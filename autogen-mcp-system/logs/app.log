@@ -1,0 +1,494 @@
+2025-10-27 16:25:28 | INFO     | __main__:<module> - ============================================================
+2025-10-27 16:25:28 | INFO     | __main__:<module> - STARTING MCP SERVER
+2025-10-27 16:25:28 | INFO     | __main__:<module> - ============================================================
+2025-10-27 16:25:28 | INFO     | __main__:<module> - Host: 127.0.0.1:8000
+2025-10-27 16:25:28 | INFO     | __main__:<module> - Ollama: http://localhost:11434 (gemma)
+2025-10-27 16:25:28 | INFO     | __main__:<module> - Database: 020304B1471XX7.rd.unr.edu,1433:1433/AdventureWorksDW2022
+2025-10-27 16:25:28 | INFO     | __main__:<module> - ============================================================
+2025-10-27 16:27:37 | INFO     | __main__:main - ============================================================
+2025-10-27 16:27:37 | INFO     | __main__:main - MCP AGENT SYSTEM - POC EXECUTION
+2025-10-27 16:27:37 | INFO     | __main__:main - ============================================================
+2025-10-27 16:27:37 | INFO     | agents.orchestrator:__init__ - Initialized Ollama client with model: gemma
+2025-10-27 16:27:37 | INFO     | __main__:main - 
+============================================================
+2025-10-27 16:27:37 | INFO     | __main__:main - TASK 1/3
+2025-10-27 16:27:37 | INFO     | __main__:main - ============================================================
+2025-10-27 16:27:37 | INFO     | agents.orchestrator:execute_task - Starting task execution for user: test_user
+2025-10-27 16:27:37 | INFO     | agents.orchestrator:execute_task - Task: Query the sales table for the last quarter. Calculate total revenue by region and identify top 5 products. Provide trend analysis.
+2025-10-27 16:27:37 | INFO     | agents.orchestrator:setup_agents - Connecting to MCP server...
+2025-10-27 16:27:37 | ERROR    | agents.orchestrator:execute_task - Task execution failed: 'McpWorkbench' object has no attribute 'connect'
+2025-10-27 16:27:37 | ERROR    | __main__:main - ✗ Task failed: 'McpWorkbench' object has no attribute 'connect'
+2025-10-27 16:27:39 | INFO     | __main__:main - 
+============================================================
+2025-10-27 16:27:39 | INFO     | __main__:main - TASK 2/3
+2025-10-27 16:27:39 | INFO     | __main__:main - ============================================================
+2025-10-27 16:27:39 | INFO     | agents.orchestrator:execute_task - Starting task execution for user: test_user
+2025-10-27 16:27:39 | INFO     | agents.orchestrator:execute_task - Task: Analyze customer data from the past 6 months. Show customer count, average purchase value, and segment by geographic region.
+2025-10-27 16:27:39 | INFO     | agents.orchestrator:setup_agents - Connecting to MCP server...
+2025-10-27 16:27:39 | ERROR    | agents.orchestrator:execute_task - Task execution failed: 'McpWorkbench' object has no attribute 'connect'
+2025-10-27 16:27:39 | ERROR    | __main__:main - ✗ Task failed: 'McpWorkbench' object has no attribute 'connect'
+2025-10-27 16:27:41 | INFO     | __main__:main - 
+============================================================
+2025-10-27 16:27:41 | INFO     | __main__:main - TASK 3/3
+2025-10-27 16:27:41 | INFO     | __main__:main - ============================================================
+2025-10-27 16:27:41 | INFO     | agents.orchestrator:execute_task - Starting task execution for user: test_user
+2025-10-27 16:27:41 | INFO     | agents.orchestrator:execute_task - Task: Generate a summary report of inventory levels. Identify items below minimum threshold and calculate procurement needs.
+2025-10-27 16:27:41 | INFO     | agents.orchestrator:setup_agents - Connecting to MCP server...
+2025-10-27 16:27:41 | ERROR    | agents.orchestrator:execute_task - Task execution failed: 'McpWorkbench' object has no attribute 'connect'
+2025-10-27 16:27:41 | ERROR    | __main__:main - ✗ Task failed: 'McpWorkbench' object has no attribute 'connect'
+2025-10-27 16:27:43 | INFO     | __main__:main - 
+============================================================
+2025-10-27 16:27:43 | INFO     | __main__:main - ALL TASKS COMPLETED
+2025-10-27 16:27:43 | INFO     | __main__:main - ============================================================
+2025-10-27 22:27:51 | INFO     | __main__:test_simple_task - ============================================================
+2025-10-27 22:27:51 | INFO     | __main__:test_simple_task - QUICK CONNECTION TEST
+2025-10-27 22:27:51 | INFO     | __main__:test_simple_task - ============================================================
+2025-10-27 22:27:51 | INFO     | agents.orchestrator:__init__ - Initialized Ollama client with model: gemma
+2025-10-27 22:27:51 | INFO     | __main__:test_simple_task - 
+Testing with simple task: List the first 5 tables in the database
+2025-10-27 22:27:51 | INFO     | agents.orchestrator:execute_task - Starting task execution for user: test_user
+2025-10-27 22:27:51 | INFO     | agents.orchestrator:execute_task - Task: List the first 5 tables in the database
+2025-10-27 22:27:53 | ERROR    | agents.orchestrator:execute_task - Task execution failed: unhandled errors in a TaskGroup (1 sub-exception)
+2025-10-27 22:27:53 | ERROR    | __main__:test_simple_task - ✗ TEST FAILED
+2025-10-27 22:27:53 | ERROR    | __main__:test_simple_task - Error: unhandled errors in a TaskGroup (1 sub-exception)
+2025-10-27 22:27:53 | INFO     | __main__:test_simple_task - ============================================================
+2025-10-27 22:29:32 | INFO     | __main__:test_simple_task - ============================================================
+2025-10-27 22:29:32 | INFO     | __main__:test_simple_task - QUICK CONNECTION TEST
+2025-10-27 22:29:32 | INFO     | __main__:test_simple_task - ============================================================
+2025-10-27 22:29:32 | INFO     | agents.orchestrator:__init__ - Initialized Ollama client with model: gemma
+2025-10-27 22:29:32 | INFO     | __main__:test_simple_task - 
+Testing with simple task: List the first 5 tables in the database
+2025-10-27 22:29:32 | INFO     | agents.orchestrator:execute_task - Starting task execution for user: sgottipalli
+2025-10-27 22:29:32 | INFO     | agents.orchestrator:execute_task - Task: List the first 5 tables in the database
+2025-10-27 22:29:34 | ERROR    | agents.orchestrator:execute_task - Task execution failed: unhandled errors in a TaskGroup (1 sub-exception)
+2025-10-27 22:29:34 | ERROR    | __main__:test_simple_task - ✗ TEST FAILED
+2025-10-27 22:29:34 | ERROR    | __main__:test_simple_task - Error: unhandled errors in a TaskGroup (1 sub-exception)
+2025-10-27 22:29:34 | INFO     | __main__:test_simple_task - ============================================================
+2025-10-27 22:30:38 | INFO     | __main__:test_simple_task - ============================================================
+2025-10-27 22:30:38 | INFO     | __main__:test_simple_task - QUICK CONNECTION TEST
+2025-10-27 22:30:38 | INFO     | __main__:test_simple_task - ============================================================
+2025-10-27 22:31:08 | INFO     | __main__:test_simple_task - ============================================================
+2025-10-27 22:31:08 | INFO     | __main__:test_simple_task - QUICK CONNECTION TEST
+2025-10-27 22:31:08 | INFO     | __main__:test_simple_task - ============================================================
+2025-10-27 22:31:30 | INFO     | __main__:test_simple_task - ============================================================
+2025-10-27 22:31:30 | INFO     | __main__:test_simple_task - QUICK CONNECTION TEST
+2025-10-27 22:31:30 | INFO     | __main__:test_simple_task - ============================================================
+2025-10-27 22:34:29 | INFO     | __main__:test_simple_task - ============================================================
+2025-10-27 22:34:29 | INFO     | __main__:test_simple_task - QUICK CONNECTION TEST
+2025-10-27 22:34:29 | INFO     | __main__:test_simple_task - ============================================================
+2025-10-27 22:40:06 | INFO     | __main__:test_simple_task - ============================================================
+2025-10-27 22:40:06 | INFO     | __main__:test_simple_task - QUICK CONNECTION TEST
+2025-10-27 22:40:06 | INFO     | __main__:test_simple_task - ============================================================
+2025-10-27 22:40:06 | INFO     | agents.orchestrator:__init__ - Initialized Ollama client with model: gemma3:latest
+2025-10-27 22:40:06 | INFO     | __main__:test_simple_task - 
+Testing with simple task: List the first 5 tables in the database
+2025-10-27 22:40:06 | INFO     | agents.orchestrator:execute_task - Starting task execution for user: test_user
+2025-10-27 22:40:06 | INFO     | agents.orchestrator:execute_task - Task: List the first 5 tables in the database
+2025-10-27 22:40:08 | ERROR    | agents.orchestrator:execute_task - Task execution failed: unhandled errors in a TaskGroup (1 sub-exception)
+2025-10-27 22:40:08 | ERROR    | __main__:test_simple_task - ✗ TEST FAILED
+2025-10-27 22:40:08 | ERROR    | __main__:test_simple_task - Error: unhandled errors in a TaskGroup (1 sub-exception)
+2025-10-27 22:40:08 | INFO     | __main__:test_simple_task - ============================================================
+2025-10-27 22:41:09 | INFO     | __main__:test_simple_task - ============================================================
+2025-10-27 22:41:09 | INFO     | __main__:test_simple_task - QUICK CONNECTION TEST
+2025-10-27 22:41:09 | INFO     | __main__:test_simple_task - ============================================================
+2025-10-27 22:41:09 | INFO     | agents.orchestrator:__init__ - Initialized Ollama client with model: gemma3:latest
+2025-10-27 22:41:09 | INFO     | __main__:test_simple_task - 
+Testing with simple task: List the first 5 tables in the database
+2025-10-27 22:41:09 | INFO     | agents.orchestrator:execute_task - Starting task execution for user: sqlapi
+2025-10-27 22:41:09 | INFO     | agents.orchestrator:execute_task - Task: List the first 5 tables in the database
+2025-10-27 22:41:11 | ERROR    | agents.orchestrator:execute_task - Task execution failed: unhandled errors in a TaskGroup (1 sub-exception)
+2025-10-27 22:41:11 | ERROR    | __main__:test_simple_task - ✗ TEST FAILED
+2025-10-27 22:41:11 | ERROR    | __main__:test_simple_task - Error: unhandled errors in a TaskGroup (1 sub-exception)
+2025-10-27 22:41:11 | INFO     | __main__:test_simple_task - ============================================================
+2025-10-27 22:43:11 | INFO     | __main__:<module> - ============================================================
+2025-10-27 22:43:11 | INFO     | __main__:<module> - STARTING MCP SERVER
+2025-10-27 22:43:11 | INFO     | __main__:<module> - ============================================================
+2025-10-27 22:43:11 | INFO     | __main__:<module> - Host: 127.0.0.1:8000
+2025-10-27 22:43:11 | INFO     | __main__:<module> - Ollama: http://localhost:11434 (gemma3:latest)
+2025-10-27 22:43:11 | INFO     | __main__:<module> - Database: 020304B1471XX7.rd.unr.edu,1433:1433/AdventureWorksDW2022
+2025-10-27 22:43:11 | INFO     | __main__:<module> - ============================================================
+2025-10-27 22:43:19 | INFO     | __main__:test_simple_task - ============================================================
+2025-10-27 22:43:19 | INFO     | __main__:test_simple_task - QUICK CONNECTION TEST
+2025-10-27 22:43:19 | INFO     | __main__:test_simple_task - ============================================================
+2025-10-27 22:43:19 | INFO     | agents.orchestrator:__init__ - Initialized Ollama client with model: gemma3:latest
+2025-10-27 22:43:19 | INFO     | __main__:test_simple_task - 
+Testing with simple task: List the first 5 tables in the database
+2025-10-27 22:43:19 | INFO     | agents.orchestrator:execute_task - Starting task execution for user: sqlapi
+2025-10-27 22:43:19 | INFO     | agents.orchestrator:execute_task - Task: List the first 5 tables in the database
+2025-10-27 22:43:20 | ERROR    | agents.orchestrator:execute_task - Task execution failed: unhandled errors in a TaskGroup (1 sub-exception)
+2025-10-27 22:43:20 | ERROR    | __main__:test_simple_task - ✗ TEST FAILED
+2025-10-27 22:43:20 | ERROR    | __main__:test_simple_task - Error: unhandled errors in a TaskGroup (1 sub-exception)
+2025-10-27 22:43:20 | INFO     | __main__:test_simple_task - ============================================================
+2025-10-27 22:47:25 | INFO     | __main__:<module> - ============================================================
+2025-10-27 22:47:25 | INFO     | __main__:<module> - STARTING MCP SERVER
+2025-10-27 22:47:25 | INFO     | __main__:<module> - ============================================================
+2025-10-27 22:47:25 | INFO     | __main__:<module> - Host: 127.0.0.1:8000
+2025-10-27 22:47:25 | INFO     | __main__:<module> - Ollama: http://localhost:11434 (gemma3:latest)
+2025-10-27 22:47:25 | INFO     | __main__:<module> - Database: 020304B1471XX7.rd.unr.edu,1433:1433/AdventureWorksDW2022
+2025-10-27 22:47:25 | INFO     | __main__:<module> - ============================================================
+2025-10-27 22:47:46 | INFO     | __main__:test_simple_task - ============================================================
+2025-10-27 22:47:46 | INFO     | __main__:test_simple_task - QUICK CONNECTION TEST
+2025-10-27 22:47:46 | INFO     | __main__:test_simple_task - ============================================================
+2025-10-27 22:48:12 | INFO     | __main__:test_simple_task - ============================================================
+2025-10-27 22:48:12 | INFO     | __main__:test_simple_task - QUICK CONNECTION TEST
+2025-10-27 22:48:12 | INFO     | __main__:test_simple_task - ============================================================
+2025-10-27 22:48:12 | INFO     | agents.orchestrator:__init__ - Initialized Ollama client with model: gemma3:latest
+2025-10-27 22:48:12 | INFO     | __main__:test_simple_task - 
+Testing with simple task: List the first 5 tables in the database
+2025-10-27 22:48:12 | INFO     | agents.orchestrator:execute_task - Starting task execution for user: sqlapi
+2025-10-27 22:48:12 | INFO     | agents.orchestrator:execute_task - Task: List the first 5 tables in the database
+2025-10-27 22:48:12 | ERROR    | agents.orchestrator:execute_task - Task execution failed: unhandled errors in a TaskGroup (1 sub-exception)
+2025-10-27 22:48:12 | ERROR    | agents.orchestrator:execute_task - Full traceback:
+  + Exception Group Traceback (most recent call last):
+  |   File "G:\dataden.ai\autogen-mcp-system\agents\orchestrator.py", line 153, in execute_task
+  |     async with McpWorkbench(server_params) as workbench:
+  |   File "G:\dataden.ai\venv\Lib\site-packages\autogen_ext\tools\mcp\_actor.py", line 84, in _run_actor
+  |     async with create_mcp_server_session(self.server_params) as session:
+  |   File "C:\Users\sgottipalli\AppData\Local\Programs\Python\Python311\Lib\contextlib.py", line 204, in __aenter__
+  |     return await anext(self.gen)
+  |            ^^^^^^^^^^^^^^^^^^^^^
+  |   File "G:\dataden.ai\venv\Lib\site-packages\autogen_ext\tools\mcp\_session.py", line 26, in create_mcp_server_session
+  |     async with sse_client(**server_params.model_dump(exclude={"type"})) as (read, write):
+  |   File "C:\Users\sgottipalli\AppData\Local\Programs\Python\Python311\Lib\contextlib.py", line 204, in __aenter__
+  |     return await anext(self.gen)
+  |            ^^^^^^^^^^^^^^^^^^^^^
+  |   File "G:\dataden.ai\venv\Lib\site-packages\mcp\client\sse.py", line 55, in sse_client
+  |     async with anyio.create_task_group() as tg:
+  |   File "G:\dataden.ai\venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 772, in __aexit__
+  |     raise BaseExceptionGroup(
+  | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+  +-+---------------- 1 ----------------
+    | Traceback (most recent call last):
+    |   File "G:\dataden.ai\venv\Lib\site-packages\mcp\client\sse.py", line 66, in sse_client
+    |     event_source.response.raise_for_status()
+    |   File "G:\dataden.ai\venv\Lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    |     raise HTTPStatusError(message, request=request, response=self)
+    | httpx.HTTPStatusError: Client error '404 Not Found' for url 'http://127.0.0.1:8000/mcp'
+    | For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+    +------------------------------------
+
+2025-10-27 22:48:12 | ERROR    | __main__:test_simple_task - ✗ TEST FAILED
+2025-10-27 22:48:12 | ERROR    | __main__:test_simple_task - Error: unhandled errors in a TaskGroup (1 sub-exception)
+2025-10-27 22:48:12 | INFO     | __main__:test_simple_task - ============================================================
+2025-10-27 23:00:42 | INFO     | __main__:test_simple_task - ============================================================
+2025-10-27 23:00:42 | INFO     | __main__:test_simple_task - QUICK CONNECTION TEST
+2025-10-27 23:00:42 | INFO     | __main__:test_simple_task - ============================================================
+2025-10-27 23:00:42 | INFO     | agents.orchestrator:__init__ - Initialized Ollama client with model: gemma3:latest
+2025-10-27 23:00:42 | INFO     | __main__:test_simple_task - 
+Testing with simple task: List the first 5 tables in the database
+2025-10-27 23:00:42 | INFO     | agents.orchestrator:execute_task - Starting task execution for user: sqlapi
+2025-10-27 23:00:42 | INFO     | agents.orchestrator:execute_task - Task: List the first 5 tables in the database
+2025-10-27 23:00:42 | ERROR    | agents.orchestrator:execute_task - Task execution failed: unhandled errors in a TaskGroup (1 sub-exception)
+2025-10-27 23:00:42 | ERROR    | agents.orchestrator:execute_task - Full traceback:
+  + Exception Group Traceback (most recent call last):
+  |   File "G:\dataden.ai\autogen-mcp-system\agents\orchestrator.py", line 153, in execute_task
+  |     async with McpWorkbench(server_params) as workbench:
+  |   File "G:\dataden.ai\venv\Lib\site-packages\autogen_ext\tools\mcp\_actor.py", line 84, in _run_actor
+  |     async with create_mcp_server_session(self.server_params) as session:
+  |   File "C:\Users\sgottipalli\AppData\Local\Programs\Python\Python311\Lib\contextlib.py", line 204, in __aenter__
+  |     return await anext(self.gen)
+  |            ^^^^^^^^^^^^^^^^^^^^^
+  |   File "G:\dataden.ai\venv\Lib\site-packages\autogen_ext\tools\mcp\_session.py", line 26, in create_mcp_server_session
+  |     async with sse_client(**server_params.model_dump(exclude={"type"})) as (read, write):
+  |   File "C:\Users\sgottipalli\AppData\Local\Programs\Python\Python311\Lib\contextlib.py", line 204, in __aenter__
+  |     return await anext(self.gen)
+  |            ^^^^^^^^^^^^^^^^^^^^^
+  |   File "G:\dataden.ai\venv\Lib\site-packages\mcp\client\sse.py", line 55, in sse_client
+  |     async with anyio.create_task_group() as tg:
+  |   File "G:\dataden.ai\venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 772, in __aexit__
+  |     raise BaseExceptionGroup(
+  | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+  +-+---------------- 1 ----------------
+    | Traceback (most recent call last):
+    |   File "G:\dataden.ai\venv\Lib\site-packages\mcp\client\sse.py", line 66, in sse_client
+    |     event_source.response.raise_for_status()
+    |   File "G:\dataden.ai\venv\Lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    |     raise HTTPStatusError(message, request=request, response=self)
+    | httpx.HTTPStatusError: Client error '404 Not Found' for url 'http://127.0.0.1:8000/mcp'
+    | For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+    +------------------------------------
+
+2025-10-27 23:00:42 | WARNING  | agents.orchestrator:execute_task - Error disconnecting workbench: 'McpWorkbench' object has no attribute 'disconnect'
+2025-10-27 23:00:42 | ERROR    | __main__:test_simple_task - ✗ TEST FAILED
+2025-10-27 23:00:42 | ERROR    | __main__:test_simple_task - Error: unhandled errors in a TaskGroup (1 sub-exception)
+2025-10-27 23:00:42 | INFO     | __main__:test_simple_task - ============================================================
+2025-10-27 23:02:32 | INFO     | __main__:test_simple_task - ============================================================
+2025-10-27 23:02:32 | INFO     | __main__:test_simple_task - QUICK CONNECTION TEST
+2025-10-27 23:02:32 | INFO     | __main__:test_simple_task - ============================================================
+2025-10-27 23:02:32 | INFO     | agents.orchestrator:__init__ - Initialized Ollama client with model: gemma3:latest
+2025-10-27 23:02:32 | INFO     | __main__:test_simple_task - 
+Testing with simple task: List the first 5 tables in the database
+2025-10-27 23:02:32 | INFO     | agents.orchestrator:execute_task - Starting task execution for user: sqlapi
+2025-10-27 23:02:32 | INFO     | agents.orchestrator:execute_task - Task: List the first 5 tables in the database
+2025-10-27 23:02:32 | ERROR    | agents.orchestrator:execute_task - Task execution failed: unhandled errors in a TaskGroup (1 sub-exception)
+2025-10-27 23:02:32 | ERROR    | agents.orchestrator:execute_task - Full traceback:
+  + Exception Group Traceback (most recent call last):
+  |   File "G:\dataden.ai\autogen-mcp-system\agents\orchestrator.py", line 153, in execute_task
+  |     async with McpWorkbench(server_params) as workbench:
+  |   File "G:\dataden.ai\venv\Lib\site-packages\autogen_ext\tools\mcp\_actor.py", line 84, in _run_actor
+  |     async with create_mcp_server_session(self.server_params) as session:
+  |   File "C:\Users\sgottipalli\AppData\Local\Programs\Python\Python311\Lib\contextlib.py", line 204, in __aenter__
+  |     return await anext(self.gen)
+  |            ^^^^^^^^^^^^^^^^^^^^^
+  |   File "G:\dataden.ai\venv\Lib\site-packages\autogen_ext\tools\mcp\_session.py", line 26, in create_mcp_server_session
+  |     async with sse_client(**server_params.model_dump(exclude={"type"})) as (read, write):
+  |   File "C:\Users\sgottipalli\AppData\Local\Programs\Python\Python311\Lib\contextlib.py", line 204, in __aenter__
+  |     return await anext(self.gen)
+  |            ^^^^^^^^^^^^^^^^^^^^^
+  |   File "G:\dataden.ai\venv\Lib\site-packages\mcp\client\sse.py", line 55, in sse_client
+  |     async with anyio.create_task_group() as tg:
+  |   File "G:\dataden.ai\venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 772, in __aexit__
+  |     raise BaseExceptionGroup(
+  | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+  +-+---------------- 1 ----------------
+    | Traceback (most recent call last):
+    |   File "G:\dataden.ai\venv\Lib\site-packages\mcp\client\sse.py", line 66, in sse_client
+    |     event_source.response.raise_for_status()
+    |   File "G:\dataden.ai\venv\Lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    |     raise HTTPStatusError(message, request=request, response=self)
+    | httpx.HTTPStatusError: Client error '404 Not Found' for url 'http://127.0.0.1:8000/mcp'
+    | For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+    +------------------------------------
+
+2025-10-27 23:02:32 | WARNING  | agents.orchestrator:execute_task - Error disconnecting workbench: 'McpWorkbench' object has no attribute 'disconnect'
+2025-10-27 23:02:32 | ERROR    | __main__:test_simple_task - ✗ TEST FAILED
+2025-10-27 23:02:32 | ERROR    | __main__:test_simple_task - Error: unhandled errors in a TaskGroup (1 sub-exception)
+2025-10-27 23:02:32 | INFO     | __main__:test_simple_task - ============================================================
+2025-10-28 10:33:06 | INFO     | __main__:test_simple_task - ============================================================
+2025-10-28 10:33:06 | INFO     | __main__:test_simple_task - QUICK CONNECTION TEST
+2025-10-28 10:33:06 | INFO     | __main__:test_simple_task - ============================================================
+2025-10-28 10:34:08 | INFO     | __main__:test_simple_task - ============================================================
+2025-10-28 10:34:08 | INFO     | __main__:test_simple_task - QUICK CONNECTION TEST
+2025-10-28 10:34:08 | INFO     | __main__:test_simple_task - ============================================================
+2025-10-28 10:34:08 | INFO     | agents.orchestrator:__init__ - Initialized Ollama client with model: gemma3:latest
+2025-10-28 10:34:08 | INFO     | __main__:test_simple_task - 
+Testing with simple task: List the first 5 tables in the database
+2025-10-28 10:34:08 | INFO     | agents.orchestrator:execute_task - Starting task execution for user: sqlapi
+2025-10-28 10:34:08 | INFO     | agents.orchestrator:execute_task - Task: List the first 5 tables in the database
+2025-10-28 10:34:08 | INFO     | agents.orchestrator:setup_agents - Agent team successfully configured
+2025-10-28 10:34:08 | ERROR    | agents.orchestrator:execute_task - Task execution failed: BaseGroupChat.run() takes 1 positional argument but 2 were given
+2025-10-28 10:34:08 | ERROR    | agents.orchestrator:execute_task - Full traceback:
+Traceback (most recent call last):
+  File "G:\dataden.ai\autogen-mcp-system\agents\orchestrator.py", line 162, in execute_task
+    result = await team.run(task_description)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: BaseGroupChat.run() takes 1 positional argument but 2 were given
+
+2025-10-28 10:34:08 | ERROR    | __main__:test_simple_task - ✗ TEST FAILED
+2025-10-28 10:34:08 | ERROR    | __main__:test_simple_task - Error: BaseGroupChat.run() takes 1 positional argument but 2 were given
+2025-10-28 10:34:08 | INFO     | __main__:test_simple_task - ============================================================
+2025-10-28 10:34:43 | INFO     | __main__:test_simple_task - ============================================================
+2025-10-28 10:34:43 | INFO     | __main__:test_simple_task - QUICK CONNECTION TEST
+2025-10-28 10:34:43 | INFO     | __main__:test_simple_task - ============================================================
+2025-10-28 10:34:43 | INFO     | agents.orchestrator:__init__ - Initialized Ollama client with model: gemma3:latest
+2025-10-28 10:34:43 | INFO     | __main__:test_simple_task - 
+Testing with simple task: List the first 5 tables in the database
+2025-10-28 10:34:43 | INFO     | agents.orchestrator:execute_task - Starting task execution for user: sqlapi
+2025-10-28 10:34:43 | INFO     | agents.orchestrator:execute_task - Task: List the first 5 tables in the database
+2025-10-28 10:34:43 | INFO     | agents.orchestrator:setup_agents - Agent team successfully configured
+2025-10-28 10:36:00 | ERROR    | agents.orchestrator:execute_task - Task execution failed: Failed to parse ledger information after multiple retries.
+2025-10-28 10:36:00 | ERROR    | agents.orchestrator:execute_task - Full traceback:
+Traceback (most recent call last):
+  File "G:\dataden.ai\autogen-mcp-system\agents\orchestrator.py", line 162, in execute_task
+    result = await team.run(task=task_description)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "G:\dataden.ai\venv\Lib\site-packages\autogen_agentchat\teams\_group_chat\_base_group_chat.py", line 307, in run
+    async for message in self.run_stream(
+  File "G:\dataden.ai\venv\Lib\site-packages\autogen_agentchat\teams\_group_chat\_base_group_chat.py", line 499, in run_stream
+    await self._runtime.send_message(
+  File "G:\dataden.ai\venv\Lib\site-packages\autogen_core\_single_threaded_agent_runtime.py", line 383, in send_message
+    return await future
+           ^^^^^^^^^^^^
+  File "G:\dataden.ai\venv\Lib\site-packages\autogen_core\_single_threaded_agent_runtime.py", line 506, in _process_send
+    response = await recipient_agent.on_message(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "G:\dataden.ai\venv\Lib\site-packages\autogen_core\_base_agent.py", line 119, in on_message
+    return await self.on_message_impl(message, ctx)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "G:\dataden.ai\venv\Lib\site-packages\autogen_agentchat\teams\_group_chat\_sequential_routed_agent.py", line 67, in on_message_impl
+    return await super().on_message_impl(message, ctx)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "G:\dataden.ai\venv\Lib\site-packages\autogen_core\_routed_agent.py", line 485, in on_message_impl
+    return await h(self, message, ctx)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "G:\dataden.ai\venv\Lib\site-packages\autogen_core\_routed_agent.py", line 389, in wrapper
+    return_value = await func(self, message, ctx)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "G:\dataden.ai\venv\Lib\site-packages\autogen_agentchat\teams\_group_chat\_magentic_one\_magentic_one_orchestrator.py", line 186, in handle_start
+    await self._reenter_outer_loop(ctx.cancellation_token)
+  File "G:\dataden.ai\venv\Lib\site-packages\autogen_agentchat\teams\_group_chat\_magentic_one\_magentic_one_orchestrator.py", line 283, in _reenter_outer_loop
+    await self._orchestrate_step(cancellation_token=cancellation_token)
+  File "G:\dataden.ai\venv\Lib\site-packages\autogen_agentchat\teams\_group_chat\_magentic_one\_magentic_one_orchestrator.py", line 353, in _orchestrate_step
+    raise ValueError("Failed to parse ledger information after multiple retries.")
+ValueError: Failed to parse ledger information after multiple retries.
+
+2025-10-28 10:36:00 | ERROR    | __main__:test_simple_task - ✗ TEST FAILED
+2025-10-28 10:36:00 | ERROR    | __main__:test_simple_task - Error: Failed to parse ledger information after multiple retries.
+2025-10-28 10:36:00 | INFO     | __main__:test_simple_task - ============================================================
+2025-10-28 10:41:39 | INFO     | __main__:test_simple_task - ============================================================
+2025-10-28 10:41:39 | INFO     | __main__:test_simple_task - QUICK CONNECTION TEST
+2025-10-28 10:41:39 | INFO     | __main__:test_simple_task - ============================================================
+2025-10-28 10:41:59 | INFO     | __main__:test_simple_task - ============================================================
+2025-10-28 10:41:59 | INFO     | __main__:test_simple_task - QUICK CONNECTION TEST
+2025-10-28 10:41:59 | INFO     | __main__:test_simple_task - ============================================================
+2025-10-28 10:43:34 | INFO     | __main__:test_simple_task - ============================================================
+2025-10-28 10:43:34 | INFO     | __main__:test_simple_task - QUICK CONNECTION TEST
+2025-10-28 10:43:34 | INFO     | __main__:test_simple_task - ============================================================
+2025-10-28 10:43:34 | INFO     | agents.orchestrator:__init__ - Initialized Ollama client with model: qwen3
+2025-10-28 10:43:34 | INFO     | __main__:test_simple_task - 
+Testing with simple task: List the first 5 tables in the database
+2025-10-28 10:43:34 | INFO     | agents.orchestrator:execute_task - Starting task execution for user: sqlapi
+2025-10-28 10:43:34 | INFO     | agents.orchestrator:execute_task - Task: List the first 5 tables in the database
+2025-10-28 10:43:34 | INFO     | agents.orchestrator:setup_agents - Agent team successfully configured
+2025-10-28 10:48:18 | INFO     | mcp_server.tools:generate_and_execute_sql - SQL Tool called: Retrieve first 5 tables from current database
+2025-10-28 10:48:18 | INFO     | utils.retry_handler:execute_with_retry - Attempt 1/3
+2025-10-28 10:48:18 | INFO     | utils.retry_handler:execute_with_retry - Query succeeded on attempt 1
+2025-10-28 10:49:46 | INFO     | agents.orchestrator:execute_task - Task completed successfully for user: sqlapi
+2025-10-28 10:49:46 | INFO     | __main__:test_simple_task - ✓ TEST PASSED
+2025-10-28 10:49:46 | INFO     | __main__:test_simple_task - Result: messages=[TextMessage(source='user', models_usage=None, metadata={}, content='List the first 5 tables in the database', type='TextMessage'), TextMessage(source='MagenticOneOrchestrator', models_usage=None, metadata={}, content='\nWe are working to address the following user request:\n\nList the first 5 tables in the database\n\n\nTo answer this request we have assembled the following team:\n\nSQLAgent: An agent that provides assistance with ability to use tools.\nAnalysisAgent: An agent that provides assistance with ability to use tools.\nValidationAgent: An agent that provides assistance with ability to use tools.\n\n\nHere is an initial fact sheet to consider:\n\n1. GIVEN OR VERIFIED FACTS  \n   - None. The request provides no specific database name, context, or predefined structure.  \n\n2. FACTS TO LOOK UP  \n   - None. The request lacks specificity about the database in question, making it impossible to identify tables without additional information.  \n\n3. FACTS TO DERIVE  \n   - None. Derivation requires constraints or rules not provided in the request.  \n\n4. EDUCATED GUESSES  \n   - If assuming a common example database (e.g., Northwind, Sakila, or a generic relational schema), the first five tables might include:  \n     1. `Customers`  \n     2. `Orders`  \n     3. `Products`  \n     4. `Employees`  \n     5. `Suppliers`  \n   - These are speculative and depend on the database’s design, which is not specified.\n\n\nHere is the plan to follow as best as possible:\n\n- **SQLAgent** will execute a query (e.g., `SHOW TABLES` or inspecting the information schema) to retrieve the first five tables from the target database.  \n- **ValidationAgent** will verify the query results against common database structures (e.g., checking for standard table names like `Customers`, `Orders`, etc.) to ensure consistency with typical schema designs.  \n- **AnalysisAgent** may optionally cross-reference inferred table relationships (e.g., linking `Orders` to `Customers`) if additional context about the database’s purpose is later provided.  \n- If the database name or structure is unknown, the team may proceed with speculative assumptions (e.g., using common examples like `Northwind` or `Sakila`) to generate a plausible list of tables.\n', type='TextMessage'), TextMessage(source='MagenticOneOrchestrator', models_usage=None, metadata={}, content='Execute a query to list tables in the database. If the database name is unspecified, proceed with a common example schema or ask for clarification.', type='TextMessage'), ToolCallRequestEvent(source='SQLAgent', models_usage=RequestUsage(prompt_tokens=822, completion_tokens=1072), metadata={}, content=[FunctionCall(id='0', arguments='{"query_description": "Retrieve first 5 tables from current database", "sql_script": "SELECT TOP 5 name AS table_name FROM sys.tables ORDER BY name;"}', name='sql_tool_wrapper')], type='ToolCallRequestEvent'), ToolCallExecutionEvent(source='SQLAgent', models_usage=None, metadata={}, content=[FunctionExecutionResult(content="{'success': True, 'columns': ['table_name'], 'rows': [{'table_name': 'AdventureWorksDWBuildVersion'}, {'table_name': 'DatabaseLog'}, {'table_name': 'DimAccount'}, {'table_name': 'DimCurrency'}, {'table_name': 'DimCustomer'}], 'row_count': 5}", name='sql_tool_wrapper', call_id='0', is_error=False)], type='ToolCallExecutionEvent'), ToolCallSummaryMessage(source='SQLAgent', models_usage=None, metadata={}, content="{'success': True, 'columns': ['table_name'], 'rows': [{'table_name': 'AdventureWorksDWBuildVersion'}, {'table_name': 'DatabaseLog'}, {'table_name': 'DimAccount'}, {'table_name': 'DimCurrency'}, {'table_name': 'DimCustomer'}], 'row_count': 5}", type='ToolCallSummaryMessage'), TextMessage(source='MagenticOneOrchestrator', models_usage=None, metadata={}, content='The first five tables in the **AdventureWorksDW** database are:  \n\n1. **AdventureWorksDWBuildVersion**  \n2. **DatabaseLog**  \n3. **DimAccount**  \n4. **DimCurrency**  \n5. **DimCustomer**  \n\nThese tables are part of the SQL Server AdventureWorks DW sample database, which is commonly used for data warehousing examples. If you’re working with a different database, the list would vary based on its schema. Let me know if you need further details!', type='TextMessage')] stop_reason="The SQLAgent successfully retrieved 5 tables from the database, fulfilling the user's request for the first 5 tables. The response includes the exact number of tables requested."
+2025-10-28 10:49:46 | INFO     | __main__:test_simple_task - ============================================================
+2025-10-28 11:03:00 | INFO     | __main__:main - ============================================================
+2025-10-28 11:03:00 | INFO     | __main__:main - MCP AGENT SYSTEM - POC EXECUTION
+2025-10-28 11:03:00 | INFO     | __main__:main - ============================================================
+2025-10-28 11:03:00 | INFO     | agents.orchestrator:__init__ - Initialized Ollama client with model: qwen3
+2025-10-28 11:03:00 | INFO     | __main__:main - 
+============================================================
+2025-10-28 11:03:00 | INFO     | __main__:main - TASK 1/3
+2025-10-28 11:03:00 | INFO     | __main__:main - ============================================================
+2025-10-28 11:03:00 | INFO     | agents.orchestrator:execute_task - Starting task execution for user: test_user
+2025-10-28 11:03:00 | INFO     | agents.orchestrator:execute_task - Task: Query the sales table for the last quarter. Calculate total revenue by region and identify top 5 products. Provide trend analysis.
+2025-10-28 11:03:00 | INFO     | agents.orchestrator:setup_agents - Agent team successfully configured
+2025-10-28 11:07:16 | INFO     | agents.orchestrator:get_table_schema_wrapper - Schema tool called for table: sales
+2025-10-28 11:09:08 | INFO     | agents.orchestrator:get_table_schema_wrapper - Schema tool called for table: sales
+2025-10-28 11:12:29 | INFO     | mcp_server.tools:generate_and_execute_sql - SQL Tool called: Check table existence and retrieve column names
+2025-10-28 11:12:29 | INFO     | utils.retry_handler:execute_with_retry - Attempt 1/3
+2025-10-28 11:12:30 | INFO     | utils.retry_handler:execute_with_retry - Query succeeded on attempt 1
+2025-10-28 11:18:47 | INFO     | mcp_server.tools:generate_and_execute_sql - SQL Tool called: Check for alternative table names
+2025-10-28 11:18:47 | INFO     | utils.retry_handler:execute_with_retry - Attempt 1/3
+2025-10-28 11:18:47 | INFO     | utils.retry_handler:execute_with_retry - Query succeeded on attempt 1
+2025-10-28 11:28:04 | INFO     | mcp_server.tools:generate_and_execute_sql - SQL Tool called: Check for case-sensitive table names
+2025-10-28 11:28:04 | INFO     | utils.retry_handler:execute_with_retry - Attempt 1/3
+2025-10-28 11:28:04 | INFO     | utils.retry_handler:execute_with_retry - Query succeeded on attempt 1
+2025-10-28 11:31:52 | INFO     | mcp_server.tools:generate_and_execute_sql - SQL Tool called: Check for tables in specific schemas
+2025-10-28 11:31:52 | INFO     | utils.retry_handler:execute_with_retry - Attempt 1/3
+2025-10-28 11:31:52 | INFO     | utils.retry_handler:execute_with_retry - Query succeeded on attempt 1
+2025-10-28 12:03:29 | INFO     | mcp_server.tools:generate_and_execute_sql - SQL Tool called: Check for case-sensitive table names and related tables containing 'sales'
+2025-10-28 12:03:29 | INFO     | utils.retry_handler:execute_with_retry - Attempt 1/3
+2025-10-28 12:03:29 | INFO     | utils.retry_handler:execute_with_retry - Query succeeded on attempt 1
+2025-10-28 12:05:16 | INFO     | agents.orchestrator:execute_task - Task completed successfully for user: test_user
+2025-10-28 12:05:16 | INFO     | __main__:main - ✓ Task completed successfully
+2025-10-28 12:05:18 | INFO     | __main__:main - 
+============================================================
+2025-10-28 12:05:18 | INFO     | __main__:main - TASK 2/3
+2025-10-28 12:05:18 | INFO     | __main__:main - ============================================================
+2025-10-28 12:05:18 | INFO     | agents.orchestrator:execute_task - Starting task execution for user: test_user
+2025-10-28 12:05:18 | INFO     | agents.orchestrator:execute_task - Task: Analyze customer data from the past 6 months. Show customer count, average purchase value, and segment by geographic region.
+2025-10-28 12:05:18 | INFO     | agents.orchestrator:setup_agents - Agent team successfully configured
+2025-10-28 12:09:52 | INFO     | agents.orchestrator:get_table_schema_wrapper - Schema tool called for table: Sales
+2025-10-28 12:09:52 | INFO     | agents.orchestrator:get_table_schema_wrapper - Schema tool called for table: Customers
+2025-10-28 12:11:55 | INFO     | mcp_server.tools:generate_and_execute_sql - SQL Tool called: Extract customer purchase data for past 6 months
+2025-10-28 12:11:55 | INFO     | utils.retry_handler:execute_with_retry - Attempt 1/3
+2025-10-28 12:11:55 | ERROR    | mcp_server.database:execute_query - MS SQL Error: ('42S02', "[42S02] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Invalid object name 'Customers'. (208) (SQLExecDirectW)")
+2025-10-28 12:11:55 | WARNING  | utils.retry_handler:execute_with_retry - Attempt 1 failed: ('42S02', "[42S02] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Invalid object name 'Customers'. (208) (SQLExecDirectW)")
+2025-10-28 12:11:55 | INFO     | utils.retry_handler:execute_with_retry - Attempt 2/3
+2025-10-28 12:11:55 | ERROR    | mcp_server.database:execute_query - MS SQL Error: ('42S02', "[42S02] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Invalid object name 'Customers'. (208) (SQLExecDirectW)")
+2025-10-28 12:11:55 | WARNING  | utils.retry_handler:execute_with_retry - Attempt 2 failed: ('42S02', "[42S02] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Invalid object name 'Customers'. (208) (SQLExecDirectW)")
+2025-10-28 12:11:55 | INFO     | utils.retry_handler:execute_with_retry - Attempt 3/3
+2025-10-28 12:11:55 | ERROR    | mcp_server.database:execute_query - MS SQL Error: ('42S02', "[42S02] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Invalid object name 'Customers'. (208) (SQLExecDirectW)")
+2025-10-28 12:11:55 | WARNING  | utils.retry_handler:execute_with_retry - Attempt 3 failed: ('42S02', "[42S02] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Invalid object name 'Customers'. (208) (SQLExecDirectW)")
+2025-10-28 12:11:55 | ERROR    | utils.retry_handler:execute_with_retry - All 3 attempts failed. Escalating to human.
+2025-10-28 12:15:31 | INFO     | mcp_server.tools:generate_and_execute_sql - SQL Tool called: Check table existence in database schema
+2025-10-28 12:15:31 | INFO     | utils.retry_handler:execute_with_retry - Attempt 1/3
+2025-10-28 12:15:31 | INFO     | utils.retry_handler:execute_with_retry - Query succeeded on attempt 1
+2025-10-28 12:17:17 | INFO     | mcp_server.tools:generate_and_execute_sql - SQL Tool called: List all tables and schemas in database
+2025-10-28 12:17:17 | INFO     | utils.retry_handler:execute_with_retry - Attempt 1/3
+2025-10-28 12:17:17 | INFO     | utils.retry_handler:execute_with_retry - Query succeeded on attempt 1
+2025-10-28 12:20:56 | INFO     | mcp_server.tools:generate_and_execute_sql - SQL Tool called: Analyze customer purchase data by geography
+2025-10-28 12:20:56 | INFO     | utils.retry_handler:execute_with_retry - Attempt 1/3
+2025-10-28 12:20:56 | INFO     | utils.retry_handler:execute_with_retry - Query succeeded on attempt 1
+2025-10-28 12:23:45 | INFO     | mcp_server.tools:analyze_data_pandas - Analysis tool called: summary
+2025-10-28 12:23:45 | ERROR    | mcp_server.tools:analyze_data_pandas - Analysis error: unhashable type: 'list'
+2025-10-28 12:27:40 | INFO     | mcp_server.tools:generate_and_execute_sql - SQL Tool called: Analyze customer purchase data by geography with corrected logic
+2025-10-28 12:27:40 | INFO     | utils.retry_handler:execute_with_retry - Attempt 1/3
+2025-10-28 12:27:40 | INFO     | utils.retry_handler:execute_with_retry - Query succeeded on attempt 1
+2025-10-28 12:31:28 | INFO     | mcp_server.tools:generate_and_execute_sql - SQL Tool called: Final analysis with corrected date filtering and join logic
+2025-10-28 12:31:28 | INFO     | utils.retry_handler:execute_with_retry - Attempt 1/3
+2025-10-28 12:31:28 | INFO     | utils.retry_handler:execute_with_retry - Query succeeded on attempt 1
+2025-10-28 12:40:47 | INFO     | mcp_server.tools:generate_and_execute_sql - SQL Tool called: Analyze customer data from the past 6 months with geographic segmentation
+2025-10-28 12:40:47 | INFO     | utils.retry_handler:execute_with_retry - Attempt 1/3
+2025-10-28 12:40:47 | ERROR    | mcp_server.database:execute_query - MS SQL Error: ('42S22', "[42S22] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Invalid column name 'PurchaseDate'. (207) (SQLExecDirectW)")
+2025-10-28 12:40:47 | WARNING  | utils.retry_handler:execute_with_retry - Attempt 1 failed: ('42S22', "[42S22] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Invalid column name 'PurchaseDate'. (207) (SQLExecDirectW)")
+2025-10-28 12:40:47 | INFO     | utils.retry_handler:execute_with_retry - Attempt 2/3
+2025-10-28 12:40:47 | ERROR    | mcp_server.database:execute_query - MS SQL Error: ('42S22', "[42S22] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Invalid column name 'PurchaseDate'. (207) (SQLExecDirectW)")
+2025-10-28 12:40:47 | WARNING  | utils.retry_handler:execute_with_retry - Attempt 2 failed: ('42S22', "[42S22] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Invalid column name 'PurchaseDate'. (207) (SQLExecDirectW)")
+2025-10-28 12:40:47 | INFO     | utils.retry_handler:execute_with_retry - Attempt 3/3
+2025-10-28 12:40:47 | ERROR    | mcp_server.database:execute_query - MS SQL Error: ('42S22', "[42S22] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Invalid column name 'PurchaseDate'. (207) (SQLExecDirectW)")
+2025-10-28 12:40:47 | WARNING  | utils.retry_handler:execute_with_retry - Attempt 3 failed: ('42S22', "[42S22] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Invalid column name 'PurchaseDate'. (207) (SQLExecDirectW)")
+2025-10-28 12:40:47 | ERROR    | utils.retry_handler:execute_with_retry - All 3 attempts failed. Escalating to human.
+2025-10-28 12:42:34 | INFO     | agents.orchestrator:get_table_schema_wrapper - Schema tool called for table: dbo.FactInternetSales
+2025-10-28 12:46:32 | INFO     | agents.orchestrator:get_table_schema_wrapper - Schema tool called for table: dbo.FactInternetSales
+2025-10-28 12:48:40 | INFO     | mcp_server.tools:generate_and_execute_sql - SQL Tool called: Check for date columns in FactInternetSales
+2025-10-28 12:48:40 | INFO     | utils.retry_handler:execute_with_retry - Attempt 1/3
+2025-10-28 12:48:40 | INFO     | utils.retry_handler:execute_with_retry - Query succeeded on attempt 1
+2025-10-28 12:51:14 | INFO     | mcp_server.tools:generate_and_execute_sql - SQL Tool called: Analyze customer data with corrected date column
+2025-10-28 12:51:14 | INFO     | utils.retry_handler:execute_with_retry - Attempt 1/3
+2025-10-28 12:51:14 | INFO     | utils.retry_handler:execute_with_retry - Query succeeded on attempt 1
+2025-10-28 12:52:34 | INFO     | agents.orchestrator:execute_task - Task completed successfully for user: test_user
+2025-10-28 12:52:34 | INFO     | __main__:main - ✓ Task completed successfully
+2025-10-28 12:52:36 | INFO     | __main__:main - 
+============================================================
+2025-10-28 12:52:36 | INFO     | __main__:main - TASK 3/3
+2025-10-28 12:52:36 | INFO     | __main__:main - ============================================================
+2025-10-28 12:52:36 | INFO     | agents.orchestrator:execute_task - Starting task execution for user: test_user
+2025-10-28 12:52:36 | INFO     | agents.orchestrator:execute_task - Task: Generate a summary report of inventory levels. Identify items below minimum threshold and calculate procurement needs.
+2025-10-28 12:52:36 | INFO     | agents.orchestrator:setup_agents - Agent team successfully configured
+2025-10-28 12:59:35 | ERROR    | agents.orchestrator:execute_task - Task execution failed: Failed to parse ledger information after multiple retries.
+2025-10-28 12:59:35 | ERROR    | agents.orchestrator:execute_task - Full traceback:
+Traceback (most recent call last):
+  File "G:\dataden.ai\autogen-mcp-system\agents\orchestrator.py", line 162, in execute_task
+    result = await team.run(task=task_description)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "G:\dataden.ai\venv\Lib\site-packages\autogen_agentchat\teams\_group_chat\_base_group_chat.py", line 307, in run
+    async for message in self.run_stream(
+  File "G:\dataden.ai\venv\Lib\site-packages\autogen_agentchat\teams\_group_chat\_base_group_chat.py", line 499, in run_stream
+    await self._runtime.send_message(
+  File "G:\dataden.ai\venv\Lib\site-packages\autogen_core\_single_threaded_agent_runtime.py", line 383, in send_message
+    return await future
+           ^^^^^^^^^^^^
+  File "G:\dataden.ai\venv\Lib\site-packages\autogen_core\_single_threaded_agent_runtime.py", line 506, in _process_send
+    response = await recipient_agent.on_message(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "G:\dataden.ai\venv\Lib\site-packages\autogen_core\_base_agent.py", line 119, in on_message
+    return await self.on_message_impl(message, ctx)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "G:\dataden.ai\venv\Lib\site-packages\autogen_agentchat\teams\_group_chat\_sequential_routed_agent.py", line 67, in on_message_impl
+    return await super().on_message_impl(message, ctx)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "G:\dataden.ai\venv\Lib\site-packages\autogen_core\_routed_agent.py", line 485, in on_message_impl
+    return await h(self, message, ctx)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "G:\dataden.ai\venv\Lib\site-packages\autogen_core\_routed_agent.py", line 389, in wrapper
+    return_value = await func(self, message, ctx)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "G:\dataden.ai\venv\Lib\site-packages\autogen_agentchat\teams\_group_chat\_magentic_one\_magentic_one_orchestrator.py", line 186, in handle_start
+    await self._reenter_outer_loop(ctx.cancellation_token)
+  File "G:\dataden.ai\venv\Lib\site-packages\autogen_agentchat\teams\_group_chat\_magentic_one\_magentic_one_orchestrator.py", line 283, in _reenter_outer_loop
+    await self._orchestrate_step(cancellation_token=cancellation_token)
+  File "G:\dataden.ai\venv\Lib\site-packages\autogen_agentchat\teams\_group_chat\_magentic_one\_magentic_one_orchestrator.py", line 353, in _orchestrate_step
+    raise ValueError("Failed to parse ledger information after multiple retries.")
+ValueError: Failed to parse ledger information after multiple retries.
+
+2025-10-28 12:59:35 | ERROR    | __main__:main - ✗ Task failed: Failed to parse ledger information after multiple retries.
+2025-10-28 12:59:37 | INFO     | __main__:main - 
+============================================================
+2025-10-28 12:59:37 | INFO     | __main__:main - ALL TASKS COMPLETED
+2025-10-28 12:59:37 | INFO     | __main__:main - ============================================================
+2025-11-05 15:21:52 | INFO     | __main__:test_all_components - ================================================================================
+2025-11-05 15:21:52 | INFO     | __main__:test_all_components - COMPLETE SYSTEM TEST
+2025-11-05 15:21:52 | INFO     | __main__:test_all_components - ================================================================================
+2025-11-05 15:21:52 | INFO     | __main__:test_all_components - 
+[1/7] Testing Database Connection...
+2025-11-05 15:21:52 | INFO     | __main__:test_all_components - ✓ Database connection working
+2025-11-05 15:21:52 | INFO     | __main__:test_all_components - 
+[2/7] Testing Ollama Connection...
+2025-11-05 15:21:52 | INFO     | __main__:test_all_components - ✓ Ollama with gpt-oss:120b-cloud available

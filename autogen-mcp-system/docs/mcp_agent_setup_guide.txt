@@ -1,0 +1,312 @@
+# MCP Agent System - Complete Setup Guide
+# MS SQL Server + Ollama + AutoGen 2 + LDAP Authentication
+# Proof of Concept Architecture
+
+## ============================================
+## PART 1: ENVIRONMENT & DEPENDENCIES SETUP
+## ============================================
+
+### Step 1: Create Project Structure
+
+```bash
+# Terminal commands
+mkdir autogen-mcp-system
+cd autogen-mcp-system
+
+# Create virtual environment (using venv as per your preference)
+python -m venv venv
+
+# Activate it
+# On Linux/macOS:
+source venv/bin/activate
+# On Windows:
+venv\Scripts\activate
+
+# Verify activation (should show path to venv)
+which python
+```
+
+### Step 2: Create Project Directory Structure
+
+```
+autogen-mcp-system/
+├── venv/
+├── config/
+│   ├── __init__.py
+│   ├── settings.py          # Configuration management
+│   └── ldap_config.py       # LDAP settings
+├── mcp_server/
+│   ├── __init__.py
+│   ├── main.py              # FastAPI MCP app
+│   ├── database.py          # MS SQL connections & queries
+│   ├── tools.py             # MCP tool definitions
+│   └── auth.py              # LDAP authentication
+├── agents/
+│   ├── __init__.py
+│   ├── orchestrator.py      # Agent team setup
+│   ├── sql_agent.py         # SQL generation & execution
+│   ├── analysis_agent.py    # Data analysis
+│   └── validation_agent.py  # Response validation
+├── utils/
+│   ├── __init__.py
+│   ├── logging_config.py    # Logging setup
+│   ├── retry_handler.py     # Query retry logic
+│   └── error_escalation.py  # Human escalation
+├── .env                      # Environment variables
+├── .env.example              # Template
+├── requirements.txt
+├── run_mcp_server.py         # Entry point for MCP server
+├── run_agents.py             # Entry point for agents
+└── README.md
+```
+
+### Step 3: Create requirements.txt
+
+Save this as `requirements.txt`:
+
+```
+# FastAPI & Web
+fastapi==0.104.1
+uvicorn==0.24.0
+pydantic==2.5.0
+pydantic-settings==2.1.0
+
+# MCP Framework
+fastmcp==0.1.0
+
+# AutoGen 2
+autogen-core==0.4.8
+autogen-agentchat==0.4.8
+
+# Ollama Integration (no LiteLLM needed for 0.4.8+)
+ollama==0.1.2
+
+# Microsoft SQL Server
+pyodbc==5.1.1
+sqlalchemy==2.0.23
+
+# LDAP Authentication
+ldap3==1.4.2
+
+# Data Processing
+pandas==2.1.4
+numpy==1.24.0
+
+# Configuration & Secrets
+python-dotenv==1.0.0
+
+# Utilities
+requests==2.31.0
+tenacity==8.2.3
+
+# Logging
+loguru==0.7.2
+```
+
+### Step 4: Install Dependencies
+
+```bash
+pip install -r requirements.txt
+
+# Verify Ollama is installed separately (not via pip)
+# On macOS: brew install ollama
+# On Linux: curl -fsSL https://ollama.com/install.sh | sh
+# On Windows: Download from https://ollama.com
+```
+
+---
+
+## PART 2: CONFIGURATION FILES
+
+### File: `.env` (Create from .env.example below)
+
+```
+# ============ OLLAMA CONFIGURATION ============
+OLLAMA_HOST=http://localhost:11434
+OLLAMA_MODEL=gemma  # or gemma2, mistral, llama3.1, etc.
+
+# ============ MS SQL SERVER ============
+MSSQL_SERVER=your_server_address  # e.g., 192.168.1.100 or hostname
+MSSQL_PORT=1433
+MSSQL_DATABASE=your_warehouse_name
+MSSQL_USER=your_sql_user
+MSSQL_PASSWORD=your_sql_password
+MSSQL_DRIVER={ODBC Driver 17 for SQL Server}
+
+# ============ LDAP / ACTIVE DIRECTORY ============
+LDAP_SERVER=ldap://ad.yourcompany.com  # or ldaps:// for SSL
+LDAP_PORT=389  # 636 for LDAP SSL
+LDAP_DOMAIN=yourcompany.com
+LDAP_BASE_DN=dc=yourcompany,dc=com
+LDAP_USER_DN_PATTERN=cn={username},cn=users,{base_dn}
+LDAP_SERVICE_ACCOUNT_USER=service_account@yourcompany.com
+LDAP_SERVICE_ACCOUNT_PASSWORD=service_account_password
+LDAP_USE_SSL=false  # Change to true if using LDAPS
+
+# ============ MCP SERVER ============
+MCP_SERVER_HOST=127.0.0.1
+MCP_SERVER_PORT=8000
+MCP_API_PREFIX=/mcp
+
+# ============ AGENT CONFIGURATION ============
+AGENT_RETRY_ATTEMPTS=3  # Query retry threshold
+AGENT_ESCALATION_EMAIL=team-lead@yourcompany.com
+LOG_LEVEL=INFO  # DEBUG, INFO, WARNING, ERROR
+
+# ============ SECURITY ============
+SECRET_KEY=your-super-secret-key-change-this-in-production
+JWT_EXPIRATION_HOURS=24
+```
+
+### File: `.env.example` (Template for users)
+
+```
+OLLAMA_HOST=http://localhost:11434
+OLLAMA_MODEL=gemma
+
+MSSQL_SERVER=
+MSSQL_PORT=1433
+MSSQL_DATABASE=
+MSSQL_USER=
+MSSQL_PASSWORD=
+MSSQL_DRIVER={ODBC Driver 17 for SQL Server}
+
+LDAP_SERVER=ldap://
+LDAP_PORT=389
+LDAP_DOMAIN=
+LDAP_BASE_DN=
+LDAP_USER_DN_PATTERN=cn={username},cn=users,{base_dn}
+LDAP_SERVICE_ACCOUNT_USER=
+LDAP_SERVICE_ACCOUNT_PASSWORD=
+LDAP_USE_SSL=false
+
+MCP_SERVER_HOST=127.0.0.1
+MCP_SERVER_PORT=8000
+MCP_API_PREFIX=/mcp
+
+AGENT_RETRY_ATTEMPTS=3
+AGENT_ESCALATION_EMAIL=
+LOG_LEVEL=INFO
+
+SECRET_KEY=
+JWT_EXPIRATION_HOURS=24
+```
+
+### Step 5: Install ODBC Driver for SQL Server
+
+**On Windows:**
+- Download: https://learn.microsoft.com/en-us/sql/connect/odbc/download-odbc-driver-for-sql-server
+- Install "ODBC Driver 17 for SQL Server" or newer
+
+**On macOS:**
+```bash
+brew install unixodbc
+brew install microsoft-odbc-driver
+```
+
+**On Linux (Ubuntu/Debian):**
+```bash
+sudo apt-get install unixodbc unixodbc-dev
+curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
+sudo add-apt-repository "$(curl https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/prod.list)"
+sudo apt-get update
+sudo apt-get install msodbcsql17
+```
+
+---
+
+## PART 3: VALIDATE YOUR SETUP
+
+### Test Ollama Installation
+
+```bash
+# Start Ollama service (if not already running)
+ollama serve
+
+# In another terminal, pull your model
+ollama pull gemma  # This takes time on first run (~5GB)
+
+# Test it
+ollama run gemma "Say hello in one sentence"
+```
+
+### Test MS SQL Connection
+
+Create a test file `test_mssql_connection.py`:
+
+```python
+import pyodbc
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+try:
+    conn_str = (
+        f"Driver={os.getenv('MSSQL_DRIVER')};"
+        f"Server={os.getenv('MSSQL_SERVER')};"
+        f"Database={os.getenv('MSSQL_DATABASE')};"
+        f"UID={os.getenv('MSSQL_USER')};"
+        f"PWD={os.getenv('MSSQL_PASSWORD')};"
+    )
+    conn = pyodbc.connect(conn_str)
+    print("✓ MS SQL Connection Successful!")
+    cursor = conn.cursor()
+    cursor.execute("SELECT TOP 1 * FROM INFORMATION_SCHEMA.TABLES")
+    print(f"✓ Query executed. Sample table found.")
+    conn.close()
+except Exception as e:
+    print(f"✗ Connection Failed: {e}")
+```
+
+Run it:
+```bash
+python test_mssql_connection.py
+```
+
+### Test LDAP Connection
+
+Create `test_ldap_connection.py`:
+
+```python
+from ldap3 import Server, Connection
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+try:
+    server = Server(
+        os.getenv('LDAP_SERVER'),
+        port=int(os.getenv('LDAP_PORT')),
+        use_ssl=(os.getenv('LDAP_USE_SSL') == 'true')
+    )
+    conn = Connection(
+        server,
+        user=os.getenv('LDAP_SERVICE_ACCOUNT_USER'),
+        password=os.getenv('LDAP_SERVICE_ACCOUNT_PASSWORD'),
+        auto_bind=True
+    )
+    print("✓ LDAP Connection Successful!")
+    conn.unbind()
+except Exception as e:
+    print(f"✗ LDAP Connection Failed: {e}")
+```
+
+Run it:
+```bash
+python test_ldap_connection.py
+```
+
+---
+
+## NEXT STEPS
+
+Once all tests pass, proceed to:
+1. Creating the complete database module
+2. Setting up LDAP authentication
+3. Building the MCP server
+4. Configuring agents
+5. Implementing retry logic & escalation
+
+Would you like me to proceed with the complete code implementation now?

@@ -1,0 +1,17 @@
+*.env
+*.exe
+*.bak
+*.csv
+__pycache__/
+*.pyc
+data/
+*/.coding/
+.coding/
+ags/
+venv/
+ods_internal/
+Education_DataSets*/
+dataden/
+.webui_secret_key
+OAI_CONFIG_LIST
+autogen_ai_lib/
