@@ -25,25 +25,26 @@ class EnhancedAgentOrchestrator:
     3. General Assistant Team (simple tasks)
     4. Data Analysis Team (SQL + analysis)
     """
-    
+
     def __init__(self):
         self.model_client = OllamaChatCompletionClient(
             model=settings.ollama_model,
             base_url=settings.ollama_host,
             temperature=0.7,
-            max_tokens=2000
+            max_tokens=2000,
+            model_info=settings.ollama_model_info,
         )
-        
+
         # User interaction state
         self.pending_approval = None
         self.user_response = None
-        
+
         logger.info(f"Initialized Enhanced Orchestrator with model: {settings.ollama_model}")
-    
+
     # ============================================================
     # FEATURE 1: SUPERVISOR AGENT (Task Manager/Team Manager)
     # ============================================================
-    
+
     async def create_supervisor_agent(self) -> AssistantAgent:
         """
         Supervisor Agent: Routes tasks to appropriate teams
@@ -54,7 +55,7 @@ class EnhancedAgentOrchestrator:
         - Handle multi-step tasks
         - Coordinate between teams if needed
         """
-        
+
         supervisor = AssistantAgent(
             name="SupervisorAgent",
             model_client=self.model_client,
@@ -111,13 +112,13 @@ class EnhancedAgentOrchestrator:
 - For risky operations, note "REQUIRES_APPROVAL" in reasoning
 - Keep reasoning concise and clear""",
         )
-        
+
         return supervisor
-    
+
     # ============================================================
     # FEATURE 2: USER PROXY AGENT (Safety & Confirmation)
     # ============================================================
-    
+
     async def create_user_proxy_agent(self) -> AssistantAgent:
         """
         User Proxy Agent: Confirms risky operations with user
@@ -128,7 +129,7 @@ class EnhancedAgentOrchestrator:
         - Block execution until user approves
         - Log all user decisions
         """
-        
+
         async def request_user_approval(operation_description: str, risk_level: str, details: str) -> dict:
             """
             Request user approval for a risky operation
@@ -144,14 +145,14 @@ class EnhancedAgentOrchestrator:
             logger.warning(f"⚠️  USER APPROVAL REQUIRED - Risk Level: {risk_level}")
             logger.warning(f"Operation: {operation_description}")
             logger.warning(f"Details: {details}")
-            
+
             # Store pending approval
             self.pending_approval = {
                 "operation": operation_description,
                 "risk_level": risk_level,
                 "details": details
             }
-            
+
             # In a real system, this would trigger UI notification
             # For now, we'll simulate user input
             print("\n" + "="*60)
@@ -161,20 +162,20 @@ class EnhancedAgentOrchestrator:
             print(f"Risk Level: {risk_level}")
             print(f"Details: {details}")
             print("="*60)
-            
+
             # Get user input (in real system, this comes from UI)
             user_input = input("Do you want to proceed? (yes/no): ").strip().lower()
-            
+
             approved = user_input in ['yes', 'y']
-            
+
             logger.info(f"User decision: {'APPROVED' if approved else 'REJECTED'}")
-            
+
             return {
                 "approved": approved,
                 "user_comment": user_input,
                 "timestamp": str(asyncio.get_event_loop().time())
             }
-        
+
         user_proxy = AssistantAgent(
             name="UserProxyAgent",
             model_client=self.model_client,
@@ -255,13 +256,13 @@ Before ANY operation, analyze:
 
 Always prioritize user safety and data integrity.""",
         )
-        
+
         return user_proxy
-    
+
     # ============================================================
     # FEATURE 3: GENERAL ASSISTANT TEAM (Simple Tasks)
     # ============================================================
-    
+
     async def create_general_assistant_team(self) -> MagenticOneGroupChat:
         """
         General Assistant Team: Handles simple, everyday tasks
@@ -273,7 +274,7 @@ Always prioritize user safety and data integrity.""",
         - Date/time operations
         - Timers and reminders
         """
-        
+
         # Define simple utility tools
         async def calculate_math(expression: str) -> dict:
             """
@@ -288,7 +289,7 @@ Always prioritize user safety and data integrity.""",
             try:
                 import math
                 import re
-                
+
                 # Handle percentage calculations
                 if "%" in expression and "of" in expression:
                     match = re.search(r'(\d+\.?\d*)%\s+of\s+(\d+\.?\d*)', expression)
@@ -302,7 +303,7 @@ Always prioritize user safety and data integrity.""",
                             "result": result,
                             "explanation": f"{percentage}% of {number} = {result}"
                         }
-                
+
                 # Handle basic math expressions
                 # Safe evaluation with limited scope
                 safe_dict = {
@@ -315,22 +316,22 @@ Always prioritize user safety and data integrity.""",
                     "pi": math.pi,
                     "e": math.e
                 }
-                
+
                 result = eval(expression, {"__builtins__": {}}, safe_dict)
-                
+
                 return {
                     "success": True,
                     "expression": expression,
                     "result": result
                 }
-                
+
             except Exception as e:
                 return {
                     "success": False,
                     "expression": expression,
                     "error": str(e)
                 }
-        
+
         async def convert_units(value: float, from_unit: str, to_unit: str) -> dict:
             """
             Convert between units
@@ -340,7 +341,7 @@ Always prioritize user safety and data integrity.""",
             - Distance: meters, kilometers, miles, feet
             - Weight: grams, kilograms, pounds, ounces
             """
-            
+
             conversions = {
                 # Temperature
                 ("celsius", "fahrenheit"): lambda x: (x * 9/5) + 32,
@@ -362,9 +363,9 @@ Always prioritize user safety and data integrity.""",
                 ("kilograms", "pounds"): lambda x: x * 2.20462,
                 ("pounds", "kilograms"): lambda x: x / 2.20462,
             }
-            
+
             key = (from_unit.lower(), to_unit.lower())
-            
+
             if key in conversions:
                 result = conversions[key](value)
                 return {
@@ -378,16 +379,16 @@ Always prioritize user safety and data integrity.""",
                     "success": False,
                     "error": f"Conversion from {from_unit} to {to_unit} not supported"
                 }
-        
+
         async def get_current_datetime(timezone: str = "UTC") -> dict:
             """Get current date and time"""
             from datetime import datetime
             import pytz
-            
+
             try:
                 tz = pytz.timezone(timezone)
                 now = datetime.now(tz)
-                
+
                 return {
                     "success": True,
                     "datetime": now.isoformat(),
@@ -401,7 +402,7 @@ Always prioritize user safety and data integrity.""",
                     "success": False,
                     "error": str(e)
                 }
-        
+
         # General Assistant Agent
         general_agent = AssistantAgent(
             name="GeneralAssistant",
@@ -457,36 +458,36 @@ You: [Use get_current_datetime tool] → "It's currently 3:45 PM UTC on Wednesda
 
 Keep responses concise, friendly, and helpful.""",
         )
-        
+
         # Create team (single agent for simple tasks)
         team = RoundRobinGroupChat(
             participants=[general_agent],
             model_client=self.model_client,
         )
-        
+
         return team
-    
+
     # ============================================================
     # DATA ANALYSIS TEAM (From Previous Implementation)
     # ============================================================
-    
+
     async def create_data_analysis_team(self) -> MagenticOneGroupChat:
         """Create the Data Analysis Team (SQL + Analysis + Validation)"""
-        
+
         # Tools
         async def sql_tool_wrapper(query_description: str, sql_script: str) -> dict:
             """Execute SQL query against data warehouse with retry logic"""
             return await generate_and_execute_sql(query_description, sql_script)
-        
+
         async def data_analysis_tool_wrapper(data_json: str, analysis_type: str) -> dict:
             """Analyze retrieved data using pandas"""
             return await analyze_data_pandas(data_json, analysis_type)
-        
+
         async def get_table_schema_wrapper(table_name: str) -> dict:
             """Get schema information for a specific table"""
             logger.info(f"Schema tool called for table: {table_name}")
             return db.get_table_schema(table_name)
-        
+
         # SQL Agent
         sql_agent = AssistantAgent(
             name="SQLAgent",
@@ -498,7 +499,7 @@ Generate accurate SQL queries, execute them safely, and report results clearly.
 Always get table schema first. Use SELECT TOP for exploration.
 Never use DROP, DELETE, TRUNCATE, or ALTER.""",
         )
-        
+
         # Analysis Agent
         analysis_agent = AssistantAgent(
             name="AnalysisAgent",
@@ -509,7 +510,7 @@ Never use DROP, DELETE, TRUNCATE, or ALTER.""",
 Perform statistical analysis, identify trends, calculate metrics, and provide insights.
 Use data_analysis_tool_wrapper for pandas operations.""",
         )
-        
+
         # Validation Agent
         validation_agent = AssistantAgent(
             name="ValidationAgent",
@@ -519,19 +520,19 @@ Use data_analysis_tool_wrapper for pandas operations.""",
 Review SQL queries and analysis for accuracy. Approve or request corrections.
 Check for dangerous operations and logical inconsistencies.""",
         )
-        
+
         team = MagenticOneGroupChat(
             participants=[sql_agent, analysis_agent, validation_agent],
             model_client=self.model_client,
             max_turns=15,
         )
-        
+
         return team
-    
+
     # ============================================================
     # MAIN ORCHESTRATION LOGIC
     # ============================================================
-    
+
     async def execute_task_with_routing(self, task_description: str, username: str = "system") -> dict:
         """
         Execute task with full orchestration:
@@ -539,29 +540,29 @@ Check for dangerous operations and logical inconsistencies.""",
         2. User Proxy checks for risks
         3. Appropriate team executes
         """
-        
+
         try:
             logger.info(f"="*60)
             logger.info(f"NEW TASK from {username}")
             logger.info(f"Task: {task_description}")
             logger.info(f"="*60)
-            
+
             # Step 1: Supervisor classifies the task
             supervisor = await self.create_supervisor_agent()
-            
+
             # Ask supervisor to classify
             classification_prompt = f"Classify this task and route to appropriate team: {task_description}"
-            
+
             # Simple synchronous call for classification
             from autogen_agentchat.messages import TextMessage
             response = await supervisor.on_messages(
                 [TextMessage(content=classification_prompt, source="user")],
                 cancellation_token=None
             )
-            
+
             classification = response.chat_message.content
             logger.info(f"Supervisor Classification:\n{classification}")
-            
+
             # Step 2: Parse classification
             if "DATA_ANALYSIS_TEAM" in classification:
                 team_name = "DATA_ANALYSIS_TEAM"
@@ -575,32 +576,32 @@ Check for dangerous operations and logical inconsistencies.""",
                     "error": "Could not determine appropriate team",
                     "classification": classification
                 }
-            
+
             logger.info(f"Routing to: {team_name}")
-            
+
             # Step 3: User Proxy checks for risks
             user_proxy = await self.create_user_proxy_agent()
-            
+
             risk_check_prompt = f"Analyze this task for risks: {task_description}"
             risk_response = await user_proxy.on_messages(
                 [TextMessage(content=risk_check_prompt, source="user")],
                 cancellation_token=None
             )
-            
+
             risk_assessment = risk_response.chat_message.content
             logger.info(f"Risk Assessment:\n{risk_assessment}")
-            
+
             # If high risk detected, get user approval
             if "CRITICAL" in risk_assessment or "HIGH" in risk_assessment:
                 logger.warning("High-risk operation detected - would request user approval here")
                 # In production, this would call request_user_approval tool
                 # For now, we proceed (in real system, wait for approval)
-            
+
             # Step 4: Execute with appropriate team
             result = await team.run(task_description)
-            
+
             logger.info(f"Task completed by {team_name}")
-            
+
             return {
                 "success": True,
                 "user": username,
@@ -611,7 +612,7 @@ Check for dangerous operations and logical inconsistencies.""",
                 "result": result,
                 "status": "completed"
             }
-            
+
         except Exception as e:
             import traceback
             error_details = traceback.format_exc()

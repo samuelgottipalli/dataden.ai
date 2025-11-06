@@ -7,12 +7,12 @@ class Settings(BaseSettings):
 
     # Ollama
     ollama_host: str = "http://localhost:11434"
-    ollama_model: str = "qwen3"
+    ollama_model: str = "gpt-oss:120b-cloud"
     ollama_model_info: dict[str, str | bool] = {
         "vision": True,
         "function_calling": True,
         "json_output": True,
-        "family": "qwen3",
+        "family": "gpt-oss",
         "structured_output": True,
     }
 

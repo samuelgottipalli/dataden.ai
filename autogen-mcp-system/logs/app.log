@@ -492,3 +492,64 @@ ValueError: Failed to parse ledger information after multiple retries.
 2025-11-05 15:21:52 | INFO     | __main__:test_all_components - 
 [2/7] Testing Ollama Connection...
 2025-11-05 15:21:52 | INFO     | __main__:test_all_components - ✓ Ollama with gpt-oss:120b-cloud available
+2025-11-05 15:54:46 | INFO     | __main__:test_all_components - ================================================================================
+2025-11-05 15:54:46 | INFO     | __main__:test_all_components - COMPLETE SYSTEM TEST
+2025-11-05 15:54:46 | INFO     | __main__:test_all_components - ================================================================================
+2025-11-05 15:54:46 | INFO     | __main__:test_all_components - 
+[1/7] Testing Database Connection...
+2025-11-05 15:54:46 | INFO     | __main__:test_all_components - ✓ Database connection working
+2025-11-05 15:54:46 | INFO     | __main__:test_all_components - 
+[2/7] Testing Ollama Connection...
+2025-11-05 15:54:46 | INFO     | __main__:test_all_components - ✓ Ollama with gpt-oss:120b-cloud available
+2025-11-05 15:54:46 | INFO     | agents.enhanced_orchestrator:__init__ - Initialized Enhanced Orchestrator with model: qwen3
+2025-11-05 15:54:46 | INFO     | __main__:test_all_components - 
+[3/7] Testing Supervisor Agent...
+2025-11-05 15:54:46 | INFO     | __main__:test_all_components - ✓ Supervisor Agent created successfully
+2025-11-05 15:54:46 | INFO     | __main__:test_all_components - 
+[4/7] Testing User Proxy Agent...
+2025-11-05 15:54:46 | INFO     | __main__:test_all_components - ✓ User Proxy Agent created successfully
+2025-11-05 15:54:46 | INFO     | __main__:test_all_components - 
+[5/7] Testing General Assistant Team...
+2025-11-05 15:54:46 | ERROR    | __main__:test_all_components - ✗ General Assistant Team failed: RoundRobinGroupChat.__init__() got an unexpected keyword argument 'model_client'
+2025-11-05 15:54:46 | INFO     | __main__:test_all_components - 
+[6/7] Testing Data Analysis Team...
+2025-11-05 15:54:46 | INFO     | __main__:test_all_components - ✓ Data Analysis Team created successfully
+2025-11-05 15:54:46 | INFO     | __main__:test_all_components -   Testing with: 'List database tables'
+2025-11-05 15:54:46 | ERROR    | __main__:test_all_components - ✗ Data Analysis Team failed: BaseGroupChat.run() takes 1 positional argument but 2 were given
+2025-11-05 15:54:46 | INFO     | __main__:test_all_components - 
+[7/7] Testing Complete Routing System...
+2025-11-05 15:54:46 | INFO     | __main__:test_all_components -   Test: Simple math question
+2025-11-05 15:54:46 | INFO     | agents.enhanced_orchestrator:execute_task_with_routing - ============================================================
+2025-11-05 15:54:46 | INFO     | agents.enhanced_orchestrator:execute_task_with_routing - NEW TASK from test_user
+2025-11-05 15:54:46 | INFO     | agents.enhanced_orchestrator:execute_task_with_routing - Task: What is 20% of 500?
+2025-11-05 15:54:46 | INFO     | agents.enhanced_orchestrator:execute_task_with_routing - ============================================================
+2025-11-05 15:55:46 | INFO     | agents.enhanced_orchestrator:execute_task_with_routing - Supervisor Classification:
+**Single Team:**
+ROUTE: GENERAL_ASSISTANT_TEAM
+REASONING: The request involves a simple percentage calculation, which falls under general math operations handled by the GENERAL_ASSISTANT_TEAM.
+2025-11-05 15:55:46 | ERROR    | agents.enhanced_orchestrator:execute_task_with_routing - Task execution failed: RoundRobinGroupChat.__init__() got an unexpected keyword argument 'model_client'
+2025-11-05 15:55:46 | ERROR    | agents.enhanced_orchestrator:execute_task_with_routing - Full traceback:
+Traceback (most recent call last):
+  File "G:\dataden.ai\autogen-mcp-system\agents\enhanced_orchestrator.py", line 572, in execute_task_with_routing
+    team = await self.create_general_assistant_team()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "G:\dataden.ai\autogen-mcp-system\agents\enhanced_orchestrator.py", line 463, in create_general_assistant_team
+    team = RoundRobinGroupChat(
+           ^^^^^^^^^^^^^^^^^^^^
+TypeError: RoundRobinGroupChat.__init__() got an unexpected keyword argument 'model_client'
+
+2025-11-05 15:55:46 | ERROR    | __main__:test_all_components -   ✗ Routing failed: RoundRobinGroupChat.__init__() got an unexpected keyword argument 'model_client'
+2025-11-05 15:55:46 | INFO     | __main__:test_all_components - 
+================================================================================
+2025-11-05 15:55:46 | INFO     | __main__:test_all_components - TEST SUMMARY
+2025-11-05 15:55:46 | INFO     | __main__:test_all_components - ================================================================================
+2025-11-05 15:55:46 | INFO     | __main__:test_all_components - ✓ Database: PASS
+2025-11-05 15:55:46 | INFO     | __main__:test_all_components - ✓ Ollama: PASS
+2025-11-05 15:55:46 | INFO     | __main__:test_all_components - ✓ Supervisor: PASS
+2025-11-05 15:55:46 | INFO     | __main__:test_all_components - ✓ User Proxy: PASS
+2025-11-05 15:55:46 | INFO     | __main__:test_all_components - ✗ General Assistant: FAIL
+2025-11-05 15:55:46 | INFO     | __main__:test_all_components - ✗ Data Analysis: FAIL
+2025-11-05 15:55:46 | INFO     | __main__:test_all_components - ✗ Routing: FAIL
+2025-11-05 15:55:46 | INFO     | __main__:test_all_components - 
+Total: 4/7 tests passed
+2025-11-05 15:55:46 | WARNING  | __main__:test_all_components - ⚠ 3 component(s) failed. Please review errors above.
