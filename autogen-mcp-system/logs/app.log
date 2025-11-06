@@ -553,3 +553,159 @@ TypeError: RoundRobinGroupChat.__init__() got an unexpected keyword argument 'mo
 2025-11-05 15:55:46 | INFO     | __main__:test_all_components - 
 Total: 4/7 tests passed
 2025-11-05 15:55:46 | WARNING  | __main__:test_all_components - ⚠ 3 component(s) failed. Please review errors above.
+2025-11-05 16:30:38 | INFO     | __main__:test_all_components - ================================================================================
+2025-11-05 16:30:38 | INFO     | __main__:test_all_components - COMPLETE SYSTEM TEST - Enhanced Version
+2025-11-05 16:30:38 | INFO     | __main__:test_all_components - ================================================================================
+2025-11-05 16:30:38 | INFO     | __main__:test_all_components - 
+[1/8] Testing Database Connection...
+2025-11-05 16:30:38 | INFO     | __main__:test_all_components -   ✓ Database connection working
+2025-11-05 16:30:38 | INFO     | __main__:test_all_components - 
+[2/8] Testing Ollama Connection...
+2025-11-05 16:30:39 | INFO     | __main__:test_all_components -   Available models: ['gpt-oss:120b-cloud', 'qwen3:latest', 'gemma3:12b', 'gpt-oss:latest', 'gemma3:latest', 'qwen3:0.6b', 'gemma3:270m', 'qwen3-coder:latest', 'codegemma:latest']
+2025-11-05 16:30:39 | INFO     | __main__:test_all_components -   ✓ Target model found: qwen3
+2025-11-05 16:30:39 | INFO     | __main__:test_all_components - 
+[3/8] Testing Model Response Format...
+2025-11-05 16:30:57 | INFO     | __main__:test_all_components -   Model response: 'TEST_SUCCESS'
+2025-11-05 16:30:57 | INFO     | __main__:test_all_components -   ✓ Model responding correctly
+2025-11-05 16:30:57 | INFO     | __main__:test_all_components - 
+[4/8] Initializing Enhanced Orchestrator...
+2025-11-05 16:30:57 | INFO     | agents.enhanced_orchestrator:__init__ - Initialized Enhanced Orchestrator with model: qwen3
+2025-11-05 16:30:57 | INFO     | __main__:test_all_components -   ✓ Orchestrator initialized
+2025-11-05 16:30:57 | INFO     | __main__:test_all_components - 
+[5/8] Testing Supervisor Agent...
+2025-11-05 16:30:57 | INFO     | __main__:test_all_components -   ✓ Supervisor Agent created successfully
+2025-11-05 16:30:57 | INFO     | __main__:test_all_components - 
+[6/8] Testing User Proxy Agent...
+2025-11-05 16:30:57 | INFO     | __main__:test_all_components -   ✓ User Proxy Agent created successfully
+2025-11-05 16:30:57 | INFO     | __main__:test_all_components - 
+[7/8] Testing General Assistant Team...
+2025-11-05 16:30:57 | INFO     | __main__:test_all_components -   ✓ General Assistant Team created successfully
+2025-11-05 16:30:57 | INFO     | __main__:test_all_components - 
+[8/8] Testing Data Analysis Team...
+2025-11-05 16:30:57 | INFO     | __main__:test_all_components -   ✓ Data Analysis Team created successfully
+2025-11-05 16:30:57 | INFO     | __main__:test_all_components - 
+[BONUS] Testing Live Task Routing...
+2025-11-05 16:30:57 | INFO     | __main__:test_all_components -   This test may fail if the model has format compatibility issues
+2025-11-05 16:30:57 | INFO     | agents.enhanced_orchestrator:execute_task_with_routing - ============================================================
+2025-11-05 16:30:57 | INFO     | agents.enhanced_orchestrator:execute_task_with_routing - NEW TASK from test_user
+2025-11-05 16:30:57 | INFO     | agents.enhanced_orchestrator:execute_task_with_routing - Task: What is 25% of 400?
+2025-11-05 16:30:57 | INFO     | agents.enhanced_orchestrator:execute_task_with_routing - ============================================================
+2025-11-05 16:31:07 | INFO     | agents.enhanced_orchestrator:execute_task_with_routing - Classification: GENERAL_ASSISTANT_TEAM
+2025-11-05 16:31:07 | INFO     | agents.enhanced_orchestrator:execute_task_with_routing - Routing to: GENERAL ASSISTANT TEAM
+2025-11-05 16:31:07 | INFO     | agents.enhanced_orchestrator:execute_task_with_routing - Executing task with GENERAL_ASSISTANT_TEAM
+2025-11-05 16:33:12 | ERROR    | __main__:test_all_components -   ✗ Routing test timed out after 60 seconds
+2025-11-05 16:33:12 | ERROR    | __main__:test_all_components -   This may indicate the model is stuck or responding too slowly
+2025-11-05 16:33:12 | INFO     | __main__:test_all_components - 
+================================================================================
+2025-11-05 16:33:12 | INFO     | __main__:test_all_components - TEST SUMMARY
+2025-11-05 16:33:12 | INFO     | __main__:test_all_components - ================================================================================
+2025-11-05 16:33:12 | INFO     | __main__:test_all_components - ✓ Database: PASS
+2025-11-05 16:33:12 | INFO     | __main__:test_all_components - ✓ Ollama: PASS
+2025-11-05 16:33:12 | INFO     | __main__:test_all_components - ✓ Model Format Check: PASS
+2025-11-05 16:33:12 | INFO     | __main__:test_all_components - ✓ Supervisor: PASS
+2025-11-05 16:33:12 | INFO     | __main__:test_all_components - ✓ User Proxy: PASS
+2025-11-05 16:33:12 | INFO     | __main__:test_all_components - ✓ General Assistant: PASS
+2025-11-05 16:33:12 | INFO     | __main__:test_all_components - ✓ Data Analysis: PASS
+2025-11-05 16:33:12 | INFO     | __main__:test_all_components - ✗ Routing: FAIL
+2025-11-05 16:33:12 | INFO     | __main__:test_all_components - 
+Total: 7/8 tests passed
+2025-11-05 16:33:12 | INFO     | __main__:test_all_components - 
+✅ Core components are working!
+2025-11-05 16:33:12 | INFO     | __main__:test_all_components - 
+⚠ Routing test failed. This is likely due to:
+2025-11-05 16:33:12 | INFO     | __main__:test_all_components -   1. Model format compatibility with MagenticOne
+2025-11-05 16:33:12 | INFO     | __main__:test_all_components -   2. You can still use direct execution mode
+2025-11-05 16:33:12 | INFO     | __main__:test_all_components - 
+To use direct execution:
+2025-11-05 16:33:12 | INFO     | __main__:test_all_components -   orchestrator = EnhancedAgentOrchestrator()
+2025-11-05 16:33:12 | INFO     | __main__:test_all_components -   result = await orchestrator.execute_direct('your task', 'general')
+2025-11-05 16:33:12 | INFO     | __main__:test_all_components -   # or
+2025-11-05 16:33:12 | INFO     | __main__:test_all_components -   result = await orchestrator.execute_direct('your task', 'data')
+2025-11-05 16:33:12 | INFO     | __main__:test_all_components - 
+✅ System is operational (with minor limitations)
+2025-11-05 16:34:43 | INFO     | __main__:test_all_components - ================================================================================
+2025-11-05 16:34:43 | INFO     | __main__:test_all_components - COMPLETE SYSTEM TEST - Enhanced Version
+2025-11-05 16:34:43 | INFO     | __main__:test_all_components - ================================================================================
+2025-11-05 16:34:43 | INFO     | __main__:test_all_components - 
+[1/8] Testing Database Connection...
+2025-11-05 16:34:43 | INFO     | __main__:test_all_components -   ✓ Database connection working
+2025-11-05 16:34:43 | INFO     | __main__:test_all_components - 
+[2/8] Testing Ollama Connection...
+2025-11-05 16:34:43 | INFO     | __main__:test_all_components -   Available models: ['gpt-oss:120b-cloud', 'qwen3:latest', 'gemma3:12b', 'gpt-oss:latest', 'gemma3:latest', 'qwen3:0.6b', 'gemma3:270m', 'qwen3-coder:latest', 'codegemma:latest']
+2025-11-05 16:34:43 | INFO     | __main__:test_all_components -   ✓ Target model found: gpt-oss:120b-cloud
+2025-11-05 16:34:43 | INFO     | __main__:test_all_components - 
+[3/8] Testing Model Response Format...
+2025-11-05 16:34:44 | INFO     | __main__:test_all_components -   Model response: 'TEST_SUCCESS'
+2025-11-05 16:34:44 | INFO     | __main__:test_all_components -   ✓ Model responding correctly
+2025-11-05 16:34:44 | INFO     | __main__:test_all_components - 
+[4/8] Initializing Enhanced Orchestrator...
+2025-11-05 16:34:44 | INFO     | agents.enhanced_orchestrator:__init__ - Initialized Enhanced Orchestrator with model: gpt-oss:120b-cloud
+2025-11-05 16:34:44 | INFO     | __main__:test_all_components -   ✓ Orchestrator initialized
+2025-11-05 16:34:44 | INFO     | __main__:test_all_components - 
+[5/8] Testing Supervisor Agent...
+2025-11-05 16:34:44 | INFO     | __main__:test_all_components -   ✓ Supervisor Agent created successfully
+2025-11-05 16:34:44 | INFO     | __main__:test_all_components - 
+[6/8] Testing User Proxy Agent...
+2025-11-05 16:34:44 | INFO     | __main__:test_all_components -   ✓ User Proxy Agent created successfully
+2025-11-05 16:34:44 | INFO     | __main__:test_all_components - 
+[7/8] Testing General Assistant Team...
+2025-11-05 16:34:44 | INFO     | __main__:test_all_components -   ✓ General Assistant Team created successfully
+2025-11-05 16:34:44 | INFO     | __main__:test_all_components - 
+[8/8] Testing Data Analysis Team...
+2025-11-05 16:34:44 | INFO     | __main__:test_all_components -   ✓ Data Analysis Team created successfully
+2025-11-05 16:34:44 | INFO     | __main__:test_all_components - 
+[BONUS] Testing Live Task Routing...
+2025-11-05 16:34:44 | INFO     | __main__:test_all_components -   This test may fail if the model has format compatibility issues
+2025-11-05 16:34:44 | INFO     | agents.enhanced_orchestrator:execute_task_with_routing - ============================================================
+2025-11-05 16:34:44 | INFO     | agents.enhanced_orchestrator:execute_task_with_routing - NEW TASK from test_user
+2025-11-05 16:34:44 | INFO     | agents.enhanced_orchestrator:execute_task_with_routing - Task: What is 25% of 400?
+2025-11-05 16:34:44 | INFO     | agents.enhanced_orchestrator:execute_task_with_routing - ============================================================
+2025-11-05 16:34:45 | INFO     | agents.enhanced_orchestrator:execute_task_with_routing - Classification: GENERAL_ASSISTANT_TEAM
+2025-11-05 16:34:45 | INFO     | agents.enhanced_orchestrator:execute_task_with_routing - Routing to: GENERAL ASSISTANT TEAM
+2025-11-05 16:34:45 | INFO     | agents.enhanced_orchestrator:execute_task_with_routing - Executing task with GENERAL_ASSISTANT_TEAM
+2025-11-05 16:34:57 | INFO     | agents.enhanced_orchestrator:execute_task_with_routing - Task completed successfully
+2025-11-05 16:34:57 | INFO     | agents.enhanced_orchestrator:execute_task_with_routing - Response: 25 % of 400 is **100**....
+2025-11-05 16:34:57 | INFO     | __main__:test_all_components -   ✓ Routed to: GENERAL_ASSISTANT_TEAM
+2025-11-05 16:34:57 | INFO     | __main__:test_all_components -   ✓ Response: 25 % of 400 is **100**....
+2025-11-05 16:34:57 | INFO     | __main__:test_all_components -   ✓ Correct routing!
+2025-11-05 16:34:57 | INFO     | __main__:test_all_components - 
+================================================================================
+2025-11-05 16:34:57 | INFO     | __main__:test_all_components - TEST SUMMARY
+2025-11-05 16:34:57 | INFO     | __main__:test_all_components - ================================================================================
+2025-11-05 16:34:57 | INFO     | __main__:test_all_components - ✓ Database: PASS
+2025-11-05 16:34:57 | INFO     | __main__:test_all_components - ✓ Ollama: PASS
+2025-11-05 16:34:57 | INFO     | __main__:test_all_components - ✓ Model Format Check: PASS
+2025-11-05 16:34:57 | INFO     | __main__:test_all_components - ✓ Supervisor: PASS
+2025-11-05 16:34:57 | INFO     | __main__:test_all_components - ✓ User Proxy: PASS
+2025-11-05 16:34:57 | INFO     | __main__:test_all_components - ✓ General Assistant: PASS
+2025-11-05 16:34:57 | INFO     | __main__:test_all_components - ✓ Data Analysis: PASS
+2025-11-05 16:34:57 | INFO     | __main__:test_all_components - ✓ Routing: PASS
+2025-11-05 16:34:57 | INFO     | __main__:test_all_components - 
+Total: 8/8 tests passed
+2025-11-05 16:34:57 | INFO     | __main__:test_all_components - 
+✅ Core components are working!
+2025-11-05 16:34:57 | INFO     | __main__:test_all_components - 
+🎉 ALL TESTS PASSED! System is fully operational.
+2025-11-05 16:35:53 | INFO     | __main__:demo_mode - ================================================================================
+2025-11-05 16:35:53 | INFO     | __main__:demo_mode - DEMO MODE - SHOWCASING ALL FEATURES
+2025-11-05 16:35:53 | INFO     | __main__:demo_mode - ================================================================================
+2025-11-05 16:35:53 | INFO     | agents.enhanced_orchestrator:__init__ - Initialized Enhanced Orchestrator with model: gpt-oss:120b-cloud
+2025-11-05 16:35:53 | INFO     | __main__:demo_mode - 
+================================================================================
+2025-11-05 16:35:53 | INFO     | __main__:demo_mode - DEMO 1/5: Simple Math (General Assistant)
+2025-11-05 16:35:53 | INFO     | __main__:demo_mode - ================================================================================
+2025-11-05 16:35:53 | INFO     | __main__:demo_mode - Task: What is 25% of 400?
+2025-11-05 16:35:53 | INFO     | __main__:demo_mode - Expected: General Assistant calculates: 100
+2025-11-05 16:35:53 | INFO     | __main__:demo_mode - --------------------------------------------------------------------------------
+
+2025-11-05 16:35:53 | INFO     | agents.enhanced_orchestrator:execute_task_with_routing - ============================================================
+2025-11-05 16:35:53 | INFO     | agents.enhanced_orchestrator:execute_task_with_routing - NEW TASK from demo_user
+2025-11-05 16:35:53 | INFO     | agents.enhanced_orchestrator:execute_task_with_routing - Task: What is 25% of 400?
+2025-11-05 16:35:53 | INFO     | agents.enhanced_orchestrator:execute_task_with_routing - ============================================================
+2025-11-05 16:35:55 | INFO     | agents.enhanced_orchestrator:execute_task_with_routing - Classification: GENERAL_ASSISTANT_TEAM
+2025-11-05 16:35:55 | INFO     | agents.enhanced_orchestrator:execute_task_with_routing - Routing to: GENERAL ASSISTANT TEAM
+2025-11-05 16:35:55 | INFO     | agents.enhanced_orchestrator:execute_task_with_routing - Executing task with GENERAL_ASSISTANT_TEAM
+2025-11-05 16:36:15 | INFO     | agents.enhanced_orchestrator:execute_task_with_routing - Task completed successfully
+2025-11-05 16:36:15 | INFO     | agents.enhanced_orchestrator:execute_task_with_routing - Response: 25 % of 400 is **100**....
+2025-11-05 16:36:15 | INFO     | __main__:demo_mode - ✓ SUCCESS
+2025-11-05 16:36:15 | INFO     | __main__:demo_mode - Routed to: GENERAL_ASSISTANT_TEAM
