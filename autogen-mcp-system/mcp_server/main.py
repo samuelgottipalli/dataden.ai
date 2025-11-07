@@ -1,53 +1,73 @@
-from fastapi import FastAPI, Depends, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from mcp_server.auth import verify_credentials
-from mcp_server.tools import generate_and_execute_sql, analyze_data_pandas
-from mcp_server.database import db
-from config.settings import settings
-from utils.logging_config import setup_logging
-from loguru import logger
 import uvicorn
+from config.settings import settings
+from fastapi import Depends, FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from loguru import logger
+from mcp_server.api_routes import router as openwebui_router
+from mcp_server.auth import verify_credentials
+from mcp_server.database import db
+from mcp_server.tools import analyze_data_pandas, generate_and_execute_sql
+from utils.logging_config import setup_logging
 
 # Setup logging
 setup_logging()
 
 # Create FastAPI app
 app = FastAPI(
-    title="MCP Agent System", description="MS SQL + Ollama + AutoGen 2", version="1.0.0"
+    title="MCP Agent System", description="MS SQL Server + Ollama + AutoGen 2", version="1.0.0"
 )
 
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://localhost:3000",  # OpenWebUI default
+        "http://localhost:8080",  # OpenWebUI alternative
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:8080",
+        # Add your OpenWebUI URL here:
+        # "https://your-openwebui-domain.com",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+logger.info("CORS configured for OpenWebUI integration")
+
+# Register OpenWebUI API routes
+app.include_router(openwebui_router)
+logger.info("OpenWebUI API routes registered at /api/v1")
+
 
 # ============ DIRECT TOOL ENDPOINTS (for testing) ============
 
 
 @app.post("/tools/sql_tool")
 async def sql_tool_endpoint(query_description: str, sql_script: str):
-    """Execute SQL query"""
+    """Execute SQL query (for testing)"""
     return await generate_and_execute_sql(query_description, sql_script)
 
 
 @app.post("/tools/data_analysis_tool")
 async def data_analysis_endpoint(data_json: str, analysis_type: str):
-    """Analyze data with pandas"""
+    """Analyze data with pandas (for testing)"""
     return await analyze_data_pandas(data_json, analysis_type)
 
 
 @app.get("/tools/get_table_schema")
 async def schema_endpoint(table_name: str):
-    """Get table schema"""
+    """Get table schema (for testing)"""
     logger.info(f"Schema tool called for table: {table_name}")
     return db.get_table_schema(table_name)
 
 
 # ============ HEALTH & AUTH ENDPOINTS ============
+
+
+@app.get("/")
+async def root():
+    return {"message": "MCP Agent System is running"}
 
 
 @app.get("/health")
@@ -80,9 +100,10 @@ async def verify_user(user_info: dict = Depends(verify_credentials)):
 @app.get("/mcp/sse")
 async def mcp_sse():
     """MCP Server-Sent Events endpoint"""
-    from fastapi.responses import StreamingResponse
-    import json
     import asyncio
+    import json
+
+    from fastapi.responses import StreamingResponse
 
     async def event_stream():
         # Send initial connection message
