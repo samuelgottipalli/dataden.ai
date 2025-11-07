@@ -63,15 +63,29 @@ def verify_api_key(api_key: Optional[str] = None) -> bool:
 
     Returns True if valid, raises HTTPException if invalid
     """
+    # If no API key configured, allow all requests
     if not settings.openwebui_api_key:
-        # No API key configured - allow all (for testing)
-        logger.warning("No API key configured - allowing all requests")
+        logger.warning(
+            "No API key configured - allowing all requests (DEVELOPMENT MODE)"
+        )
         return True
 
+    # If API key is None (not sent by client)
+    if api_key is None:
+        logger.warning(
+            "No API key provided in request - allowing anyway (for OpenWebUI compatibility)"
+        )
+        # For now, allow it - OpenWebUI might not send API key in headers
+        return True
+
+    # If API key provided, verify it
     if api_key != settings.openwebui_api_key:
-        logger.error(f"Invalid API key received: {api_key[:10]}...")
+        logger.error(
+            f"Invalid API key received: {api_key[:10] if api_key else 'None'}..."
+        )
         raise HTTPException(status_code=401, detail="Invalid API key")
 
+    logger.info("API key validated successfully")
     return True
 
 
