@@ -519,7 +519,329 @@ Be decisive and clear.""",
                 "success": False,
                 "error": str(e)
             }
+        
 
+    async def execute_with_streaming(self, task_description: str, username: str = "system"):
+        """
+        Execute task with full orchestration and stream each agent message
+        
+        This method yields events in real-time as agents communicate,
+        allowing OpenWebUI to display the full thought process.
+        
+        Yields:
+            dict: Event with format:
+                {
+                    "agent": "AgentName",
+                    "type": "routing|thinking|action|tool_result|validation|analysis|final|error",
+                    "content": "Message content",
+                    "timestamp": "ISO timestamp"
+                }
+        
+        Example usage:
+            async for event in orchestrator.execute_with_streaming("Show sales", "user123"):
+                print(f"{event['agent']}: {event['content']}")
+        """
+        
+        from datetime import datetime
+        
+        try:
+            logger.info(f"{'='*60}")
+            logger.info(f"STREAMING TASK from {username}")
+            logger.info(f"Task: {task_description}")
+            logger.info(f"{'='*60}")
+            
+            # Step 1: Supervisor classification
+            yield {
+                "agent": "SupervisorAgent",
+                "type": "routing",
+                "content": "Analyzing your request...",
+                "timestamp": datetime.now().isoformat()
+            }
+            
+            supervisor = await self.create_supervisor_agent()
+            
+            # Get classification
+            from autogen_agentchat.messages import TextMessage
+            classification_msg = TextMessage(
+                content=f"Classify: {task_description}",
+                source="user"
+            )
+            
+            classification_response = await supervisor.on_messages(
+                [classification_msg],
+                cancellation_token=None
+            )
+            
+            classification = classification_response.chat_message.content.strip()
+            logger.info(f"Classification: {classification}")
+            
+            # Step 2: Determine routing
+            team_name = None
+            team = None
+            
+            if "DATA_ANALYSIS_TEAM" in classification:
+                team_name = "DATA_ANALYSIS_TEAM"
+                yield {
+                    "agent": "SupervisorAgent",
+                    "type": "routing",
+                    "content": f"📊 Routing to: **Data Analysis Team**\nThis requires SQL queries and data analysis.",
+                    "timestamp": datetime.now().isoformat()
+                }
+                team = await self.create_data_analysis_team()
+                
+            elif "GENERAL_ASSISTANT_TEAM" in classification:
+                team_name = "GENERAL_ASSISTANT_TEAM"
+                yield {
+                    "agent": "SupervisorAgent",
+                    "type": "routing",
+                    "content": f"🤖 Routing to: **General Assistant Team**\nThis is a simple task that doesn't require database access.",
+                    "timestamp": datetime.now().isoformat()
+                }
+                team = await self.create_general_assistant_team()
+                
+            else:
+                # Default to general assistant
+                team_name = "GENERAL_ASSISTANT_TEAM"
+                yield {
+                    "agent": "SupervisorAgent",
+                    "type": "routing",
+                    "content": f"🤖 Routing to: **General Assistant Team** (default)\nUnclear classification, using general assistant.",
+                    "timestamp": datetime.now().isoformat()
+                }
+                team = await self.create_general_assistant_team()
+            
+            logger.info(f"Streaming with {team_name}")
+            
+            # Step 3: Execute with team and stream messages
+            try:
+                # Run the team with streaming
+                async for message in team.run_stream(task=task_description):
+                    # Extract message details
+                    source = getattr(message, 'source', 'Unknown')
+                    content = getattr(message, 'content', str(message))
+                    
+                    # Determine message type based on content
+                    message_type = self._classify_message_type(source, content)
+                    
+                    # Yield formatted event
+                    yield {
+                        "agent": source,
+                        "type": message_type,
+                        "content": content,
+                        "timestamp": datetime.now().isoformat()
+                    }
+                    
+                    logger.debug(f"[{source}] {content[:100]}...")
+                
+                # Final success message
+                yield {
+                    "agent": "System",
+                    "type": "final",
+                    "content": "✅ Task completed successfully",
+                    "timestamp": datetime.now().isoformat()
+                }
+                
+                logger.info(f"Streaming completed successfully for {username}")
+                
+            except ValueError as ve:
+                # Handle MagenticOne parsing errors
+                if "Failed to parse ledger information" in str(ve):
+                    logger.error("MagenticOne ledger parsing error during streaming")
+                    yield {
+                        "agent": "System",
+                        "type": "error",
+                        "content": "⚠️ Model response format issue detected. Falling back to direct execution...",
+                        "timestamp": datetime.now().isoformat()
+                    }
+                    
+                    # Fallback to direct execution without streaming
+                    result = await self.execute_direct(task_description, "data" if team_name == "DATA_ANALYSIS_TEAM" else "general")
+                    
+                    if result["success"]:
+                        yield {
+                            "agent": "System",
+                            "type": "final",
+                            "content": result.get("response", "Task completed"),
+                            "timestamp": datetime.now().isoformat()
+                        }
+                    else:
+                        yield {
+                            "agent": "System",
+                            "type": "error",
+                            "content": f"❌ Error: {result.get('error', 'Unknown error')}",
+                            "timestamp": datetime.now().isoformat()
+                        }
+                else:
+                    raise
+                    
+        except Exception as e:
+            logger.error(f"Streaming execution failed: {e}")
+            logger.exception("Full traceback:")
+            
+            yield {
+                "agent": "System",
+                "type": "error",
+                "content": f"❌ Error during execution: {str(e)}\n\nPlease try again or contact support if the issue persists.",
+                "timestamp": datetime.now().isoformat()
+            }
+
+
+    def _classify_message_type(self, agent: str, content: str) -> str:
+        """
+        Classify message type based on agent and content
+        
+        This helps format messages appropriately in OpenWebUI
+        """
+        
+        content_lower = content.lower()
+        
+        # Tool-related messages
+        if "tool" in content_lower or "function" in content_lower:
+            if "call" in content_lower or "calling" in content_lower:
+                return "action"
+            elif "result" in content_lower or "returned" in content_lower:
+                return "tool_result"
+        
+        # SQL-related messages
+        if "select" in content_lower or "from" in content_lower or "where" in content_lower:
+            return "action"
+        
+        # Validation messages
+        if agent.lower() == "validationagent" or "validat" in content_lower:
+            return "validation"
+        
+        # Analysis messages
+        if agent.lower() == "analysisagent" or "analyz" in content_lower or "analys" in content_lower:
+            return "analysis"
+        
+        # Thinking/planning messages
+        if any(word in content_lower for word in ["i will", "i'll", "let me", "i need to", "first", "then"]):
+            return "thinking"
+        
+        # Error messages
+        if "error" in content_lower or "failed" in content_lower:
+            return "error"
+        
+        # Default to regular message
+        return "message"
+
+
+    # ============================================================
+    # ALTERNATIVE: If run_stream doesn't work, use this version
+    # ============================================================
+
+    async def execute_with_streaming_fallback(self, task_description: str, username: str = "system"):
+        """
+        Fallback streaming implementation if team.run_stream() doesn't exist
+        
+        This version executes the task and simulates streaming by breaking
+        down the response into logical chunks.
+        
+        Use this if you get: AttributeError: 'MagenticOneGroupChat' object has no attribute 'run_stream'
+        """
+        
+        from datetime import datetime
+        
+        try:
+            logger.info(f"{'='*60}")
+            logger.info(f"STREAMING TASK (FALLBACK) from {username}")
+            logger.info(f"Task: {task_description}")
+            logger.info(f"{'='*60}")
+            
+            # Step 1: Show routing
+            yield {
+                "agent": "SupervisorAgent",
+                "type": "routing",
+                "content": "Analyzing your request...",
+                "timestamp": datetime.now().isoformat()
+            }
+            
+            # Execute task normally
+            result = await self.execute_task_with_routing(
+                task_description=task_description,
+                username=username
+            )
+            
+            # Step 2: Show team assignment
+            team_name = result.get("routed_to", "Unknown")
+            yield {
+                "agent": "SupervisorAgent",
+                "type": "routing",
+                "content": f"Routing to: **{team_name}**",
+                "timestamp": datetime.now().isoformat()
+            }
+            
+            # Step 3: Show processing
+            yield {
+                "agent": team_name,
+                "type": "thinking",
+                "content": "Processing your request...",
+                "timestamp": datetime.now().isoformat()
+            }
+            
+            # Step 4: Show result
+            if result["success"]:
+                response = result.get("response", "Task completed")
+                
+                # Break response into chunks for streaming effect
+                chunks = self._break_into_chunks(response)
+                
+                for i, chunk in enumerate(chunks):
+                    yield {
+                        "agent": team_name,
+                        "type": "message" if i < len(chunks) - 1 else "final",
+                        "content": chunk,
+                        "timestamp": datetime.now().isoformat()
+                    }
+                    
+                    # Small delay between chunks
+                    await asyncio.sleep(0.1)
+            else:
+                yield {
+                    "agent": "System",
+                    "type": "error",
+                    "content": f"❌ Error: {result.get('error', 'Unknown error')}",
+                    "timestamp": datetime.now().isoformat()
+                }
+                
+        except Exception as e:
+            logger.error(f"Fallback streaming failed: {e}")
+            yield {
+                "agent": "System",
+                "type": "error",
+                "content": f"❌ Error: {str(e)}",
+                "timestamp": datetime.now().isoformat()
+            }
+
+
+    def _break_into_chunks(self, text: str, chunk_size: int = 200) -> list:
+        """
+        Break text into logical chunks for streaming
+        
+        Breaks at sentence boundaries when possible
+        """
+        
+        if len(text) <= chunk_size:
+            return [text]
+        
+        chunks = []
+        current_chunk = ""
+        
+        # Split by sentences
+        sentences = text.replace(". ", ".|").replace("? ", "?|").replace("! ", "!|").split("|")
+        
+        for sentence in sentences:
+            if len(current_chunk) + len(sentence) <= chunk_size:
+                current_chunk += sentence
+            else:
+                if current_chunk:
+                    chunks.append(current_chunk.strip())
+                current_chunk = sentence
+        
+        if current_chunk:
+            chunks.append(current_chunk.strip())
+        
+        return chunks
 
 # ============================================================
 # TESTING FUNCTION
@@ -527,9 +849,9 @@ Be decisive and clear.""",
 
 async def test_orchestrator():
     """Simple test of the orchestrator"""
-    
+
     orchestrator = EnhancedAgentOrchestrator()
-    
+
     # Test 1: Simple math (general assistant)
     print("\n" + "="*60)
     print("TEST 1: General Assistant - Math")
@@ -539,7 +861,7 @@ async def test_orchestrator():
         "test_user"
     )
     print(f"Result: {result1}")
-    
+
     # Test 2: Database query (data analysis)
     print("\n" + "="*60)
     print("TEST 2: Data Analysis - Database")
@@ -550,6 +872,57 @@ async def test_orchestrator():
     )
     print(f"Result: {result2}")
 
+# ============================================================
+# TESTING FUNCTION
+# ============================================================
+
+async def test_streaming():
+    """
+    Test the streaming functionality
+
+    Run this to verify streaming works before connecting OpenWebUI
+    """
+
+    print("=" * 60)
+    print("TESTING STREAMING FUNCTIONALITY")
+    print("=" * 60)
+
+    orchestrator = EnhancedAgentOrchestrator()
+
+    # Test 1: Simple math
+    print("\n[Test 1] Simple math (General Assistant)")
+    print("-" * 60)
+
+    async for event in orchestrator.execute_with_streaming(
+        "What is 25% of 400?", "test_user"
+    ):
+        agent = event.get("agent", "Unknown")
+        msg_type = event.get("type", "message")
+        content = event.get("content", "")
+
+        print(f"[{agent}] ({msg_type}): {content[:100]}...")
+
+    print("\n" + "=" * 60)
+    print("Test 1 complete!")
+
+    # Test 2: Database query (if you want to test)
+    # print("\n[Test 2] Database query (Data Analysis)")
+    # print("-" * 60)
+    #
+    # async for event in orchestrator.execute_with_streaming(
+    #     "List the first 3 tables in the database",
+    #     "test_user"
+    # ):
+    #     agent = event.get("agent", "Unknown")
+    #     msg_type = event.get("type", "message")
+    #     content = event.get("content", "")
+    #
+    #     print(f"[{agent}] ({msg_type}): {content[:100]}...")
+    #
+    # print("\n" + "=" * 60)
+    # print("Test 2 complete!")
+
 
 if __name__ == "__main__":
     asyncio.run(test_orchestrator())
+    asyncio.run(test_streaming())

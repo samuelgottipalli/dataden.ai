@@ -48,6 +48,9 @@ class Settings(BaseSettings):
     secret_key: str
     jwt_expiration_hours: int = 24
 
+    # OpenWebUI Integration
+    openwebui_api_key: str = ""
+
     class Config:
         env_file = r"G:\dataden.ai\autogen-mcp-system\config\.env"
         case_sensitive = False
