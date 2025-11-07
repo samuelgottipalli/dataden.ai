@@ -1,10 +1,7 @@
 # ============================================================
 # COMPLETE WORKING SYSTEM - FINAL INTEGRATION
-# All features working together with database, tools, and safety
+# Fixed to match enhanced_orchestrator response format
 # ============================================================
-
-# run_complete_system.py
-# Main entry point for the complete system
 
 import asyncio
 from agents.enhanced_orchestrator import EnhancedAgentOrchestrator
@@ -65,19 +62,21 @@ async def interactive_mode():
                 print("🤖 Response:")
                 print("="*80)
                 
-                # Show classification
-                if "classification" in result:
-                    print(f"\n📋 Routed to: {result.get('routed_to', 'Unknown')}")
+                # Show routing info
+                routed_to = result.get('routed_to', 'Unknown')
+                print(f"\n📋 Routed to: {routed_to}")
                 
-                # Show result
-                print(f"\n{result['result']}")
+                # Show response (key changed from 'result' to 'response')
+                response_text = result.get('response', 'No response')
+                print(f"\n{response_text}")
                 
                 print("\n" + "="*80)
             else:
                 print("\n" + "="*80)
                 print("❌ Error:")
                 print("="*80)
-                print(f"{result['error']}")
+                error_msg = result.get('error', 'Unknown error')
+                print(f"{error_msg}")
                 print("="*80)
         
         except KeyboardInterrupt:
@@ -86,6 +85,7 @@ async def interactive_mode():
         except Exception as e:
             logger.error(f"Error: {e}")
             print(f"\n❌ Error: {e}\n")
+
 
 async def demo_mode():
     """
@@ -107,7 +107,7 @@ async def demo_mode():
         {
             "name": "Unit Conversion (General Assistant)",
             "task": "Convert 100 Fahrenheit to Celsius",
-            "expected": "General Assistant converts: 37.78°C"
+            "expected": "General Assistant converts: ~37.78°C"
         },
         {
             "name": "General Knowledge (General Assistant)",
@@ -134,24 +134,31 @@ async def demo_mode():
         logger.info(f"Expected: {scenario['expected']}")
         logger.info(f"{'-'*80}\n")
         
-        result = await orchestrator.execute_task_with_routing(
-            task_description=scenario['task'],
-            username="demo_user"
-        )
-        
-        if result["success"]:
-            logger.info(f"✓ SUCCESS")
-            logger.info(f"Routed to: {result.get('routed_to', 'Unknown')}")
-            print(f"\nResult:\n{result['result']}\n")
-        else:
-            logger.error(f"✗ FAILED: {result['error']}")
-        
-        # Pause between demos
-        await asyncio.sleep(3)
+        try:
+            result = await orchestrator.execute_task_with_routing(
+                task_description=scenario['task'],
+                username="demo_user"
+            )
+            
+            if result["success"]:
+                logger.info(f"✓ SUCCESS")
+                logger.info(f"Routed to: {result.get('routed_to', 'Unknown')}")
+                # Fixed: Changed from result['result'] to result['response']
+                print(f"\nResult:\n{result.get('response', 'No response')}\n")
+            else:
+                logger.error(f"✗ FAILED: {result.get('error', 'Unknown error')}")
+            
+            # Pause between demos
+            await asyncio.sleep(3)
+            
+        except Exception as e:
+            logger.error(f"✗ EXCEPTION in demo {i}: {e}")
+            await asyncio.sleep(2)
     
     logger.info(f"\n{'='*80}")
     logger.info("DEMO COMPLETE")
     logger.info(f"{'='*80}")
+
 
 async def single_query_mode(query: str):
     """
@@ -163,17 +170,25 @@ async def single_query_mode(query: str):
     
     orchestrator = EnhancedAgentOrchestrator()
     
-    result = await orchestrator.execute_task_with_routing(
-        task_description=query,
-        username="api_user"
-    )
-    
-    if result["success"]:
-        print(result['result'])
-        return 0
-    else:
-        print(f"Error: {result['error']}")
+    try:
+        result = await orchestrator.execute_task_with_routing(
+            task_description=query,
+            username="api_user"
+        )
+        
+        if result["success"]:
+            # Fixed: Changed from result['result'] to result['response']
+            print(result.get('response', 'No response'))
+            return 0
+        else:
+            print(f"Error: {result.get('error', 'Unknown error')}")
+            return 1
+            
+    except Exception as e:
+        logger.error(f"Exception: {e}")
+        print(f"Error: {e}")
         return 1
+
 
 def main():
     """Main entry point with mode selection"""
@@ -201,6 +216,9 @@ def main():
             print("  python run_complete_system.py demo         # Demo mode (showcases features)")
             print("  python run_complete_system.py query 'Q'    # Single query mode")
             print("  python run_complete_system.py help         # Show this help")
+            print("\nExamples:")
+            print("  python run_complete_system.py query 'What is 15% of 850?'")
+            print("  python run_complete_system.py query 'List the first 10 tables'")
             sys.exit(0)
         
         else:
@@ -211,6 +229,7 @@ def main():
     else:
         # Default: Interactive mode
         asyncio.run(interactive_mode())
+
 
 if __name__ == "__main__":
     main()
