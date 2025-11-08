@@ -210,7 +210,7 @@ async def stream_agent_response(message: str, user_id: str, user_email: str):
             yield f"data: {json.dumps(chunk)}\n\n"
 
             # Small delay to prevent overwhelming the client
-            await asyncio.sleep(0.01)
+            await asyncio.sleep(0.1)
 
         logger.info(f"Streamed {message_count} messages for {user_id}")
 
