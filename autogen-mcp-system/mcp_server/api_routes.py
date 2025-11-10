@@ -169,26 +169,29 @@ async def stream_agent_response(message: str, user_id: str, user_email: str):
     """
     Stream agent messages back to OpenWebUI in real-time
 
-    Yields Server-Sent Events (SSE) in OpenAI format
+    CRITICAL: Each chunk must be yielded and flushed immediately
     """
-
     try:
         # Create orchestrator
         orchestrator = EnhancedAgentOrchestrator()
 
-        # Generate unique ID for this conversation
-        conversation_id = f"chatcmpl-{datetime.now().timestamp()}"
+        # Generate unique ID
+        conversation_id = f"chatcmpl-{int(datetime.now().timestamp())}"
 
-        logger.info(f"Starting streaming response for {user_id}")
+        logger.info(f"🎬 Starting streaming response for {user_id}")
 
-        # Stream agent execution
         message_count = 0
+
+        # Stream agent execution - THIS IS THE KEY PART
         async for event in orchestrator.execute_with_streaming(
             task_description=message, username=user_id
         ):
             message_count += 1
 
-            # Format as OpenAI streaming chunk
+            # Format agent message
+            formatted_content = format_agent_message(event)
+
+            # Create OpenAI-compatible streaming chunk
             chunk = {
                 "id": conversation_id,
                 "object": "chat.completion.chunk",
@@ -197,24 +200,23 @@ async def stream_agent_response(message: str, user_id: str, user_email: str):
                 "choices": [
                     {
                         "index": 0,
-                        "delta": {
-                            "role": "assistant",
-                            "content": format_agent_message(event),
-                        },
+                        "delta": {"role": "assistant", "content": formatted_content},
                         "finish_reason": None,
                     }
                 ],
             }
 
-            # Yield as SSE
-            yield f"data: {json.dumps(chunk)}\n\n"
+            # Yield immediately - NO BUFFERING
+            chunk_json = json.dumps(chunk)
+            yield f"data: {chunk_json}\n\n"
 
-            # Small delay to prevent overwhelming the client
-            await asyncio.sleep(0.1)
+            # CRITICAL: Very small delay helps prevent overwhelming
+            # But don't make it too long or it defeats real-time
+            await asyncio.sleep(0.01)
 
-        logger.info(f"Streamed {message_count} messages for {user_id}")
+        logger.info(f"✅ Streamed {message_count} messages for {user_id}")
 
-        # Send final chunk with finish_reason
+        # Send final completion chunk
         final_chunk = {
             "id": conversation_id,
             "object": "chat.completion.chunk",
@@ -228,10 +230,10 @@ async def stream_agent_response(message: str, user_id: str, user_email: str):
         yield "data: [DONE]\n\n"
 
     except Exception as e:
-        logger.error(f"Error streaming response: {e}")
+        logger.error(f"❌ Error streaming response: {e}")
         logger.exception("Full traceback:")
 
-        # Send error as final message
+        # Send error message
         error_chunk = {
             "id": conversation_id,
             "object": "chat.completion.chunk",
@@ -242,7 +244,7 @@ async def stream_agent_response(message: str, user_id: str, user_email: str):
                     "index": 0,
                     "delta": {
                         "role": "assistant",
-                        "content": f"\n\n❌ Error: {str(e)}\n\nPlease try again or contact support.",
+                        "content": f"\n\n❌ **Error**\n{str(e)}\n\nPlease try again.",
                     },
                     "finish_reason": "stop",
                 }

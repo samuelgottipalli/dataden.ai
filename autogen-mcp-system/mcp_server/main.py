@@ -1,6 +1,6 @@
 import uvicorn
 from config.settings import settings
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 from mcp_server.api_routes import router as openwebui_router
@@ -16,6 +16,27 @@ setup_logging()
 app = FastAPI(
     title="MCP Agent System", description="MS SQL Server + Ollama + AutoGen 2", version="1.0.0"
 )
+
+
+@app.middleware("http")
+async def disable_buffering_middleware(request: Request, call_next):
+    """
+    Disable response buffering for streaming endpoints
+
+    This ensures nginx and other proxies don't buffer our SSE responses
+    """
+    response = await call_next(request)
+
+    # Disable buffering for streaming endpoints
+    if request.url.path.endswith("/chat/completions"):
+        response.headers["X-Accel-Buffering"] = "no"  # Nginx
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        response.headers["Connection"] = "keep-alive"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+
+    return response
+
 
 # Add CORS middleware
 app.add_middleware(

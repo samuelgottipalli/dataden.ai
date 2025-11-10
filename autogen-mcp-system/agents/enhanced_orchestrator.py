@@ -522,239 +522,239 @@ Be decisive and clear.""",
 
     async def execute_with_streaming(self, task_description: str, username: str = "system"):
         """
-        Execute task with full orchestration and stream each agent message
+        Execute task with TRUE real-time streaming
         
-        This method yields events in real-time as agents communicate,
-        allowing OpenWebUI to display the full thought process.
-        
-        Yields:
-            dict: Event with format:
-                {
-                    "agent": "AgentName",
-                    "type": "routing|thinking|action|tool_result|validation|analysis|final|error",
-                    "content": "Message content",
-                    "timestamp": "ISO timestamp"
-                }
-        
-        Example usage:
-            async for event in orchestrator.execute_with_streaming("Show sales", "user123"):
-                print(f"{event['agent']}: {event['content']}")
+        This yields agent messages AS THEY HAPPEN, not after completion
         """
-
         from datetime import datetime
-
+        import asyncio
+        
         try:
             logger.info(f"{'='*60}")
             logger.info(f"STREAMING TASK from {username}")
             logger.info(f"Task: {task_description}")
             logger.info(f"{'='*60}")
-
-            # Step 1: Supervisor classification
+            
+            # Step 1: Classify task and select team
             yield {
                 "agent": "SupervisorAgent",
                 "type": "routing",
-                "content": "Analyzing your request...",
+                "content": "🎯 Analyzing your request...",
                 "timestamp": datetime.now().isoformat()
             }
-
-            supervisor = await self.create_supervisor_agent()
-
-            # Get classification
-            from autogen_agentchat.messages import TextMessage
-            classification_msg = TextMessage(
-                content=f"Classify: {task_description}",
-                source="user"
-            )
-
-            classification_response = await supervisor.on_messages(
-                [classification_msg],
-                cancellation_token=None
-            )
-
-            classification = classification_response.chat_message.content.strip()
-            logger.info(f"Classification: {classification}")
-
-            # Step 2: Determine routing
-            team_name = None
-            team = None
-
-            if "DATA_ANALYSIS_TEAM" in classification:
+            
+            # Classify the task
+            classification = await self._classify_task(task_description)
+            task_type = classification.get("type", "general").upper()
+            confidence = classification.get("confidence", 0.0)
+            
+            # Create appropriate team
+            if "SQL" in task_type or "DATABASE" in task_type or "DATA" in task_type:
                 team_name = "DATA_ANALYSIS_TEAM"
                 yield {
                     "agent": "SupervisorAgent",
                     "type": "routing",
-                    "content": f"📊 Routing to: **Data Analysis Team**\nThis requires SQL queries and data analysis.",
+                    "content": f"🎯 **Routing Decision**\n**Team:** Data Analysis Team\n**Reason:** Database query detected\n**Confidence:** {confidence:.0%}",
                     "timestamp": datetime.now().isoformat()
                 }
                 team = await self.create_data_analysis_team()
-
-            elif "GENERAL_ASSISTANT_TEAM" in classification:
-                team_name = "GENERAL_ASSISTANT_TEAM"
-                yield {
-                    "agent": "SupervisorAgent",
-                    "type": "routing",
-                    "content": f"🤖 Routing to: **General Assistant Team**\nThis is a simple task that doesn't require database access.",
-                    "timestamp": datetime.now().isoformat()
-                }
-                team = await self.create_general_assistant_team()
-
             else:
-                # Default to general assistant
                 team_name = "GENERAL_ASSISTANT_TEAM"
                 yield {
                     "agent": "SupervisorAgent",
                     "type": "routing",
-                    "content": f"🤖 Routing to: **General Assistant Team** (default)\nUnclear classification, using general assistant.",
+                    "content": f"🎯 **Routing Decision**\n**Team:** General Assistant Team\n**Reason:** General task\n**Confidence:** {confidence:.0%}",
                     "timestamp": datetime.now().isoformat()
                 }
                 team = await self.create_general_assistant_team()
-
-            logger.info(f"Streaming with {team_name}")
-
-            # Step 3: Execute with team and stream messages
+            
+            logger.info(f"Selected team: {team_name}")
+            
+            # Step 2: Stream team execution
             try:
-                # Run the team with streaming
-                async for message in team.run_stream(task=task_description):
-                    # Extract message details with better error handling
-                    source = getattr(message, 'source', 'Unknown')
+                # Try to use run_stream if available
+                if hasattr(team, 'run_stream'):
+                    logger.info("Using team.run_stream() for real-time streaming")
                     
-                    # Handle content more carefully - it might be a list, dict, or string
-                    raw_content = getattr(message, 'content', None)
+                    async for message in team.run_stream(task=task_description):
+                        # Extract message details safely
+                        source = getattr(message, 'source', 'Unknown')
+                        raw_content = getattr(message, 'content', None)
+                        
+                        # Handle content - might be string, list, or dict
+                        if raw_content is None:
+                            content = str(message)
+                        elif isinstance(raw_content, str):
+                            content = raw_content
+                        elif isinstance(raw_content, (list, dict)):
+                            content = str(raw_content)
+                        else:
+                            content = str(raw_content)
+                        
+                        # Classify message type based on content
+                        msg_type = self._classify_message_type(source, content)
+                        
+                        # Yield immediately
+                        yield {
+                            "agent": source,
+                            "type": msg_type,
+                            "content": content,
+                            "timestamp": datetime.now().isoformat()
+                        }
+                        
+                        # Small delay to prevent overwhelming client
+                        await asyncio.sleep(0.05)
                     
-                    if raw_content is None:
-                        content = str(message)
-                    elif isinstance(raw_content, (list, dict)):
-                        content = str(raw_content)
-                    else:
-                        content = raw_content
-
-                    # Determine message type based on content
-                    message_type = self._classify_message_type(source, content)
-
-                    # Yield formatted event
-                    yield {
-                        "agent": source,
-                        "type": message_type,
-                        "content": content,
-                        "timestamp": datetime.now().isoformat()
-                    }
-
-                    logger.debug(f"[{source}] {content[:100]}...")
-
-                # Final success message
-                yield {
-                    "agent": "System",
-                    "type": "final",
-                    "content": "✅ Task completed successfully",
-                    "timestamp": datetime.now().isoformat()
-                }
-
-                logger.info(f"Streaming completed successfully for {username}")
-
-            except ValueError as ve:
-                # Handle MagenticOne parsing errors
-                if "Failed to parse ledger information" in str(ve):
-                    logger.error("MagenticOne ledger parsing error during streaming")
+                    # Success message
                     yield {
                         "agent": "System",
-                        "type": "error",
-                        "content": "⚠️ Model response format issue detected. Falling back to direct execution...",
+                        "type": "final",
+                        "content": "✅ Task completed successfully",
                         "timestamp": datetime.now().isoformat()
                     }
-
-                    # Fallback to direct execution without streaming
-                    result = await self.execute_direct(task_description, "data" if team_name == "DATA_ANALYSIS_TEAM" else "general")
-
+                
+                else:
+                    # Fallback: run_stream not available
+                    logger.warning("run_stream not available, using incremental execution")
+                    
+                    # Show processing message
+                    yield {
+                        "agent": team_name,
+                        "type": "thinking",
+                        "content": "🤔 Processing your request...",
+                        "timestamp": datetime.now().isoformat()
+                    }
+                    
+                    # Execute task
+                    result = await self.execute_task_with_routing(
+                        task_description=task_description,
+                        username=username
+                    )
+                    
+                    # Stream the result incrementally
                     if result["success"]:
+                        response = result.get("response", "Task completed")
+                        
+                        # Send in smaller chunks for perceived streaming
+                        words = response.split()
+                        chunk_size = 20  # words per chunk
+                        
+                        for i in range(0, len(words), chunk_size):
+                            chunk = " ".join(words[i:i+chunk_size])
+                            
+                            yield {
+                                "agent": team_name,
+                                "type": "message",
+                                "content": chunk,
+                                "timestamp": datetime.now().isoformat()
+                            }
+                            
+                            await asyncio.sleep(0.1)
+                        
+                        # Final message
                         yield {
                             "agent": "System",
                             "type": "final",
-                            "content": result.get("response", "Task completed"),
+                            "content": "✅ Task completed",
                             "timestamp": datetime.now().isoformat()
                         }
                     else:
+                        # Error message
                         yield {
                             "agent": "System",
                             "type": "error",
                             "content": f"❌ Error: {result.get('error', 'Unknown error')}",
                             "timestamp": datetime.now().isoformat()
                         }
-                else:
-                    raise
-
+            
+            except AttributeError as ae:
+                # run_stream doesn't exist - use fallback
+                logger.warning(f"AttributeError with run_stream: {ae}, using fallback")
+                
+                # Execute normally and stream result
+                result = await self.execute_task_with_routing(
+                    task_description=task_description,
+                    username=username
+                )
+                
+                if result["success"]:
+                    response = result.get("response", "Task completed")
+                    
+                    # Stream response word by word for better UX
+                    words = response.split()
+                    chunk_size = 15
+                    
+                    for i in range(0, len(words), chunk_size):
+                        chunk = " ".join(words[i:i+chunk_size])
+                        
+                        yield {
+                            "agent": team_name,
+                            "type": "message",
+                            "content": chunk + " ",
+                            "timestamp": datetime.now().isoformat()
+                        }
+                        
+                        await asyncio.sleep(0.08)
+                
+                yield {
+                    "agent": "System",
+                    "type": "final",
+                    "content": "✅ Complete",
+                    "timestamp": datetime.now().isoformat()
+                }
+            
         except Exception as e:
             logger.error(f"Streaming execution failed: {e}")
             logger.exception("Full traceback:")
-
+            
             yield {
                 "agent": "System",
                 "type": "error",
-                "content": f"❌ Error during execution: {str(e)}\n\nPlease try again or contact support if the issue persists.",
+                "content": f"❌ Error: {str(e)}",
                 "timestamp": datetime.now().isoformat()
             }
 
-    def _classify_message_type(self, agent: str, content: str) -> str:
+
+    def _classify_message_type(self, source: str, content: str) -> str:
         """
-        Classify message type based on agent and content
-
-        This helps format messages appropriately in OpenWebUI
-
-        Handles content as either string or list (handles both cases)
+        Classify message type based on source and content
+        
+        Returns: 'routing', 'thinking', 'action', 'tool_result', 'validation', 'analysis', 'final', or 'message'
         """
-
-        # Handle content that might be a list or other types
-        if isinstance(content, list):
-            # If it's a list, convert to string
-            content_str = " ".join(str(item) for item in content)
-        elif isinstance(content, dict):
-            # If it's a dict, convert to string
-            content_str = str(content)
-        elif content is None:
-            # If None, use empty string
-            content_str = ""
-        else:
-            # If string or other, convert to string
-            content_str = str(content)
-
-        content_lower = content_str.lower()
-        agent_lower = str(agent).lower()
-
-        # Tool-related messages
-        if "tool" in content_lower or "function" in content_lower:
-            if "call" in content_lower or "calling" in content_lower:
-                return "action"
-            elif "result" in content_lower or "returned" in content_lower:
-                return "tool_result"
-
-        # SQL-related messages
-        if "select" in content_lower or "from" in content_lower or "where" in content_lower:
-            return "action"
-
-        # Validation messages
-        if agent_lower == "validationagent" or "validat" in content_lower:
-            return "validation"
-
-        # Analysis messages
-        if (
-            agent_lower == "analysisagent"
-            or "analyz" in content_lower
-            or "analys" in content_lower
-        ):
-            return "analysis"
-
-        # Thinking/planning messages
-        if any(
-            word in content_lower
-            for word in ["i will", "i'll", "let me", "i need to", "first", "then"]
-        ):
+        content_lower = content.lower() if isinstance(content, str) else ""
+        source_lower = source.lower()
+        
+        # Routing messages
+        if "supervisor" in source_lower or "routing" in content_lower:
+            return "routing"
+        
+        # Thinking/planning
+        if any(word in content_lower for word in ["thinking", "analyzing", "planning", "considering", "let me", "i need to", "i'll"]):
             return "thinking"
-
-        # Error messages
-        if "error" in content_lower or "failed" in content_lower:
-            return "error"
-
-        # Default to regular message
+        
+        # Actions/tool calls
+        if any(word in content_lower for word in ["executing", "calling", "running", "query:", "select ", "function call"]):
+            return "action"
+        
+        # Tool results
+        if any(word in content_lower for word in ["result:", "output:", "returned", "rows returned"]):
+            return "tool_result"
+        
+        # Validation
+        if "validation" in source_lower or any(word in content_lower for word in ["validating", "checking", "approved", "blocked", "safe"]):
+            return "validation"
+        
+        # Analysis
+        if "analysis" in source_lower or any(word in content_lower for word in ["analyzing", "shows that", "indicates", "trend"]):
+            return "analysis"
+        
+        # Final answer indicators
+        if any(word in content_lower for word in ["final answer", "in conclusion", "to summarize", "✅"]):
+            return "final"
+        
+        # Default
         return "message"
+
 
     # ============================================================
     # ALTERNATIVE: If run_stream doesn't work, use this version
