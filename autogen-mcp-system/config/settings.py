@@ -17,7 +17,14 @@ class Settings(BaseSettings):
     }
 
     # Fallback Model Configuration
-    ollama_fallback_model: str = "llama3.2:3b"
+    ollama_fallback_model: str = "qwen3-vl:latest"
+    ollama_fallback_model_info: dict[str, str | bool] = {
+        "vision": True,
+        "function_calling": True,
+        "json_output": True,
+        "family": "qwen3",
+        "structured_output": True,
+    }
     enable_fallback: bool = True
     fallback_after_attempts: int = 2
 
@@ -42,7 +49,7 @@ class Settings(BaseSettings):
     notify_on_fallback: bool = True
     notify_on_quota_warning: bool = True
     show_token_count: bool = False
-    
+
     # MS SQL Server
     mssql_server: str
     mssql_port: int = 1433

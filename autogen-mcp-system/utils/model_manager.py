@@ -5,7 +5,7 @@ File: utils/model_manager.py (NEW FILE)
 
 from loguru import logger
 from typing import Optional, Tuple
-from autogen_ext.models.openai import OllamaChatCompletionClient
+from autogen_ext.models.ollama import OllamaChatCompletionClient
 from config.settings import settings
 
 class ModelManager:
@@ -13,7 +13,9 @@ class ModelManager:
     
     def __init__(self):
         self.primary_model = settings.ollama_model
+        self.primary_model_info = settings.ollama_model_info
         self.fallback_model = settings.ollama_fallback_model
+        self.fallback_model_info = settings.ollama_fallback_model_info
         self.enable_fallback = settings.enable_fallback
         self.fallback_after_attempts = settings.fallback_after_attempts
         
@@ -31,20 +33,23 @@ class ModelManager:
         # Determine which model to use
         if force_fallback or (self.using_fallback and self.enable_fallback):
             model_name = self.fallback_model
+            model_info = self.fallback_model_info
             logger.info(f"🔄 Using fallback model: {model_name}")
         else:
             model_name = self.primary_model
+            model_info = self.primary_model_info
             logger.debug(f"Using primary model: {model_name}")
         
         # Create client with INCREASED context length
         client = OllamaChatCompletionClient(
             model=model_name,
+            model_info=model_info,
             base_url=settings.ollama_host,
             temperature=settings.temperature,
             max_tokens=settings.max_tokens,  # Now 8000!
         )
         
-        return client, model_name
+        return client, model_name, model_info
     
     def record_failure(self) -> bool:
         """

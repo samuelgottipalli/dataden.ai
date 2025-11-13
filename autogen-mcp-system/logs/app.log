@@ -13256,3 +13256,30 @@ AssertionError
 2025-11-12 16:40:20 | INFO     | __main__:<module> - CORS configured for OpenWebUI integration
 2025-11-12 16:40:20 | INFO     | __main__:<module> - OpenWebUI API routes registered at /api/v1
 2025-11-12 16:40:20 | INFO     | __main__:<module> - Starting MCP Server on 0.0.0.0:8000
+2025-11-12 16:41:44 | WARNING  | mcp_server.api_routes:verify_api_key - No API key provided in request - allowing anyway (for OpenWebUI compatibility)
+2025-11-12 16:41:44 | INFO     | mcp_server.api_routes:chat_completions - Chat request from anonymous: from this info, select the top 5 categories of products that were sold in 2014...
+2025-11-12 16:41:44 | WARNING  | mcp_server.api_routes:non_streaming_response - Non-streaming request from anonymous - agent visibility will be hidden
+2025-11-12 16:42:57 | INFO     | __main__:<module> - CORS configured for OpenWebUI integration
+2025-11-12 16:42:57 | INFO     | __main__:<module> - OpenWebUI API routes registered at /api/v1
+2025-11-12 16:42:57 | INFO     | __main__:<module> - Starting MCP Server on 0.0.0.0:8000
+2025-11-12 16:43:08 | WARNING  | mcp_server.api_routes:verify_api_key - No API key provided in request - allowing anyway (for OpenWebUI compatibility)
+2025-11-12 16:43:08 | INFO     | mcp_server.api_routes:chat_completions - Chat request from anonymous: from this info, select the top 5 categories of products that were sold in 2014...
+2025-11-12 16:43:08 | WARNING  | mcp_server.api_routes:non_streaming_response - Non-streaming request from anonymous - agent visibility will be hidden
+2025-11-12 16:53:55 | INFO     | __main__:<module> - CORS configured for OpenWebUI integration
+2025-11-12 16:53:55 | INFO     | __main__:<module> - OpenWebUI API routes registered at /api/v1
+2025-11-12 16:53:55 | INFO     | __main__:<module> - Starting MCP Server on 0.0.0.0:8000
+2025-11-12 16:54:03 | WARNING  | mcp_server.api_routes:verify_api_key - No API key provided in request - allowing anyway (for OpenWebUI compatibility)
+2025-11-12 16:54:03 | INFO     | mcp_server.api_routes:chat_completions - Chat request from anonymous: from this info, select the top 5 categories of products that were sold in 2014...
+2025-11-12 16:54:03 | WARNING  | mcp_server.api_routes:non_streaming_response - Non-streaming request from anonymous - agent visibility will be hidden
+2025-11-12 16:54:03 | INFO     | agents.enhanced_orchestrator:__init__ - Initialized Enhanced Orchestrator
+2025-11-12 16:54:03 | INFO     | agents.enhanced_orchestrator:__init__ - Model: gpt-oss:120b-cloud
+2025-11-12 16:54:03 | INFO     | agents.enhanced_orchestrator:__init__ - Max tokens: 8000
+2025-11-12 16:54:03 | INFO     | agents.enhanced_orchestrator:__init__ - Temperature: 0.3
+2025-11-12 16:54:03 | INFO     | agents.enhanced_orchestrator:execute_task_with_routing - ============================================================
+2025-11-12 16:54:03 | INFO     | agents.enhanced_orchestrator:execute_task_with_routing - NEW TASK from anonymous
+2025-11-12 16:54:03 | INFO     | agents.enhanced_orchestrator:execute_task_with_routing - Task: from this info, select the top 5 categories of products that were sold in 2014
+2025-11-12 16:54:03 | INFO     | agents.enhanced_orchestrator:execute_task_with_routing - ============================================================
+2025-11-12 16:54:04 | INFO     | agents.enhanced_orchestrator:execute_task_with_routing - Classification: DATA_ANALYSIS_TEAM
+2025-11-12 16:54:04 | INFO     | agents.enhanced_orchestrator:execute_task_with_routing - Routing to: DATA ANALYSIS TEAM
+2025-11-12 16:54:04 | INFO     | agents.enhanced_orchestrator:execute_task_with_routing - Executing task with DATA_ANALYSIS_TEAM
+2025-11-12 16:54:04 | INFO     | agents.enhanced_orchestrator:_execute_with_retry - Attempt 1/3

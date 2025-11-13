@@ -35,7 +35,7 @@ class EnhancedAgentOrchestrator:
         model_manager = get_model_manager()
         
         # Get appropriate model client
-        self.model_client, self.current_model = model_manager.get_model_client()
+        self.model_client, self.current_model, self.current_model_info = model_manager.get_model_client()
         self.model_manager = model_manager
         
         logger.info(f"Initialized Enhanced Orchestrator")
