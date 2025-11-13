@@ -5,7 +5,7 @@ from typing import Optional
 class Settings(BaseSettings):
     """Application settings from environment variables"""
 
-    # Ollama
+    # Ollama - PRIMARY MODEL
     ollama_host: str = "http://localhost:11434"
     ollama_model: str = "gpt-oss:120b-cloud"
     ollama_model_info: dict[str, str | bool] = {
@@ -16,6 +16,33 @@ class Settings(BaseSettings):
         "structured_output": True,
     }
 
+    # Fallback Model Configuration
+    ollama_fallback_model: str = "llama3.2:3b"
+    enable_fallback: bool = True
+    fallback_after_attempts: int = 2
+
+    # Token and Context Configuration
+    max_tokens: int = 8000  # INCREASED from 4000
+    temperature: float = 0.3
+
+    # Rate Limiting
+    max_retries_per_query: int = 3
+    retry_delay_seconds: int = 2
+
+    # API Quota Limits
+    api_quota_daily_limit: int = 1000
+    api_quota_warn_percentage: float = 0.8
+    api_quota_reset_hour: int = 0
+
+    # Usage Tracking
+    track_token_usage: bool = True
+    usage_log_file: str = "logs/api_usage.log"
+
+    # User Notifications
+    notify_on_fallback: bool = True
+    notify_on_quota_warning: bool = True
+    show_token_count: bool = False
+    
     # MS SQL Server
     mssql_server: str
     mssql_port: int = 1433

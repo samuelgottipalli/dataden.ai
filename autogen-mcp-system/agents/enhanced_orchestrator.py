@@ -30,15 +30,18 @@ class EnhancedAgentOrchestrator:
 
     def __init__(self):
         # Configure model client with better settings for MagenticOne
-        self.model_client = OllamaChatCompletionClient(
-            model=settings.ollama_model,
-            base_url=settings.ollama_host,
-            temperature=0.3,  # Lower temperature for more consistent formatting
-            max_tokens=4000,  # Higher token limit for complex responses
-            model_info=settings.ollama_model_info,
-        )
-
-        logger.info(f"Initialized Enhanced Orchestrator with model: {settings.ollama_model}")
+        # Use model manager for dynamic model selection
+        from utils.model_manager import get_model_manager
+        model_manager = get_model_manager()
+        
+        # Get appropriate model client
+        self.model_client, self.current_model = model_manager.get_model_client()
+        self.model_manager = model_manager
+        
+        logger.info(f"Initialized Enhanced Orchestrator")
+        logger.info(f"Model: {self.current_model}")
+        logger.info(f"Max tokens: {settings.max_tokens}")
+        logger.info(f"Temperature: {settings.temperature}")
 
     # ============================================================
     # SUPERVISOR AGENT (Task Router)
@@ -283,34 +286,34 @@ Keep responses brief and helpful.""",
             tools=[sql_tool_wrapper, get_table_schema_wrapper, list_all_tables_wrapper],
             system_message="""You are an expert SQL developer for Microsoft SQL Server.
 
-**Core Responsibilities:**
-1. Generate accurate T-SQL queries
-2. Execute queries using sql_tool_wrapper
-3. Handle errors and retry as needed
-4. Present results clearly
+                        **Core Responsibilities:**
+                        1. Generate accurate T-SQL queries
+                        2. Execute queries using sql_tool_wrapper
+                        3. Handle errors and retry as needed
+                        4. Present results clearly
 
-**Safety Rules:**
-- NEVER use: DROP, DELETE, TRUNCATE, ALTER
-- Always use SELECT TOP for exploration
-- Get schema before complex queries
-- Use proper table qualifiers [schema].[table]
+                        **Safety Rules:**
+                        - NEVER use: DROP, DELETE, TRUNCATE, ALTER
+                        - Always use SELECT TOP for exploration
+                        - Get schema before complex queries
+                        - Use proper table qualifiers [schema].[table]
 
-**Query Process:**
-1. If table name provided → use get_table_schema_wrapper first
-2. If unsure about tables → use list_all_tables_wrapper
-3. Generate appropriate SELECT query
-4. Execute using sql_tool_wrapper
-5. Report results clearly
+                        **Query Process:**
+                        1. If table name provided → use get_table_schema_wrapper first
+                        2. If unsure about tables → use list_all_tables_wrapper
+                        3. Generate appropriate SELECT query
+                        4. Execute using sql_tool_wrapper
+                        5. Report results clearly
 
-**Response Format:**
-When you have results, provide:
-- Brief summary of what was found
-- Key data points
-- Total row count if relevant
+                        **Response Format:**
+                        When you have results, provide:
+                        - Brief summary of what was found
+                        - Key data points
+                        - Total row count if relevant
 
-Example: "Found 150 sales records. Top revenue: $45,230 from Store #5."
+                        Example: "Found 150 sales records. Top revenue: $45,230 from Store #5."
 
-Be direct and factual.""",
+                        Be direct and factual.""",
         )
 
         # Analysis Agent
@@ -320,23 +323,23 @@ Be direct and factual.""",
             tools=[data_analysis_tool_wrapper],
             system_message="""You are a data analyst specializing in statistical analysis.
 
-**Capabilities:**
-- Calculate statistics (mean, median, mode, std dev)
-- Identify trends and patterns
-- Perform aggregations
-- Generate insights
+                        **Capabilities:**
+                        - Calculate statistics (mean, median, mode, std dev)
+                        - Identify trends and patterns
+                        - Perform aggregations
+                        - Generate insights
 
-**When to Act:**
-- After SQLAgent retrieves data
-- When statistical analysis is requested
-- For trend identification
+                        **When to Act:**
+                        - After SQLAgent retrieves data
+                        - When statistical analysis is requested
+                        - For trend identification
 
-**Response Style:**
-- Clear numerical findings
-- Brief interpretation
-- Actionable insights
+                        **Response Style:**
+                        - Clear numerical findings
+                        - Brief interpretation
+                        - Actionable insights
 
-Be concise and data-driven.""",
+                        Be concise and data-driven.""",
         )
 
         # Validation Agent
@@ -345,23 +348,23 @@ Be concise and data-driven.""",
             model_client=self.model_client,
             system_message="""You are a quality assurance specialist.
 
-**Responsibilities:**
-- Review SQL queries for correctness
-- Check for dangerous operations (DROP, DELETE, etc.)
-- Validate analysis logic
-- Ensure safe execution
+                        **Responsibilities:**
+                        - Review SQL queries for correctness
+                        - Check for dangerous operations (DROP, DELETE, etc.)
+                        - Validate analysis logic
+                        - Ensure safe execution
 
-**Validation Checklist:**
-1. Query uses READ-ONLY operations
-2. No dangerous commands
-3. Proper table references
-4. Reasonable row limits
+                        **Validation Checklist:**
+                        1. Query uses READ-ONLY operations
+                        2. No dangerous commands
+                        3. Proper table references
+                        4. Reasonable row limits
 
-**Response Format:**
-If safe: "APPROVED: Query is safe to execute"
-If unsafe: "REJECTED: [specific reason]"
+                        **Response Format:**
+                        If safe: "APPROVED: Query is safe to execute"
+                        If unsafe: "REJECTED: [specific reason]"
 
-Be decisive and clear.""",
+                        Be decisive and clear.""",
         )
 
         # Create team with MagenticOne orchestration
@@ -372,6 +375,74 @@ Be decisive and clear.""",
         )
 
         return team
+
+
+    async def _execute_with_retry(self, team, task_description: str, team_name: str) -> dict:
+        """Execute task with retry logic and fallback support"""
+        from utils.usage_tracker import get_usage_tracker
+        from utils.model_manager import get_model_manager
+        import asyncio
+        
+        tracker = get_usage_tracker()
+        model_manager = get_model_manager()
+        
+        max_retries = settings.max_retries_per_query
+        attempt = 0
+        
+        while attempt < max_retries:
+            attempt += 1
+            logger.info(f"Attempt {attempt}/{max_retries}")
+            
+            try:
+                # Check quota
+                quota_status = tracker.check_quota()
+                if quota_status["exceeded"]:
+                    return {
+                        "success": False,
+                        "error": "Daily API quota exceeded. Please try again tomorrow."
+                    }
+                
+                # Execute
+                result = await team.run(task=task_description)
+                
+                # Extract response
+                final_message = None
+                if hasattr(result, 'messages') and result.messages:
+                    final_message = result.messages[-1].content
+                else:
+                    final_message = str(result)
+                
+                # Record success
+                tracker.record_request(tokens_used=len(final_message.split()))
+                model_manager.record_success()
+                
+                return {
+                    "success": True,
+                    "response": final_message,
+                    "routed_to": team_name
+                }
+            
+            except Exception as e:
+                logger.error(f"Attempt {attempt} failed: {e}")
+                model_manager.record_failure()
+                
+                if attempt >= max_retries:
+                    return {
+                        "success": False,
+                        "error": f"Failed after {max_retries} attempts: {str(e)}"
+                    }
+                
+                # If switched to fallback, recreate team
+                if model_manager.using_fallback:
+                    self.model_client, self.current_model = model_manager.get_model_client()
+                    if "DATA" in team_name:
+                        team = await self.create_data_analysis_team()
+                    else:
+                        team = await self.create_general_assistant_team()
+                
+                # Wait before retry
+                await asyncio.sleep(settings.retry_delay_seconds * attempt)
+
 
     # ============================================================
     # MAIN EXECUTION WITH ROUTING
@@ -434,7 +505,8 @@ Be decisive and clear.""",
 
             # Run the team with proper error handling
             try:
-                result = await team.run(task=task_description)
+                # result = await team.run(task=task_description)
+                result = await self._execute_with_retry(team, task_description, team_name)
 
                 # Extract final response
                 final_message = None
@@ -520,14 +592,132 @@ Be decisive and clear.""",
                 "error": str(e)
             }
 
+
+    def _extract_clean_content(self, raw_content: any) -> str:
+        """
+        Extract clean, user-friendly content from raw agent messages
+        
+        Filters out:
+        - TextMessage wrappers
+        - Metadata and system info
+        - Internal orchestrator conversations
+        - Token usage statistics
+        
+        Returns only the final, user-relevant answer
+        """
+        import re
+        
+        # If it's already a clean string without TextMessage, return it
+        if isinstance(raw_content, str):
+            # Check if it contains TextMessage wrappings
+            if "TextMessage(" not in raw_content and "models_usage" not in raw_content:
+                return raw_content
+            
+            # Extract content from TextMessage format
+            # Look for the LAST message from MagenticOneOrchestrator or agent
+            # as that's usually the final answer
+            
+            # Pattern to find message content='...'
+            pattern = r"content='([^']+(?:''[^']+)*?)'"
+            matches = re.findall(pattern, raw_content)
+            
+            if matches:
+                # Get the LAST match (usually the final answer)
+                last_content = matches[-1]
+                
+                # Clean up escaped quotes
+                last_content = last_content.replace("''", "'")
+                
+                # If it's still too long and looks like internal messages
+                if len(last_content) > 2000 and "MagenticOneOrchestrator" in raw_content:
+                    # Find orchestrator's final message
+                    orchestrator_pattern = r"TextMessage\(source='MagenticOneOrchestrator'[^}]+content='([^']+(?:''[^']+)*?)'"
+                    orchestrator_matches = re.findall(orchestrator_pattern, raw_content)
+                    
+                    if len(orchestrator_matches) >= 2:
+                        # Get the LAST orchestrator message
+                        last_content = orchestrator_matches[-1].replace("''", "'")
+                
+                return last_content
+            
+            # If no content= found, try to extract readable text
+            cleaned = re.sub(r'TextMessage\([^)]+\)', '', raw_content)
+            cleaned = re.sub(r'models_usage=[^,\]]+', '', cleaned)
+            cleaned = re.sub(r'metadata=\{[^}]*\}', '', cleaned)
+            cleaned = re.sub(r'source=[\'"][^\'"]+[\'"]', '', cleaned)
+            cleaned = re.sub(r'type=[\'"][^\'"]+[\'"]', '', cleaned)
+            
+            # Clean up extra whitespace
+            cleaned = re.sub(r'\s+', ' ', cleaned)
+            cleaned = cleaned.strip(' ,[]')
+            
+            return cleaned if cleaned else raw_content
+        
+        elif isinstance(raw_content, list):
+            # If it's a list, extract content from each item
+            contents = []
+            for item in raw_content:
+                extracted = self._extract_clean_content(item)
+                if extracted and len(extracted) > 10:
+                    contents.append(extracted)
+            
+            # Return the last content
+            return contents[-1] if contents else str(raw_content)
+        
+        elif isinstance(raw_content, dict):
+            # If it's a dict, look for 'content' key
+            if 'content' in raw_content:
+                return self._extract_clean_content(raw_content['content'])
+            return str(raw_content)
+        
+        else:
+            return str(raw_content)
+
+
+    def _should_show_message(self, source: str, content: str, message_type: str) -> bool:
+        """
+        Determine if a message should be shown to the user
+        
+        Returns:
+            True if message should be displayed
+            False if message is internal/verbose
+        """
+        # Always show these types
+        if message_type in ["final", "error"]:
+            return True
+        
+        # Hide internal orchestrator planning
+        if source == "MagenticOneOrchestrator" and message_type not in ["final", "routing"]:
+            # Orchestrator planning is internal
+            if "We are working to address" in content or "Here is the plan" in content:
+                return False
+        
+        # Hide raw TextMessage dumps
+        if "TextMessage(" in content and "models_usage" in content:
+            return False
+        
+        # Hide very long internal messages
+        if len(content) > 1500 and message_type not in ["final", "analysis"]:
+            return False
+        
+        # Show everything else
+        return True
+
+    
+    # ============================================================
+    # STREAMING EXECUTION (Real-Time Responses)
+    # ============================================================
+
     async def execute_with_streaming(self, task_description: str, username: str = "system"):
         """
         Execute task with TRUE real-time streaming
         
         This yields agent messages AS THEY HAPPEN, not after completion
+        Uses the EXISTING supervisor classification approach
         """
         from datetime import datetime
         import asyncio
+        from autogen_agentchat.messages import TextMessage
         
         try:
             logger.info(f"{'='*60}")
@@ -535,7 +725,7 @@ Be decisive and clear.""",
             logger.info(f"Task: {task_description}")
             logger.info(f"{'='*60}")
             
-            # Step 1: Classify task and select team
+            # Step 1: Show initial routing message
             yield {
                 "agent": "SupervisorAgent",
                 "type": "routing",
@@ -543,38 +733,62 @@ Be decisive and clear.""",
                 "timestamp": datetime.now().isoformat()
             }
             
-            # Classify the task
-            classification = await self._classify_task(task_description)
-            task_type = classification.get("type", "general").upper()
-            confidence = classification.get("confidence", 0.0)
+            # Step 2: Supervisor classification (using YOUR existing approach)
+            supervisor = await self.create_supervisor_agent()
             
-            # Create appropriate team
-            if "SQL" in task_type or "DATABASE" in task_type or "DATA" in task_type:
+            classification_prompt = f"Classify this task and route to appropriate team: {task_description}"
+            
+            # Use the SAME classification approach as execute_task_with_routing
+            response = await supervisor.on_messages(
+                [TextMessage(content=classification_prompt, source="user")],
+                cancellation_token=None
+            )
+            
+            classification = response.chat_message.content
+            logger.info(f"Supervisor Classification: {classification}")
+            
+            # Step 3: Parse classification and create team
+            team_name = None
+            team = None
+            
+            if "DATA_ANALYSIS_TEAM" in classification:
                 team_name = "DATA_ANALYSIS_TEAM"
                 yield {
                     "agent": "SupervisorAgent",
                     "type": "routing",
-                    "content": f"🎯 **Routing Decision**\n**Team:** Data Analysis Team\n**Reason:** Database query detected\n**Confidence:** {confidence:.0%}",
+                    "content": f"🎯 **Routing Decision**\n**Team:** Data Analysis Team\n**Reason:** Database query detected",
                     "timestamp": datetime.now().isoformat()
                 }
                 team = await self.create_data_analysis_team()
-            else:
+                
+            elif "GENERAL_ASSISTANT_TEAM" in classification:
                 team_name = "GENERAL_ASSISTANT_TEAM"
                 yield {
                     "agent": "SupervisorAgent",
                     "type": "routing",
-                    "content": f"🎯 **Routing Decision**\n**Team:** General Assistant Team\n**Reason:** General task\n**Confidence:** {confidence:.0%}",
+                    "content": f"🎯 **Routing Decision**\n**Team:** General Assistant Team\n**Reason:** General task",
+                    "timestamp": datetime.now().isoformat()
+                }
+                team = await self.create_general_assistant_team()
+                
+            else:
+                # Default to general assistant
+                team_name = "GENERAL_ASSISTANT_TEAM"
+                yield {
+                    "agent": "SupervisorAgent",
+                    "type": "routing",
+                    "content": f"🎯 **Routing Decision**\n**Team:** General Assistant Team (default)\n**Reason:** Unclear classification",
                     "timestamp": datetime.now().isoformat()
                 }
                 team = await self.create_general_assistant_team()
             
             logger.info(f"Selected team: {team_name}")
             
-            # Step 2: Stream team execution
+            # Step 4: Stream team execution
             try:
                 # Try to use run_stream if available
                 if hasattr(team, 'run_stream'):
-                    logger.info("Using team.run_stream() for real-time streaming")
+                    logger.info("✓ Using team.run_stream() for real-time streaming")
                     
                     async for message in team.run_stream(task=task_description):
                         # Extract message details safely
@@ -591,14 +805,23 @@ Be decisive and clear.""",
                         else:
                             content = str(raw_content)
                         
-                        # Classify message type based on content
-                        msg_type = self._classify_message_type(source, content)
+                        # ✨ CLEAN THE CONTENT - Extract only user-relevant parts
+                        clean_content = self._extract_clean_content(content)
                         
-                        # Yield immediately
+                        # Classify message type based on CLEAN content
+                        msg_type = self._classify_message_type(source, clean_content)
+                        
+                        # ✨ Check if we should show this message
+                        if not self._should_show_message(source, clean_content, msg_type):
+                            # Skip internal/verbose messages
+                            logger.debug(f"Skipping internal message from {source}")
+                            continue
+                        
+                        # Yield formatted event with CLEAN content
                         yield {
                             "agent": source,
                             "type": msg_type,
-                            "content": content,
+                            "content": clean_content,  # ✨ Using clean_content here
                             "timestamp": datetime.now().isoformat()
                         }
                         
@@ -615,7 +838,7 @@ Be decisive and clear.""",
                 
                 else:
                     # Fallback: run_stream not available
-                    logger.warning("run_stream not available, using incremental execution")
+                    logger.warning("⚠ run_stream not available, using word-by-word streaming fallback")
                     
                     # Show processing message
                     yield {
@@ -625,19 +848,19 @@ Be decisive and clear.""",
                         "timestamp": datetime.now().isoformat()
                     }
                     
-                    # Execute task
+                    # Execute task using existing method
                     result = await self.execute_task_with_routing(
                         task_description=task_description,
                         username=username
                     )
                     
-                    # Stream the result incrementally
+                    # Stream the result word-by-word for better UX
                     if result["success"]:
                         response = result.get("response", "Task completed")
                         
-                        # Send in smaller chunks for perceived streaming
+                        # Send in word chunks
                         words = response.split()
-                        chunk_size = 20  # words per chunk
+                        chunk_size = 15  # words per chunk
                         
                         for i in range(0, len(words), chunk_size):
                             chunk = " ".join(words[i:i+chunk_size])
@@ -645,11 +868,11 @@ Be decisive and clear.""",
                             yield {
                                 "agent": team_name,
                                 "type": "message",
-                                "content": chunk,
+                                "content": chunk + " ",
                                 "timestamp": datetime.now().isoformat()
                             }
                             
-                            await asyncio.sleep(0.1)
+                            await asyncio.sleep(0.08)
                         
                         # Final message
                         yield {
@@ -669,7 +892,15 @@ Be decisive and clear.""",
             
             except AttributeError as ae:
                 # run_stream doesn't exist - use fallback
-                logger.warning(f"AttributeError with run_stream: {ae}, using fallback")
+                logger.warning(f"⚠ AttributeError with run_stream: {ae}, using word-streaming fallback")
+                
+                # Show processing
+                yield {
+                    "agent": team_name,
+                    "type": "thinking",
+                    "content": "🤔 Processing...",
+                    "timestamp": datetime.now().isoformat()
+                }
                 
                 # Execute normally and stream result
                 result = await self.execute_task_with_routing(
@@ -680,7 +911,7 @@ Be decisive and clear.""",
                 if result["success"]:
                     response = result.get("response", "Task completed")
                     
-                    # Stream response word by word for better UX
+                    # Stream response word by word
                     words = response.split()
                     chunk_size = 15
                     
@@ -695,7 +926,15 @@ Be decisive and clear.""",
                         }
                         
                         await asyncio.sleep(0.08)
+                else:
+                    yield {
+                        "agent": "System",
+                        "type": "error",
+                        "content": f"❌ Error: {result.get('error', 'Unknown error')}",
+                        "timestamp": datetime.now().isoformat()
+                    }
                 
+                # Final
                 yield {
                     "agent": "System",
                     "type": "final",
@@ -754,7 +993,6 @@ Be decisive and clear.""",
         
         # Default
         return "message"
-
 
     # ============================================================
     # ALTERNATIVE: If run_stream doesn't work, use this version
