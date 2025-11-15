@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     }
 
     # Fallback Model Configuration
-    ollama_fallback_model: str = "qwen3-vl:latest"
+    ollama_fallback_model: str = "qwen3:latest"
     ollama_fallback_model_info: dict[str, str | bool] = {
         "vision": True,
         "function_calling": True,

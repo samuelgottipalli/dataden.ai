@@ -1,6 +1,82 @@
 # ============================================================
+# Usage Instructions
+# ============================================================
+
+"""
+USAGE INSTRUCTIONS:
+
+1. Add to your mcp_server/main.py:
+   
+   from mcp_server.api_routes import router as openwebui_router
+   app.include_router(openwebui_router)
+
+2. Set environment variable in .env:
+   
+   OPENWEBUI_API_KEY=your-secret-key-here
+
+3. Configure OpenWebUI:
+   
+   - Go to Settings → Connections
+   - Add External API
+   - URL: http://your-server:8000/api/v1/chat/completions
+   - API Key: your-secret-key-here
+   - Enable streaming: Yes
+
+4. Test the connection:
+   
+   curl -X POST http://localhost:8000/api/v1/health
+   
+   Should return: {"status": "healthy", ...}
+
+5. Test streaming:
+   
+   curl -X POST http://localhost:8000/api/v1/chat/completions \
+     -H "Content-Type: application/json" \
+     -H "X-API-Key: your-secret-key-here" \
+     -H "X-User-ID: test_user" \
+     -d '{
+       "model": "autogen-agents",
+       "messages": [{"role": "user", "content": "What is 15% of 850?"}],
+       "stream": true
+     }'
+
+WHAT YOU'LL SEE IN OPENWEBUI:
+
+User: "Show me top 5 sales"
+
+🎯 SupervisorAgent
+Routing to: DATA_ANALYSIS_TEAM
+
+🤔 SQLAgent [Thinking]
+I need to find the sales table and check its schema
+
+⚡ SQLAgent [Action]
+get_table_schema("sales")
+
+📦 Tool Result
+Schema: id, customer, amount, date...
+
+⚡ SQLAgent [Action]
+SELECT TOP 5 customer, amount 
+FROM sales 
+ORDER BY amount DESC
+
+🛡️ ValidationAgent [Validation]
+✓ Query is safe
+✓ No dangerous operations
+Approved for execution
+
+📦 Tool Result
+5 rows returned
+
+📊 AnalysisAgent [Analysis]
+Top 5 customers with highest sales...
+
+✅ Final Answer
+[Shows results and analysis]
+"""
+# ============================================================
 # OpenWebUI Integration - Streaming API Routes
-# File 1 of 5: API endpoints for OpenWebUI connection
 # ============================================================
 
 from fastapi import APIRouter, Header, HTTPException, Request
@@ -173,10 +249,27 @@ async def stream_agent_response(message: str, user_id: str, user_email: str):
     """
     try:
         # Create orchestrator
-        orchestrator = EnhancedAgentOrchestrator()
+        orchestrator = EnhancedAgentOrchestrator(task_description=message)
 
         # Generate unique ID
         conversation_id = f"chatcmpl-{int(datetime.now().timestamp())}"
+
+        if orchestrator.show_local_notice and settings.notify_on_fallback:
+            notice_chunk = {
+                "id": conversation_id,
+                "object": "chat.completion.chunk",
+                "created": int(datetime.now().timestamp()),
+                "model": "autogen-agents",
+                "choices": [{
+                    "index": 0,
+                    "delta": {
+                        "role": "assistant",
+                        "content": f"\n💡 *Using local model for faster response. Processing may take a moment.*\n\n"
+                    },
+                    "finish_reason": None
+                }]
+            }
+            yield f"data: {json.dumps(notice_chunk)}\n\n"
 
         logger.info(f"🎬 Starting streaming response for {user_id}")
 
@@ -392,82 +485,3 @@ async def health_check():
         "version": "1.0.0",
         "timestamp": datetime.now().isoformat(),
     }
-
-
-# ============================================================
-# Usage Instructions
-# ============================================================
-
-"""
-USAGE INSTRUCTIONS:
-
-1. Add to your mcp_server/main.py:
-   
-   from mcp_server.api_routes import router as openwebui_router
-   app.include_router(openwebui_router)
-
-2. Set environment variable in .env:
-   
-   OPENWEBUI_API_KEY=your-secret-key-here
-
-3. Configure OpenWebUI:
-   
-   - Go to Settings → Connections
-   - Add External API
-   - URL: http://your-server:8000/api/v1/chat/completions
-   - API Key: your-secret-key-here
-   - Enable streaming: Yes
-
-4. Test the connection:
-   
-   curl -X POST http://localhost:8000/api/v1/health
-   
-   Should return: {"status": "healthy", ...}
-
-5. Test streaming:
-   
-   curl -X POST http://localhost:8000/api/v1/chat/completions \
-     -H "Content-Type: application/json" \
-     -H "X-API-Key: your-secret-key-here" \
-     -H "X-User-ID: test_user" \
-     -d '{
-       "model": "autogen-agents",
-       "messages": [{"role": "user", "content": "What is 15% of 850?"}],
-       "stream": true
-     }'
-
-WHAT YOU'LL SEE IN OPENWEBUI:
-
-User: "Show me top 5 sales"
-
-🎯 SupervisorAgent
-Routing to: DATA_ANALYSIS_TEAM
-
-🤔 SQLAgent [Thinking]
-I need to find the sales table and check its schema
-
-⚡ SQLAgent [Action]
-get_table_schema("sales")
-
-📦 Tool Result
-Schema: id, customer, amount, date...
-
-⚡ SQLAgent [Action]
-SELECT TOP 5 customer, amount 
-FROM sales 
-ORDER BY amount DESC
-
-🛡️ ValidationAgent [Validation]
-✓ Query is safe
-✓ No dangerous operations
-Approved for execution
-
-📦 Tool Result
-5 rows returned
-
-📊 AnalysisAgent [Analysis]
-Top 5 customers with highest sales...
-
-✅ Final Answer
-[Shows results and analysis]
-"""
