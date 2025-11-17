@@ -68,21 +68,21 @@ def get_or_create_conversation_id(user_id: str, session_hint: Optional[str] = No
     Returns:
         conversation_id to use
     """
-
+    
     if session_hint and session_hint in conversation_tracking:
         return conversation_tracking[session_hint]["conversation_id"]
-
+    
     # Create new conversation
     import uuid
     conversation_id = f"conv-{uuid.uuid4()}"
-
+    
     if session_hint:
         conversation_tracking[session_hint] = {
             "conversation_id": conversation_id,
             "user_id": user_id,
             "created": datetime.now().isoformat()
         }
-
+    
     return conversation_id
 
 
@@ -91,51 +91,17 @@ def get_or_create_conversation_id(user_id: str, session_hint: Optional[str] = No
 # ============================================================
 
 
-def verify_api_key(
-    x_api_key: Optional[str] = None, authorization: Optional[str] = None
-) -> bool:
-    """
-    Verify API key from OpenWebUI
-
-    OpenWebUI sends API key as: Authorization: Bearer <key>
-    Some tools send as: X-API-Key: <key>
-
-    This handles both formats.
-    """
-
-    # If no API key configured, allow all (for testing)
+def verify_api_key(api_key: Optional[str] = None) -> bool:
+    """Verify API key from OpenWebUI"""
+    
     if not settings.openwebui_api_key:
-        logger.warning("⚠️ No API key configured - allowing all requests")
+        logger.warning("No API key configured - allowing all requests")
         return True
 
-    # Extract API key from either header
-    received_key = None
-
-    # Try Authorization header first (OpenWebUI format)
-    if authorization:
-        if authorization.startswith("Bearer "):
-            received_key = authorization.replace("Bearer ", "").strip()
-        else:
-            received_key = authorization.strip()
-
-    # Try X-API-Key header (curl/Postman format)
-    if not received_key and x_api_key:
-        received_key = x_api_key.strip()
-
-    # Debug logging
-    logger.debug(f"🔑 Received key: {received_key[:20] if received_key else 'None'}...")
-    logger.debug(f"🔑 Expected key: {settings.openwebui_api_key[:20]}...")
-
-    # Validate
-    if not received_key:
-        logger.error("❌ No API key provided in request")
-        raise HTTPException(status_code=401, detail="API key required")
-
-    if received_key != settings.openwebui_api_key:
-        logger.error(f"❌ Invalid API key. Received: {received_key[:20]}")
+    if api_key != settings.openwebui_api_key:
+        logger.error(f"Invalid API key received")
         raise HTTPException(status_code=401, detail="Invalid API key")
 
-    logger.debug("✅ API key validated")
     return True
 
 
@@ -147,29 +113,27 @@ def verify_api_key(
 @router.post("/chat/completions")
 async def chat_completions(
     request: ChatRequest,
-    authorization: Optional[str] = Header(None),  # OpenWebUI uses this
-    x_api_key: Optional[str] = Header(None, alias="X-API-Key"),  # curl/Postman use this
+    x_api_key: Optional[str] = Header(None, alias="X-API-Key"),
     x_user_id: Optional[str] = Header(None, alias="X-User-ID"),
     x_user_email: Optional[str] = Header(None, alias="X-User-Email"),
     x_session_id: Optional[str] = Header(None, alias="X-Session-ID"),
 ):
     """
     Phase 1: Interactive Chat Completions
-
-    Supports both OpenWebUI and direct API calls.
-
+    
+    Now supports:
+    - Agents asking clarifying questions
+    - Conversation pause/resume
+    - Multi-turn interactions
+    
     Headers:
-        Authorization: Bearer <key>  (OpenWebUI format)
-        OR
-        X-API-Key: <key>  (curl/Postman format)
-
-        X-User-ID: User identifier
+        X-API-Key: API key for authentication
+        X-User-ID: User identifier (from LDAP)
         X-User-Email: User email
-        X-Session-ID: Session tracking
+        X-Session-ID: Optional session identifier for tracking conversations
     """
 
-    # Verify API key from either header format
-    verify_api_key(x_api_key=x_api_key, authorization=authorization)
+    verify_api_key(x_api_key)
 
     user_id = x_user_id or "anonymous"
     user_email = x_user_email or "unknown@example.com"
@@ -190,7 +154,7 @@ async def chat_completions(
                 message=last_message,
                 user_id=user_id,
                 user_email=user_email,
-                session_id=x_session_id,
+                session_id=x_session_id
             ),
             media_type="text/event-stream",
             headers={

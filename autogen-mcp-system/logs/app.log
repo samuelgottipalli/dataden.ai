@@ -14427,3 +14427,122 @@ Traceback (most recent call last):
                      └ <agents.enhanced_orchestrator.EnhancedAgentOrchestrator object at 0x0000023D8EA34D90>
 
 AttributeError: 'EnhancedAgentOrchestrator' object has no attribute '_force_data_team_if_needed'
+2025-11-17 13:17:09 | INFO     | __main__:<module> - CORS configured for OpenWebUI integration
+2025-11-17 13:17:09 | INFO     | __main__:<module> - OpenWebUI API routes registered at /api/v1
+2025-11-17 13:17:09 | INFO     | __main__:<module> - Starting MCP Server on 0.0.0.0:8000
+2025-11-17 13:20:06 | ERROR    | mcp_server.api_routes:verify_api_key - Invalid API key received
+2025-11-17 13:31:37 | INFO     | mcp_server.api_routes:chat_completions - 💬 Chat request from test_user: What is 2+2?...
+2025-11-17 13:31:37 | WARNING  | mcp_server.api_routes:non_streaming_response - Non-streaming mode requested - interactive features limited
+2025-11-17 13:31:37 | INFO     | agents.enhanced_orchestrator:__init__ - ✨ Phase 1 Interactive Orchestrator initialized with model: gpt-oss:120b-cloud
+2025-11-17 13:31:37 | INFO     | agents.enhanced_orchestrator:execute_with_interactive_streaming - 🎬 Interactive execution started: conv-19a8f99c-cf55-4747-a98d-3a60c108fd73
+2025-11-17 13:31:37 | INFO     | agents.enhanced_orchestrator:execute_with_interactive_streaming - Task: What is 2+2?...
+2025-11-17 13:31:39 | INFO     | agents.enhanced_orchestrator:_clear_conversation_state - 🧹 Cleared conversation state for conv-19a8f99c-cf55-4747-a98d-3a60c108fd73
+2025-11-17 13:32:26 | ERROR    | mcp_server.api_routes:verify_api_key - Invalid API key received
+2025-11-17 13:34:39 | ERROR    | mcp_server.api_routes:verify_api_key - Invalid API key received
+2025-11-17 13:35:03 | ERROR    | mcp_server.api_routes:verify_api_key - Invalid API key received
+2025-11-17 13:37:30 | ERROR    | mcp_server.api_routes:verify_api_key - Invalid API key received
+2025-11-17 13:43:54 | INFO     | __main__:<module> - CORS configured for OpenWebUI integration
+2025-11-17 13:43:54 | INFO     | __main__:<module> - OpenWebUI API routes registered at /api/v1
+2025-11-17 13:43:55 | INFO     | __main__:<module> - Starting MCP Server on 0.0.0.0:8000
+2025-11-17 13:44:16 | INFO     | mcp_server.api_routes:chat_completions - 💬 Chat request from anonymous: what is 2+2?...
+2025-11-17 13:44:16 | INFO     | agents.enhanced_orchestrator:__init__ - ✨ Phase 1 Interactive Orchestrator initialized with model: gpt-oss:120b-cloud
+2025-11-17 13:44:16 | INFO     | mcp_server.api_routes:stream_interactive_response - 🎬 Starting interactive streaming for anonymous
+2025-11-17 13:44:16 | INFO     | mcp_server.api_routes:stream_interactive_response - Conversation: conv-8f84cb8c-264f-4487-b89e-65e5ab3a2684
+2025-11-17 13:44:16 | INFO     | agents.enhanced_orchestrator:execute_with_interactive_streaming - 🎬 Interactive execution started: conv-8f84cb8c-264f-4487-b89e-65e5ab3a2684
+2025-11-17 13:44:16 | INFO     | agents.enhanced_orchestrator:execute_with_interactive_streaming - Task: what is 2+2?...
+2025-11-17 13:44:19 | INFO     | agents.enhanced_orchestrator:_clear_conversation_state - 🧹 Cleared conversation state for conv-8f84cb8c-264f-4487-b89e-65e5ab3a2684
+2025-11-17 13:44:19 | INFO     | mcp_server.api_routes:stream_interactive_response - ✅ Streaming complete: 7 events
+2025-11-17 13:44:19 | INFO     | mcp_server.api_routes:chat_completions - 💬 Chat request from anonymous: ### Task:
+Suggest 3-5 relevant follow-up questions or prompts that the user might naturally ask next...
+2025-11-17 13:44:19 | WARNING  | mcp_server.api_routes:non_streaming_response - Non-streaming mode requested - interactive features limited
+2025-11-17 13:44:19 | INFO     | agents.enhanced_orchestrator:__init__ - ✨ Phase 1 Interactive Orchestrator initialized with model: gpt-oss:120b-cloud
+2025-11-17 13:44:19 | INFO     | agents.enhanced_orchestrator:execute_with_interactive_streaming - 🎬 Interactive execution started: conv-ef4b642c-9d8d-49f9-835f-c091069819d1
+2025-11-17 13:44:19 | INFO     | agents.enhanced_orchestrator:execute_with_interactive_streaming - Task: ### Task:
+Suggest 3-5 relevant follow-up questions or prompts that the user might naturally ask next...
+2025-11-17 13:44:26 | INFO     | agents.enhanced_orchestrator:_clear_conversation_state - 🧹 Cleared conversation state for conv-ef4b642c-9d8d-49f9-835f-c091069819d1
+2025-11-17 13:44:27 | INFO     | mcp_server.api_routes:chat_completions - 💬 Chat request from anonymous: ### Task:
+Generate a concise, 3-5 word title with an emoji summarizing the chat history.
+### Guideli...
+2025-11-17 13:44:27 | WARNING  | mcp_server.api_routes:non_streaming_response - Non-streaming mode requested - interactive features limited
+2025-11-17 13:44:27 | INFO     | agents.enhanced_orchestrator:__init__ - ✨ Phase 1 Interactive Orchestrator initialized with model: gpt-oss:120b-cloud
+2025-11-17 13:44:27 | INFO     | agents.enhanced_orchestrator:execute_with_interactive_streaming - 🎬 Interactive execution started: conv-7e3bae64-609e-44e5-8dc6-ec79516018b6
+2025-11-17 13:44:27 | INFO     | agents.enhanced_orchestrator:execute_with_interactive_streaming - Task: ### Task:
+Generate a concise, 3-5 word title with an emoji summarizing the chat history.
+### Guideli...
+2025-11-17 13:44:31 | INFO     | agents.enhanced_orchestrator:_clear_conversation_state - 🧹 Cleared conversation state for conv-7e3bae64-609e-44e5-8dc6-ec79516018b6
+2025-11-17 13:44:55 | INFO     | mcp_server.api_routes:chat_completions - 💬 Chat request from anonymous: What is 15 multiplied by 7?...
+2025-11-17 13:44:55 | INFO     | agents.enhanced_orchestrator:__init__ - ✨ Phase 1 Interactive Orchestrator initialized with model: gpt-oss:120b-cloud
+2025-11-17 13:44:55 | INFO     | mcp_server.api_routes:stream_interactive_response - 🎬 Starting interactive streaming for anonymous
+2025-11-17 13:44:55 | INFO     | mcp_server.api_routes:stream_interactive_response - Conversation: conv-a5f01bae-f9bf-4aee-9ffd-ec400efb2ab9
+2025-11-17 13:44:55 | INFO     | agents.enhanced_orchestrator:execute_with_interactive_streaming - 🎬 Interactive execution started: conv-a5f01bae-f9bf-4aee-9ffd-ec400efb2ab9
+2025-11-17 13:44:55 | INFO     | agents.enhanced_orchestrator:execute_with_interactive_streaming - Task: What is 15 multiplied by 7?...
+2025-11-17 13:44:59 | INFO     | agents.enhanced_orchestrator:_clear_conversation_state - 🧹 Cleared conversation state for conv-a5f01bae-f9bf-4aee-9ffd-ec400efb2ab9
+2025-11-17 13:44:59 | INFO     | mcp_server.api_routes:stream_interactive_response - ✅ Streaming complete: 7 events
+2025-11-17 13:45:00 | INFO     | mcp_server.api_routes:chat_completions - 💬 Chat request from anonymous: ### Task:
+Suggest 3-5 relevant follow-up questions or prompts that the user might naturally ask next...
+2025-11-17 13:45:00 | WARNING  | mcp_server.api_routes:non_streaming_response - Non-streaming mode requested - interactive features limited
+2025-11-17 13:45:00 | INFO     | agents.enhanced_orchestrator:__init__ - ✨ Phase 1 Interactive Orchestrator initialized with model: gpt-oss:120b-cloud
+2025-11-17 13:45:00 | INFO     | agents.enhanced_orchestrator:execute_with_interactive_streaming - 🎬 Interactive execution started: conv-ca0c257f-6ee5-4264-b045-5e7d9c2a3a48
+2025-11-17 13:45:00 | INFO     | agents.enhanced_orchestrator:execute_with_interactive_streaming - Task: ### Task:
+Suggest 3-5 relevant follow-up questions or prompts that the user might naturally ask next...
+2025-11-17 13:45:05 | INFO     | agents.enhanced_orchestrator:_clear_conversation_state - 🧹 Cleared conversation state for conv-ca0c257f-6ee5-4264-b045-5e7d9c2a3a48
+2025-11-17 13:46:26 | INFO     | mcp_server.api_routes:chat_completions - 💬 Chat request from anonymous: show me sales data?...
+2025-11-17 13:46:26 | INFO     | agents.enhanced_orchestrator:__init__ - ✨ Phase 1 Interactive Orchestrator initialized with model: gpt-oss:120b-cloud
+2025-11-17 13:46:26 | INFO     | mcp_server.api_routes:stream_interactive_response - 🎬 Starting interactive streaming for anonymous
+2025-11-17 13:46:26 | INFO     | mcp_server.api_routes:stream_interactive_response - Conversation: conv-1a052ffd-bee4-4598-b137-ad4e072e2453
+2025-11-17 13:46:26 | INFO     | agents.enhanced_orchestrator:execute_with_interactive_streaming - 🎬 Interactive execution started: conv-1a052ffd-bee4-4598-b137-ad4e072e2453
+2025-11-17 13:46:26 | INFO     | agents.enhanced_orchestrator:execute_with_interactive_streaming - Task: show me sales data?...
+2025-11-17 13:46:45 | INFO     | agents.enhanced_orchestrator:_execute_task_stream - ❓ Agent asked a question: Could you please specify the details for the sales data you’d like to see?
+2025-11-17 13:46:45 | INFO     | agents.enhanced_orchestrator:_save_conversation_state - 💾 Saved conversation state for conv-1a052ffd-bee4-4598-b137-ad4e072e2453
+2025-11-17 13:46:45 | INFO     | mcp_server.api_routes:stream_interactive_response - ❓ Agent asked question - pausing execution
+2025-11-17 13:46:45 | INFO     | mcp_server.api_routes:stream_interactive_response - ⏸️ Streaming paused - waiting for user response
+2025-11-17 13:46:46 | INFO     | mcp_server.api_routes:chat_completions - 💬 Chat request from anonymous: ### Task:
+Suggest 3-5 relevant follow-up questions or prompts that the user might naturally ask next...
+2025-11-17 13:46:46 | WARNING  | mcp_server.api_routes:non_streaming_response - Non-streaming mode requested - interactive features limited
+2025-11-17 13:46:46 | INFO     | agents.enhanced_orchestrator:__init__ - ✨ Phase 1 Interactive Orchestrator initialized with model: gpt-oss:120b-cloud
+2025-11-17 13:46:46 | INFO     | agents.enhanced_orchestrator:execute_with_interactive_streaming - 🎬 Interactive execution started: conv-e806f52c-64c4-4688-b5fd-25c6172d5be1
+2025-11-17 13:46:46 | INFO     | agents.enhanced_orchestrator:execute_with_interactive_streaming - Task: ### Task:
+Suggest 3-5 relevant follow-up questions or prompts that the user might naturally ask next...
+2025-11-17 13:47:31 | INFO     | agents.enhanced_orchestrator:_execute_task_stream - ❓ Agent asked a question: Please provide the following details for the sales data you’d like to see:
+2025-11-17 13:47:31 | INFO     | agents.enhanced_orchestrator:_save_conversation_state - 💾 Saved conversation state for conv-e806f52c-64c4-4688-b5fd-25c6172d5be1
+2025-11-17 13:47:58 | INFO     | mcp_server.api_routes:chat_completions - 💬 Chat request from anonymous: i want sales data from the database organized by product type...
+2025-11-17 13:47:58 | INFO     | agents.enhanced_orchestrator:__init__ - ✨ Phase 1 Interactive Orchestrator initialized with model: gpt-oss:120b-cloud
+2025-11-17 13:47:58 | INFO     | mcp_server.api_routes:stream_interactive_response - 🎬 Starting interactive streaming for anonymous
+2025-11-17 13:47:58 | INFO     | mcp_server.api_routes:stream_interactive_response - Conversation: conv-06ba95f0-a96e-4b49-9fcc-e979e40fb8d9
+2025-11-17 13:47:58 | INFO     | agents.enhanced_orchestrator:execute_with_interactive_streaming - 🎬 Interactive execution started: conv-06ba95f0-a96e-4b49-9fcc-e979e40fb8d9
+2025-11-17 13:47:58 | INFO     | agents.enhanced_orchestrator:execute_with_interactive_streaming - Task: i want sales data from the database organized by product type...
+2025-11-17 13:48:18 | INFO     | agents.enhanced_orchestrator:_execute_task_stream - ❓ Agent asked a question: To retrieve the sales data organized by product type, I need some details about your database and the specific data you want.
+2025-11-17 13:48:18 | INFO     | agents.enhanced_orchestrator:_save_conversation_state - 💾 Saved conversation state for conv-06ba95f0-a96e-4b49-9fcc-e979e40fb8d9
+2025-11-17 13:48:18 | INFO     | mcp_server.api_routes:stream_interactive_response - ❓ Agent asked question - pausing execution
+2025-11-17 13:48:18 | INFO     | mcp_server.api_routes:stream_interactive_response - ⏸️ Streaming paused - waiting for user response
+2025-11-17 13:48:18 | INFO     | mcp_server.api_routes:chat_completions - 💬 Chat request from anonymous: ### Task:
+Suggest 3-5 relevant follow-up questions or prompts that the user might naturally ask next...
+2025-11-17 13:48:18 | WARNING  | mcp_server.api_routes:non_streaming_response - Non-streaming mode requested - interactive features limited
+2025-11-17 13:48:18 | INFO     | agents.enhanced_orchestrator:__init__ - ✨ Phase 1 Interactive Orchestrator initialized with model: gpt-oss:120b-cloud
+2025-11-17 13:48:18 | INFO     | agents.enhanced_orchestrator:execute_with_interactive_streaming - 🎬 Interactive execution started: conv-1cfdb51a-e9d1-43e0-b49b-4c57bbda09ce
+2025-11-17 13:48:18 | INFO     | agents.enhanced_orchestrator:execute_with_interactive_streaming - Task: ### Task:
+Suggest 3-5 relevant follow-up questions or prompts that the user might naturally ask next...
+2025-11-17 13:48:45 | INFO     | mcp_server.api_routes:chat_completions - 💬 Chat request from anonymous: Please use the current database connection available....
+2025-11-17 13:48:45 | INFO     | agents.enhanced_orchestrator:__init__ - ✨ Phase 1 Interactive Orchestrator initialized with model: gpt-oss:120b-cloud
+2025-11-17 13:48:45 | INFO     | mcp_server.api_routes:stream_interactive_response - 🎬 Starting interactive streaming for anonymous
+2025-11-17 13:48:45 | INFO     | mcp_server.api_routes:stream_interactive_response - Conversation: conv-1e351fb2-d06b-439b-8f69-93175a0a466b
+2025-11-17 13:48:45 | INFO     | agents.enhanced_orchestrator:execute_with_interactive_streaming - 🎬 Interactive execution started: conv-1e351fb2-d06b-439b-8f69-93175a0a466b
+2025-11-17 13:48:45 | INFO     | agents.enhanced_orchestrator:execute_with_interactive_streaming - Task: Please use the current database connection available....
+2025-11-17 13:48:58 | INFO     | agents.enhanced_orchestrator:list_all_tables_wrapper - List tables tool called
+2025-11-17 13:48:58 | INFO     | mcp_server.tools:generate_and_execute_sql - SQL Tool called: List all tables
+2025-11-17 13:48:58 | INFO     | utils.retry_handler:execute_with_retry - Attempt 1/3
+2025-11-17 13:48:58 | INFO     | utils.retry_handler:execute_with_retry - Query succeeded on attempt 1
+2025-11-17 13:49:04 | INFO     | agents.enhanced_orchestrator:_execute_task_stream - ❓ Agent asked a question: Could you please share the JSON payload containing the database connection details, table names, column names, and any filters you’d like applied? I need the actual values (not placeholders) for all required fields so I can validate it.
+2025-11-17 13:49:04 | INFO     | agents.enhanced_orchestrator:_save_conversation_state - 💾 Saved conversation state for conv-1cfdb51a-e9d1-43e0-b49b-4c57bbda09ce
+2025-11-17 13:49:04 | INFO     | mcp_server.tools:generate_and_execute_sql - SQL Tool called: Get column definitions for all dbo tables
+2025-11-17 13:49:04 | INFO     | utils.retry_handler:execute_with_retry - Attempt 1/3
+2025-11-17 13:49:04 | INFO     | utils.retry_handler:execute_with_retry - Query succeeded on attempt 1
+2025-11-17 13:50:07 | INFO     | agents.enhanced_orchestrator:_clear_conversation_state - 🧹 Cleared conversation state for conv-1e351fb2-d06b-439b-8f69-93175a0a466b
+2025-11-17 13:50:07 | INFO     | mcp_server.api_routes:stream_interactive_response - ✅ Streaming complete: 14 events
+2025-11-17 13:50:07 | INFO     | mcp_server.api_routes:chat_completions - 💬 Chat request from anonymous: ### Task:
+Suggest 3-5 relevant follow-up questions or prompts that the user might naturally ask next...
+2025-11-17 13:50:07 | WARNING  | mcp_server.api_routes:non_streaming_response - Non-streaming mode requested - interactive features limited
+2025-11-17 13:50:07 | INFO     | agents.enhanced_orchestrator:__init__ - ✨ Phase 1 Interactive Orchestrator initialized with model: gpt-oss:120b-cloud
+2025-11-17 13:50:07 | INFO     | agents.enhanced_orchestrator:execute_with_interactive_streaming - 🎬 Interactive execution started: conv-7fff490e-863a-45db-b86c-7909a4ed4b10
+2025-11-17 13:50:07 | INFO     | agents.enhanced_orchestrator:execute_with_interactive_streaming - Task: ### Task:
+Suggest 3-5 relevant follow-up questions or prompts that the user might naturally ask next...

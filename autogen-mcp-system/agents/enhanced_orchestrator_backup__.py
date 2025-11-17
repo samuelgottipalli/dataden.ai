@@ -16,8 +16,12 @@ from autogen_agentchat.ui import Console
 from autogen_ext.models.ollama import OllamaChatCompletionClient
 
 from config.settings import settings
-from mcp_server.tools import generate_and_execute_sql, analyze_data_pandas
-from mcp_server.database import db
+from mcp_server.tools import (
+    sql_tool_wrapper,
+    data_analysis_tool_wrapper,
+    get_table_schema_wrapper,
+    list_all_tables_wrapper,
+)
 
 
 class EnhancedAgentOrchestrator:
@@ -246,35 +250,6 @@ Format: [ROUTE:TEAM_NAME] Brief explanation
         """
         Data Analysis Team with interactive questioning
         """
-
-        # Create tool wrappers from actual functions
-        async def sql_tool_wrapper(query_description: str, sql_script: str) -> dict:
-            """Execute SQL query against data warehouse with retry logic"""
-            return await generate_and_execute_sql(query_description, sql_script)
-
-        async def data_analysis_tool_wrapper(data_json: str, analysis_type: str) -> dict:
-            """Analyze retrieved data using pandas"""
-            return await analyze_data_pandas(data_json, analysis_type)
-
-        async def get_table_schema_wrapper(table_name: str) -> dict:
-            """Get schema information for a specific table"""
-            logger.info(f"Schema tool called for table: {table_name}")
-            return db.get_table_schema(table_name)
-
-        async def list_all_tables_wrapper() -> dict:
-            """List all tables in the database"""
-            logger.info("List tables tool called")
-            # Query information schema for all tables
-            result = await generate_and_execute_sql(
-                "List all tables",
-                """
-                SELECT TABLE_SCHEMA, TABLE_NAME, TABLE_TYPE
-                FROM INFORMATION_SCHEMA.TABLES
-                WHERE TABLE_TYPE = 'BASE TABLE'
-                ORDER BY TABLE_SCHEMA, TABLE_NAME
-                """
-            )
-            return result
 
         # SQL Agent - NOW with clarification capability
         sql_agent = AssistantAgent(
