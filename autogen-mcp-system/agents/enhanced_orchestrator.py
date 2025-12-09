@@ -4,19 +4,21 @@
 # ============================================================
 
 import asyncio
-from typing import Optional, Dict, List
-from loguru import logger
+import json
+import re
+from datetime import datetime
+from typing import Any, Dict, List, Optional
+
 from autogen_agentchat.agents import AssistantAgent
+from autogen_agentchat.messages import TextMessage
 from autogen_agentchat.teams import MagenticOneGroupChat
 from autogen_agentchat.ui import Console
 from autogen_ext.models.ollama import OllamaChatCompletionClient
-from autogen_agentchat.messages import TextMessage
 from config.settings import settings
-from mcp_server.tools import generate_and_execute_sql, analyze_data_pandas
+from loguru import logger
 from mcp_server.database import db
-import re
-import json
-from datetime import datetime
+from mcp_server.tools import analyze_data_pandas, generate_and_execute_sql
+
 
 class EnhancedAgentOrchestrator:
     """
@@ -49,22 +51,22 @@ class EnhancedAgentOrchestrator:
         
         This is the KEY to clean responses - filters out ALL internal junk
         """
-        
+
         if isinstance(result, str):
             # Check if it has TextMessage wrappers
             if "TextMessage(" not in result:
                 return result
-            
+
             # Extract content from TextMessage format using regex
             pattern = r"content='([^']+(?:''[^']+)*?)'"
             matches = re.findall(pattern, result)
-            
+
             if matches:
                 # Get the LAST match (usually the final answer)
                 last_content = matches[-1]
                 # Clean up escaped quotes
                 last_content = last_content.replace("''", "'")
-                
+
                 # If still too technical, try to extract just the answer
                 if len(last_content) > 1000:
                     # Look for actual answer after planning
@@ -76,9 +78,9 @@ class EnhancedAgentOrchestrator:
                         answer_match = re.search(pattern, last_content, re.IGNORECASE | re.DOTALL)
                         if answer_match:
                             return answer_match.group(1).strip()
-                
+
                 return last_content
-        
+
         # Handle object with messages attribute
         if hasattr(result, 'messages'):
             messages = result.messages
@@ -91,7 +93,7 @@ class EnhancedAgentOrchestrator:
                     if isinstance(content, str) and "TextMessage(" in content:
                         return self._extract_clean_content(content)
                     return str(content)
-        
+
         # Fallback
         return str(result)
 
@@ -101,22 +103,22 @@ class EnhancedAgentOrchestrator:
         
         Filters out internal orchestrator planning messages
         """
-        
+
         # Skip internal orchestrator planning
         if source == "MagenticOneOrchestrator":
             # Only show if it's a final answer
             if any(phrase in content.lower() for phrase in ["final", "answer", "result", "here is"]):
                 return True
             return False
-        
+
         # Skip empty or very short messages
         if not content or len(content.strip()) < 5:
             return False
-        
+
         # Skip technical metadata messages
         if any(keyword in content.lower() for keyword in ["textmessage(", "models_usage", "metadata={}"]):
             return False
-        
+
         # Show everything else
         return True
 
@@ -291,6 +293,50 @@ Keep it short.""",
 
         return team
 
+    def _build_context_prompt(self, current_message: str, conversation_history: List[Dict]) -> str:
+        """
+        Build enriched prompt with conversation context
+        
+        Args:
+            current_message: The latest user message
+            conversation_history: List of previous messages [{"role": "user/assistant", "content": "..."}]
+        
+        Returns:
+            Enhanced prompt with context
+        """
+
+        if not conversation_history or len(conversation_history) <= 1:
+            # No previous context, return as-is
+            return current_message
+
+        # Build context summary from previous messages
+        context_lines = []
+        context_lines.append("**Previous conversation context:**")
+
+        # Get last 3-5 exchanges (6-10 messages)
+        recent_history = conversation_history[-10:] if len(conversation_history) > 10 else conversation_history
+
+        for msg in recent_history:
+            role = msg.get("role", "unknown")
+            content = msg.get("content", "")
+
+            if role == "user":
+                context_lines.append(f"User: {content[:200]}")  # Truncate long messages
+            elif role == "assistant":
+                context_lines.append(f"Assistant: {content[:200]}")
+
+        # Add current message
+        context_lines.append("")
+        context_lines.append("**Current question:**")
+        context_lines.append(current_message)
+
+        enhanced_prompt = "\n".join(context_lines)
+
+        logger.info(f"📚 Added conversation context ({len(recent_history)} previous messages)")
+        logger.debug(f"Context: {enhanced_prompt[:500]}...")
+
+        return enhanced_prompt
+
     # ============================================================
     # ROUTING - TWO-TIER SOPHISTICATED CLASSIFICATION
     # ============================================================
@@ -302,9 +348,9 @@ Keep it short.""",
         Tier 1: Check for STRONG database indicators
         Tier 2: Check for simple task indicators
         """
-        
+
         task_lower = task.lower()
-        
+
         # TIER 1: Strong database/data indicators (prioritize these)
         complex_indicators = [
             # Action verbs
@@ -321,23 +367,23 @@ Keep it short.""",
             "sales", "customer", "product", "order", "revenue",
             "employee", "supplier", "inventory", "transaction",
         ]
-        
+
         if any(indicator in task_lower for indicator in complex_indicators):
             logger.info(f"🎯 Classified as DATA (found: {[i for i in complex_indicators if i in task_lower]})")
             return "DATA_ANALYSIS_TEAM"
-        
+
         # TIER 2: Simple task indicators (only if no complex indicators found)
         simple_indicators = [
             "what is", "calculate", "compute", "convert",
             "how much", "percentage", "sum", "multiply", "divide"
         ]
-        
+
         if any(indicator in task_lower for indicator in simple_indicators):
             # Double-check it's not actually a database query
             if not any(entity in task_lower for entity in ["sales", "customer", "data", "table", "from"]):
                 logger.info(f"🎯 Classified as GENERAL (simple task)")
                 return "GENERAL_ASSISTANT_TEAM"
-        
+
         # Default to general for ambiguous cases
         logger.info(f"🎯 Classified as GENERAL (default)")
         return "GENERAL_ASSISTANT_TEAM"
@@ -346,18 +392,41 @@ Keep it short.""",
     # MAIN EXECUTION
     # ============================================================
 
-    async def execute_task_with_routing(self, task_description: str, username: str = "system") -> dict:
-        """Execute task with routing"""
+    async def execute_task_with_routing(
+        self,
+        task_description: str,
+        username: str = "system",
+        conversation_history: Optional[List[Dict]] = None,
+    ) -> Dict[str, Any]:
+        """
+        Execute task with routing and conversation context
+
+        Args:
+            task_description: Current user message
+            username: User identifier
+            conversation_history: Previous messages for context
+        """
 
         logger.info(f"{'='*60}")
         logger.info(f"🚀 NEW TASK from {username}")
         logger.info(f"📝 Task: {task_description}")
+
+        # Add context if available
+        if conversation_history:
+            logger.info(f"📚 With {len(conversation_history)} previous messages")
+            # Build enhanced prompt with context
+            enriched_task = self._build_context_prompt(
+                task_description, conversation_history
+            )
+        else:
+            enriched_task = task_description
+
         logger.info(f"{'='*60}")
 
         try:
             # Classify using two-tier system
-            team_name = self._classify_task(task_description)
-            
+            team_name = self._classify_task(enriched_task)
+
             # Create appropriate team
             if team_name == "DATA_ANALYSIS_TEAM":
                 logger.info(f"📊 Creating Data Analysis Team")
@@ -366,9 +435,9 @@ Keep it short.""",
                 logger.info(f"💬 Creating General Assistant Team")
                 team = await self.create_general_assistant_team()
 
-            # Execute
+            # Execute with enriched task (includes context)
             logger.info(f"⚙️ Executing with {team_name}")
-            result = await team.run(task=task_description)
+            result = await team.run(task=enriched_task)
 
             # Extract clean response
             response_text = self._extract_clean_content(result)
@@ -380,34 +449,55 @@ Keep it short.""",
                 "success": True,
                 "response": response_text,
                 "routed_to": team_name,
-                "full_result": result
+                "full_result": result,
             }
 
         except Exception as e:
             logger.error(f"❌ Task execution failed: {e}")
             logger.exception("Full traceback:")
-            
+
             return {
                 "success": False,
                 "error": str(e),
-                "routed_to": team_name if 'team_name' in locals() else "Unknown"
+                "routed_to": team_name if "team_name" in locals() else "Unknown",
             }
+
 
     # ============================================================
     # STREAMING SUPPORT
     # ============================================================
 
-    async def execute_with_streaming(self, task_description: str, username: str = "system"):
-        """Execute with streaming - FILTERED messages"""
+    async def execute_with_streaming(
+        self, 
+        task_description: str, 
+        username: str = "system",
+        conversation_history: Optional[List[Dict]] = None
+    ):
+        """
+        Execute with streaming and conversation context
+        
+        Args:
+            task_description: Current user message
+            username: User identifier  
+            conversation_history: Previous messages for context
+        """
 
         try:
             logger.info(f"{'='*60}")
             logger.info(f"🎬 STREAMING TASK from {username}")
             logger.info(f"📝 Task: {task_description}")
+            
+            # Add context if available
+            if conversation_history:
+                logger.info(f"📚 With {len(conversation_history)} previous messages")
+                enriched_task = self._build_context_prompt(task_description, conversation_history)
+            else:
+                enriched_task = task_description
+                
             logger.info(f"{'='*60}")
 
             # Classify and route
-            team_name = self._classify_task(task_description)
+            team_name = self._classify_task(enriched_task)
             
             # Yield routing decision
             yield {
@@ -423,9 +513,9 @@ Keep it short.""",
             else:
                 team = await self.create_general_assistant_team()
 
-            # Stream execution
+            # Stream execution with enriched task
             if hasattr(team, 'run_stream'):
-                async for message in team.run_stream(task=task_description):
+                async for message in team.run_stream(task=enriched_task):
                     source = getattr(message, 'source', 'Unknown')
                     raw_content = getattr(message, 'content', '')
                     
@@ -458,7 +548,7 @@ Keep it short.""",
 
             else:
                 # Fallback: execute and return result
-                result = await team.run(task=task_description)
+                result = await team.run(task=enriched_task)
                 response = self._extract_clean_content(result)
                 
                 yield {
@@ -480,43 +570,44 @@ Keep it short.""",
                 "timestamp": datetime.now().isoformat()
             }
 
+
     # ============================================================
     # HELPER: Message Type Classification
     # ============================================================
 
     def _classify_message_type(self, agent: str, content: str) -> str:
         """Classify message type for formatting"""
-        
+
         if not isinstance(content, str):
             content = str(content)
-        
+
         content_lower = content.lower()
         agent_lower = agent.lower()
-        
+
         # SQL queries
         if "select" in content_lower and "from" in content_lower:
             return "action"
-        
+
         # Tool calls
         if "calling" in content_lower or "executing" in content_lower:
             return "action"
-        
+
         # Validation
         if "validation" in agent_lower or "approved" in content_lower:
             return "validation"
-        
+
         # Analysis
         if "analysis" in agent_lower or "statistic" in content_lower:
             return "analysis"
-        
+
         # Thinking
         if any(word in content_lower for word in ["i will", "let me", "first"]):
             return "thinking"
-        
+
         # Errors
         if "error" in content_lower or "failed" in content_lower:
             return "error"
-        
+
         # Default
         return "message"
 
