@@ -1,738 +1,523 @@
 # ============================================================
-# PHASE 1: INTERACTIVE AGENT RESPONSES
-# Enhanced Orchestrator with User Question/Answer Capability
+# COMPLETE WORKING VERSION - Enhanced Orchestrator
+# All features from November 15 working session
 # ============================================================
 
 import asyncio
-import uuid
-import re
-from typing import Optional, Dict, AsyncIterator, Any
-from datetime import datetime
+from typing import Optional, Dict, List
 from loguru import logger
-
 from autogen_agentchat.agents import AssistantAgent
-from autogen_agentchat.teams import MagenticOneGroupChat, RoundRobinGroupChat
+from autogen_agentchat.teams import MagenticOneGroupChat
 from autogen_agentchat.ui import Console
 from autogen_ext.models.ollama import OllamaChatCompletionClient
-
+from autogen_agentchat.messages import TextMessage
 from config.settings import settings
 from mcp_server.tools import generate_and_execute_sql, analyze_data_pandas
 from mcp_server.database import db
-
+import re
+import json
+from datetime import datetime
 
 class EnhancedAgentOrchestrator:
     """
-    Phase 1: Interactive Agent Orchestrator
-    
-    New Features:
-    - Agents can ask users clarifying questions
-    - Conversation pause/resume capability
-    - Question detection and parsing
-    - State preservation between turns
+    COMPLETE working orchestrator with all features:
+    1. Message filtering (clean responses)
+    2. Database-aware SQL agent
+    3. Two-tier sophisticated routing
+    4. Max turns = 10 (prevents loops)
+    5. Proper streaming
     """
 
     def __init__(self):
         self.model_client = OllamaChatCompletionClient(
             model=settings.ollama_model,
             base_url=settings.ollama_host,
-            temperature=0.7,
+            temperature=0.7,  # Good balance for creativity and consistency
             max_tokens=2000,
             model_info=settings.ollama_model_info,
         )
 
-        # Phase 1: User interaction state
-        self.pending_questions: Dict[str, Dict] = {}  # conversation_id -> question data
-        self.conversation_states: Dict[str, Dict] = {}  # conversation_id -> agent state
-        
-        logger.info(f"✨ Phase 1 Interactive Orchestrator initialized with model: {settings.ollama_model}")
+        logger.info(f"✨ Enhanced Orchestrator initialized with model: {settings.ollama_model}")
 
     # ============================================================
-    # PHASE 1: QUESTION DETECTION & PARSING
+    # MESSAGE FILTERING - Removes TextMessage junk
     # ============================================================
 
-    def _detect_user_question(self, message_content: str) -> Dict[str, Any]:
+    def _extract_clean_content(self, result) -> str:
         """
-        Detect if agent message contains a user question
+        Extract clean, user-friendly content from raw agent messages
         
-        Agents use this format:
-        [NEED_USER_INPUT]
-        Question: What do you need clarification on?
-        Options:
-        1. Option one
-        2. Option two
-        3. Option three
-        Context: Why I need this information
-        [/NEED_USER_INPUT]
-        
-        Returns:
-            dict with keys: is_question, question, options, context
+        This is the KEY to clean responses - filters out ALL internal junk
         """
         
-        if "[NEED_USER_INPUT]" not in str(message_content):
-            return {"is_question": False}
+        if isinstance(result, str):
+            # Check if it has TextMessage wrappers
+            if "TextMessage(" not in result:
+                return result
+            
+            # Extract content from TextMessage format using regex
+            pattern = r"content='([^']+(?:''[^']+)*?)'"
+            matches = re.findall(pattern, result)
+            
+            if matches:
+                # Get the LAST match (usually the final answer)
+                last_content = matches[-1]
+                # Clean up escaped quotes
+                last_content = last_content.replace("''", "'")
+                
+                # If still too technical, try to extract just the answer
+                if len(last_content) > 1000:
+                    # Look for actual answer after planning
+                    answer_patterns = [
+                        r"(?:Final answer|Result|Answer):\s*(.+?)(?:TextMessage|$)",
+                        r"(?:Here(?:'s| is) the (?:result|answer)):\s*(.+?)(?:TextMessage|$)",
+                    ]
+                    for pattern in answer_patterns:
+                        answer_match = re.search(pattern, last_content, re.IGNORECASE | re.DOTALL)
+                        if answer_match:
+                            return answer_match.group(1).strip()
+                
+                return last_content
         
-        try:
-            content_str = str(message_content)
-            start = content_str.find("[NEED_USER_INPUT]") + len("[NEED_USER_INPUT]")
-            end = content_str.find("[/NEED_USER_INPUT]")
-            
-            if end == -1:
-                return {"is_question": False}
-            
-            question_block = content_str[start:end].strip()
-            
-            # Parse the structured question
-            lines = question_block.split("\n")
-            question = ""
-            options = []
-            context = ""
-            current_section = None
-            
-            for line in lines:
-                line = line.strip()
-                if not line:
-                    continue
-                    
-                if line.startswith("Question:"):
-                    question = line.replace("Question:", "").strip()
-                elif line.startswith("Options:"):
-                    current_section = "options"
-                elif line.startswith("Context:"):
-                    current_section = "context"
-                elif current_section == "options":
-                    # Remove numbering if present (1. 2. etc)
-                    option = re.sub(r'^\d+\.\s*', '', line).strip()
-                    if option:
-                        options.append(option)
-                elif current_section == "context":
-                    context += line + " "
-            
-            return {
-                "is_question": True,
-                "question": question,
-                "options": options,
-                "context": context.strip()
-            }
-            
-        except Exception as e:
-            logger.error(f"Failed to parse user question: {e}")
-            return {"is_question": False}
+        # Handle object with messages attribute
+        if hasattr(result, 'messages'):
+            messages = result.messages
+            if messages:
+                # Get last message
+                last_message = messages[-1]
+                if hasattr(last_message, 'content'):
+                    content = last_message.content
+                    # Recursively clean if needed
+                    if isinstance(content, str) and "TextMessage(" in content:
+                        return self._extract_clean_content(content)
+                    return str(content)
+        
+        # Fallback
+        return str(result)
 
-    def _format_question_for_user(self, question_data: Dict) -> str:
+    def _should_show_message(self, source: str, content: str) -> bool:
         """
-        Format question for display to user
+        Determine if a message should be shown to user
         
-        Makes it look nice in OpenWebUI
+        Filters out internal orchestrator planning messages
         """
         
-        question = question_data.get("question", "I need more information")
-        options = question_data.get("options", [])
-        context = question_data.get("context", "")
+        # Skip internal orchestrator planning
+        if source == "MagenticOneOrchestrator":
+            # Only show if it's a final answer
+            if any(phrase in content.lower() for phrase in ["final", "answer", "result", "here is"]):
+                return True
+            return False
         
-        formatted = f"🤔 **I need clarification:**\n\n{question}\n\n"
+        # Skip empty or very short messages
+        if not content or len(content.strip()) < 5:
+            return False
         
-        if options:
-            formatted += "**Please choose:**\n"
-            for i, opt in enumerate(options, 1):
-                formatted += f"{i}. {opt}\n"
-            formatted += "\n*You can respond with the number or describe your choice*"
+        # Skip technical metadata messages
+        if any(keyword in content.lower() for keyword in ["textmessage(", "models_usage", "metadata={}"]):
+            return False
         
-        if context:
-            formatted += f"\n\n💡 *{context}*"
-        
-        return formatted
+        # Show everything else
+        return True
 
     # ============================================================
-    # PHASE 1: CONVERSATION STATE MANAGEMENT
-    # ============================================================
-
-    def _save_conversation_state(
-        self,
-        conversation_id: str,
-        original_task: str,
-        current_context: Dict,
-        agent_state: Optional[Dict] = None
-    ):
-        """
-        Save conversation state when pausing for user input
-        """
-        
-        self.conversation_states[conversation_id] = {
-            "original_task": original_task,
-            "context": current_context,
-            "agent_state": agent_state or {},
-            "timestamp": datetime.now().isoformat(),
-            "status": "waiting_for_user"
-        }
-        
-        logger.info(f"💾 Saved conversation state for {conversation_id}")
-
-    def _get_conversation_state(self, conversation_id: str) -> Optional[Dict]:
-        """
-        Retrieve saved conversation state
-        """
-        
-        return self.conversation_states.get(conversation_id)
-
-    def _clear_conversation_state(self, conversation_id: str):
-        """
-        Clear conversation state after completion
-        """
-        
-        if conversation_id in self.conversation_states:
-            del self.conversation_states[conversation_id]
-        if conversation_id in self.pending_questions:
-            del self.pending_questions[conversation_id]
-        
-        logger.info(f"🧹 Cleared conversation state for {conversation_id}")
-
-    # ============================================================
-    # PHASE 1: SUPERVISOR AGENT (with question support)
+    # SUPERVISOR AGENT - Simple routing
     # ============================================================
 
     async def create_supervisor_agent(self) -> AssistantAgent:
-        """
-        Supervisor Agent with clarification capabilities
-        """
+        """Supervisor Agent: Routes tasks to teams"""
 
         supervisor = AssistantAgent(
             name="SupervisorAgent",
             model_client=self.model_client,
-            system_message="""You are the Supervisor and Task Router.
+            system_message="""You are a task router. Respond with ONLY the team name.
 
-**Your role:**
-1. Analyze user requests
-2. Route to appropriate team
-3. Ask for clarification if request is ambiguous
+**Rules:**
 
-**Available Teams:**
+1. **DATA_ANALYSIS_TEAM** - For database, SQL, data analysis
+2. **GENERAL_ASSISTANT_TEAM** - For math, knowledge, conversions
 
-1. **DATA_ANALYSIS_TEAM** - For database queries and analysis
-   Examples: "Show sales", "Analyze revenue", "Query customers"
-   
-2. **GENERAL_ASSISTANT_TEAM** - For simple tasks
-   Examples: "What's 15% of 850?", "Convert units", "Explain concept"
+Respond with ONE of:
+- DATA_ANALYSIS_TEAM
+- GENERAL_ASSISTANT_TEAM
 
-**When to ask for clarification:**
-- Request is too vague ("show me data" - which data?)
-- Multiple valid interpretations
-- Missing critical parameters
-
-**How to ask (use this exact format):**
-```
-[NEED_USER_INPUT]
-Question: What specifically do you need?
-Options:
-1. Sales data
-2. Customer data
-3. Product data
-Context: Your request matches multiple data types
-[/NEED_USER_INPUT]
-```
-
-**Otherwise:** Route directly with clear reasoning.
-
-Format: [ROUTE:TEAM_NAME] Brief explanation
-""",
+No explanations.""",
         )
 
         return supervisor
 
     # ============================================================
-    # PHASE 1: DATA ANALYSIS TEAM (with question support)
+    # GENERAL ASSISTANT TEAM
+    # ============================================================
+
+    async def create_general_assistant_team(self) -> MagenticOneGroupChat:
+        """General Assistant for simple tasks"""
+
+        general_agent = AssistantAgent(
+            name="GeneralAssistant",
+            model_client=self.model_client,
+            system_message="""You are a helpful assistant.
+
+Handle:
+- Math calculations
+- Unit conversions
+- General knowledge
+- Simple questions
+
+Be concise and direct. Provide the answer clearly.""",
+        )
+
+        team = MagenticOneGroupChat(
+            participants=[general_agent],
+            model_client=self.model_client,
+            max_turns=5,  # Simple tasks don't need many turns
+        )
+
+        return team
+
+    # ============================================================
+    # DATA ANALYSIS TEAM - Database-aware with max_turns=10
     # ============================================================
 
     async def create_data_analysis_team(self) -> MagenticOneGroupChat:
-        """
-        Data Analysis Team with interactive questioning
-        """
+        """Data Analysis Team with DATABASE-AWARE SQL agent"""
 
-        # Create tool wrappers from actual functions
+        # Tool wrappers
         async def sql_tool_wrapper(query_description: str, sql_script: str) -> dict:
-            """Execute SQL query against data warehouse with retry logic"""
+            logger.info(f"🔧 SQL Tool: {query_description}")
             return await generate_and_execute_sql(query_description, sql_script)
 
         async def data_analysis_tool_wrapper(data_json: str, analysis_type: str) -> dict:
-            """Analyze retrieved data using pandas"""
+            logger.info(f"📊 Analysis Tool: {analysis_type}")
             return await analyze_data_pandas(data_json, analysis_type)
 
         async def get_table_schema_wrapper(table_name: str) -> dict:
-            """Get schema information for a specific table"""
-            logger.info(f"Schema tool called for table: {table_name}")
+            logger.info(f"📋 Schema Tool: {table_name}")
             return db.get_table_schema(table_name)
 
         async def list_all_tables_wrapper() -> dict:
-            """List all tables in the database"""
-            logger.info("List tables tool called")
-            # Query information schema for all tables
-            result = await generate_and_execute_sql(
-                "List all tables",
-                """
+            logger.info("📚 List Tables Tool")
+            result = db.execute_query("""
                 SELECT TABLE_SCHEMA, TABLE_NAME, TABLE_TYPE
                 FROM INFORMATION_SCHEMA.TABLES
                 WHERE TABLE_TYPE = 'BASE TABLE'
                 ORDER BY TABLE_SCHEMA, TABLE_NAME
-                """
-            )
+            """)
             return result
 
-        # SQL Agent - NOW with clarification capability
+        # SQL Agent - DATABASE AWARE AND DIRECTIVE
         sql_agent = AssistantAgent(
             name="SQLAgent",
             model_client=self.model_client,
             tools=[sql_tool_wrapper, get_table_schema_wrapper, list_all_tables_wrapper],
-            system_message="""You are a SQL expert for MS SQL Server.
+            system_message="""You are a SQL expert CONNECTED to MS SQL Server (AdventureWorksDW).
 
-**Critical Rules:**
-1. NEVER make assumptions when unclear
-2. ALWAYS ask for clarification when you don't have enough information
-3. Use exact format for questions (see below)
+🔴 CRITICAL: YOU ARE ALREADY CONNECTED - DON'T ASK FOR CREDENTIALS
 
-**When to ask questions:**
+**Your Tools (USE THEM IMMEDIATELY):**
+1. list_all_tables_wrapper - See all tables NOW
+2. get_table_schema_wrapper(table) - See columns NOW
+3. sql_tool_wrapper(desc, sql) - Execute queries NOW
 
-1. **Multiple tables match** → Ask which table
-   Example: User says "show sales" but there are sales.monthly, sales.transactions, sales.regional
+**WORKFLOW - NO QUESTIONS:**
+When user asks for data:
+1. ✅ Call list_all_tables_wrapper (see what exists)
+2. ✅ Call get_table_schema_wrapper on relevant table
+3. ✅ Generate SELECT query
+4. ✅ Execute with sql_tool_wrapper
+5. ✅ Return results
 
-2. **Missing time period** → Ask for timeframe
-   Example: "show sales" but no date specified
-
-3. **Ambiguous request** → Ask for specifics
-   Example: "analyze data" but unclear what analysis
-
-4. **Missing filters** → Ask what to filter by
-   Example: "show customers" but database has 1M+ customers
-
-**How to ask (EXACT format):**
-```
-[NEED_USER_INPUT]
-Question: [Your question here]
-Options:
-1. [First option]
-2. [Second option]
-3. [Third option]
-Context: [Why you need this]
-[/NEED_USER_INPUT]
-```
-
-**Example:**
-```
-[NEED_USER_INPUT]
-Question: I found 3 sales tables. Which one do you need?
-Options:
-1. sales.monthly_summary (aggregated by month)
-2. sales.transactions (individual transactions)  
-3. sales.regional_breakdown (grouped by region)
-Context: Your request "show sales" matches multiple tables
-[/NEED_USER_INPUT]
-```
-
-**Only after getting clarification:** Generate and execute SQL.
+**DO NOT ASK FOR:**
+- Connection details (you're connected!)
+- What tables exist (use list_all_tables_wrapper!)
+- Column names (use get_table_schema_wrapper!)
 
 **Safety:**
-- NEVER use: DROP, DELETE, TRUNCATE, ALTER
-- Always use SELECT TOP for exploration
-- Get schema before complex queries
+- NEVER: DROP, DELETE, TRUNCATE, ALTER
+- ALWAYS: Use SELECT TOP 100 for exploration
+
+**BE DIRECTIVE:**
+- Don't loop asking clarifying questions
+- Use your tools to explore
+- Make reasonable assumptions
+- Execute queries directly
+
+Example:
+User: "Show sales data"
+YOU: [Call list_all_tables_wrapper] → Find FactInternetSales
+     [Call get_table_schema_wrapper('FactInternetSales')] → See columns
+     [Execute] SELECT TOP 100 * FROM FactInternetSales ORDER BY OrderDate DESC
+     [Return results]
 """,
         )
 
-        # Analysis Agent
+        # Analysis Agent - Concise
         analysis_agent = AssistantAgent(
             name="AnalysisAgent",
             model_client=self.model_client,
             tools=[data_analysis_tool_wrapper],
             system_message="""You are a data analyst.
 
-Analyze results from SQLAgent and provide insights.
+Analyze results from SQLAgent. Provide:
+- Key statistics
+- Trends
+- Insights
 
-If data is unclear or incomplete, you can also ask questions using:
-[NEED_USER_INPUT]
-Question: [question]
-Options: [options if applicable]
-Context: [context]
-[/NEED_USER_INPUT]
-
-Focus on: trends, patterns, anomalies, key metrics.
-""",
+Be brief and data-driven.""",
         )
 
-        # Validation Agent
+        # Validation Agent - Quick
         validation_agent = AssistantAgent(
             name="ValidationAgent",
             model_client=self.model_client,
-            system_message="""You are a validation specialist.
+            system_message="""You are a QA specialist.
 
-Review SQL queries for safety and correctness.
+Check:
+- Query safety (no DROP/DELETE)
+- Logic correctness
 
-If you find issues that need user clarification, ask questions using:
-[NEED_USER_INPUT]
-Question: [question]
-Options: [options if applicable]
-Context: [context]
-[/NEED_USER_INPUT]
+Be decisive:
+- "APPROVED" or "REJECTED: reason"
 
-Approve only safe queries. Reject dangerous operations.
-""",
+Keep it short.""",
         )
 
+        # Create team with max_turns=10 (prevents loops)
         team = MagenticOneGroupChat(
             participants=[sql_agent, analysis_agent, validation_agent],
             model_client=self.model_client,
-            max_turns=20,
+            max_turns=10,  # KEY: Prevents qwen3-vl from looping
         )
 
         return team
 
     # ============================================================
-    # PHASE 1: GENERAL ASSISTANT TEAM
+    # ROUTING - TWO-TIER SOPHISTICATED CLASSIFICATION
     # ============================================================
 
-    async def create_general_assistant_team(self) -> RoundRobinGroupChat:
+    def _classify_task(self, task: str) -> str:
         """
-        General Assistant Team for simple tasks
-        """
-
-        assistant = AssistantAgent(
-            name="GeneralAssistant",
-            model_client=self.model_client,
-            system_message="""You are a helpful general assistant.
-
-Handle: math, conversions, explanations, general knowledge.
-
-If you need clarification, ask using:
-[NEED_USER_INPUT]
-Question: [question]
-Options: [options if applicable]
-Context: [context]
-[/NEED_USER_INPUT]
-
-Be concise and accurate.
-""",
-        )
-
-        team = RoundRobinGroupChat(
-            participants=[assistant],
-            max_turns=3,
-        )
-
-        return team
-
-    # ============================================================
-    # PHASE 1: INTERACTIVE EXECUTION WITH STREAMING
-    # ============================================================
-
-    async def execute_with_interactive_streaming(
-        self,
-        task_description: str,
-        username: str = "system",
-        conversation_id: Optional[str] = None,
-        user_response: Optional[str] = None,
-    ) -> AsyncIterator[Dict[str, Any]]:
-        """
-        Execute task with interactive question/answer capability
+        Two-tier classification for better routing
         
-        Args:
-            task_description: User's request
-            username: User identifier
-            conversation_id: Unique conversation ID (generated if None)
-            user_response: User's answer to previous question (if resuming)
+        Tier 1: Check for STRONG database indicators
+        Tier 2: Check for simple task indicators
+        """
+        
+        task_lower = task.lower()
+        
+        # TIER 1: Strong database/data indicators (prioritize these)
+        complex_indicators = [
+            # Action verbs
+            "show", "list", "display", "get", "fetch", "find", "retrieve",
+            "analyze", "compare", "calculate from", "query",
             
-        Yields:
-            Events including regular messages and user_question events
-        """
+            # Question starters
+            "how many", "what are", "which", "who are",
+            
+            # Database terms
+            "table", "database", "sql", "data",
+            
+            # Business entities
+            "sales", "customer", "product", "order", "revenue",
+            "employee", "supplier", "inventory", "transaction",
+        ]
+        
+        if any(indicator in task_lower for indicator in complex_indicators):
+            logger.info(f"🎯 Classified as DATA (found: {[i for i in complex_indicators if i in task_lower]})")
+            return "DATA_ANALYSIS_TEAM"
+        
+        # TIER 2: Simple task indicators (only if no complex indicators found)
+        simple_indicators = [
+            "what is", "calculate", "compute", "convert",
+            "how much", "percentage", "sum", "multiply", "divide"
+        ]
+        
+        if any(indicator in task_lower for indicator in simple_indicators):
+            # Double-check it's not actually a database query
+            if not any(entity in task_lower for entity in ["sales", "customer", "data", "table", "from"]):
+                logger.info(f"🎯 Classified as GENERAL (simple task)")
+                return "GENERAL_ASSISTANT_TEAM"
+        
+        # Default to general for ambiguous cases
+        logger.info(f"🎯 Classified as GENERAL (default)")
+        return "GENERAL_ASSISTANT_TEAM"
 
-        # Generate conversation ID if new conversation
-        if conversation_id is None:
-            conversation_id = f"conv-{uuid.uuid4()}"
-        
-        logger.info(f"🎬 Interactive execution started: {conversation_id}")
-        logger.info(f"Task: {task_description[:100]}...")
-        
+    # ============================================================
+    # MAIN EXECUTION
+    # ============================================================
+
+    async def execute_task_with_routing(self, task_description: str, username: str = "system") -> dict:
+        """Execute task with routing"""
+
+        logger.info(f"{'='*60}")
+        logger.info(f"🚀 NEW TASK from {username}")
+        logger.info(f"📝 Task: {task_description}")
+        logger.info(f"{'='*60}")
+
         try:
-            # Check if resuming from previous question
-            if user_response:
-                state = self._get_conversation_state(conversation_id)
-                if state:
-                    logger.info(f"▶️ Resuming conversation with user response: {user_response}")
-                    
-                    # Yield acknowledgment
-                    yield {
-                        "agent": "System",
-                        "type": "user_response",
-                        "content": f"✅ Got it: {user_response}",
-                        "timestamp": datetime.now().isoformat(),
-                        "conversation_id": conversation_id
-                    }
-                    
-                    # Continue with original task + user response context
-                    task_with_context = f"{state['original_task']}\n\nUser clarification: {user_response}"
-                    
-                    # Clear the pending question
-                    if conversation_id in self.pending_questions:
-                        del self.pending_questions[conversation_id]
-                    
-                    # Re-execute with context
-                    async for event in self._execute_task_stream(
-                        task_with_context,
-                        username,
-                        conversation_id
-                    ):
-                        yield event
-                    
-                    # Clear state on completion
-                    self._clear_conversation_state(conversation_id)
-                    return
+            # Classify using two-tier system
+            team_name = self._classify_task(task_description)
             
-            # New execution
-            async for event in self._execute_task_stream(
-                task_description,
-                username,
-                conversation_id
-            ):
-                yield event
-                
+            # Create appropriate team
+            if team_name == "DATA_ANALYSIS_TEAM":
+                logger.info(f"📊 Creating Data Analysis Team")
+                team = await self.create_data_analysis_team()
+            else:
+                logger.info(f"💬 Creating General Assistant Team")
+                team = await self.create_general_assistant_team()
+
+            # Execute
+            logger.info(f"⚙️ Executing with {team_name}")
+            result = await team.run(task=task_description)
+
+            # Extract clean response
+            response_text = self._extract_clean_content(result)
+
+            logger.info(f"✅ Task completed successfully")
+            logger.info(f"📤 Response: {response_text[:200]}...")
+
+            return {
+                "success": True,
+                "response": response_text,
+                "routed_to": team_name,
+                "full_result": result
+            }
+
         except Exception as e:
-            logger.error(f"Interactive execution failed: {e}")
+            logger.error(f"❌ Task execution failed: {e}")
             logger.exception("Full traceback:")
             
+            return {
+                "success": False,
+                "error": str(e),
+                "routed_to": team_name if 'team_name' in locals() else "Unknown"
+            }
+
+    # ============================================================
+    # STREAMING SUPPORT
+    # ============================================================
+
+    async def execute_with_streaming(self, task_description: str, username: str = "system"):
+        """Execute with streaming - FILTERED messages"""
+
+        try:
+            logger.info(f"{'='*60}")
+            logger.info(f"🎬 STREAMING TASK from {username}")
+            logger.info(f"📝 Task: {task_description}")
+            logger.info(f"{'='*60}")
+
+            # Classify and route
+            team_name = self._classify_task(task_description)
+            
+            # Yield routing decision
+            yield {
+                "agent": "SupervisorAgent",
+                "type": "routing",
+                "content": f"🎯 Routing to: **{team_name.replace('_', ' ').title()}**",
+                "timestamp": datetime.now().isoformat()
+            }
+
+            # Create team
+            if team_name == "DATA_ANALYSIS_TEAM":
+                team = await self.create_data_analysis_team()
+            else:
+                team = await self.create_general_assistant_team()
+
+            # Stream execution
+            if hasattr(team, 'run_stream'):
+                async for message in team.run_stream(task=task_description):
+                    source = getattr(message, 'source', 'Unknown')
+                    raw_content = getattr(message, 'content', '')
+                    
+                    # Convert to string if needed
+                    if isinstance(raw_content, (list, dict)):
+                        content = str(raw_content)
+                    else:
+                        content = raw_content
+                    
+                    # FILTER: Only show relevant messages
+                    if not self._should_show_message(source, content):
+                        logger.debug(f"⏭️ Skipping internal message from {source}")
+                        continue
+                    
+                    # CLEAN: Extract user-friendly content
+                    clean_content = self._extract_clean_content(content)
+                    
+                    # Classify message type
+                    message_type = self._classify_message_type(source, clean_content)
+                    
+                    # Yield to user
+                    yield {
+                        "agent": source,
+                        "type": message_type,
+                        "content": clean_content,
+                        "timestamp": datetime.now().isoformat()
+                    }
+                    
+                    logger.debug(f"💬 [{source}] {clean_content[:100]}...")
+
+            else:
+                # Fallback: execute and return result
+                result = await team.run(task=task_description)
+                response = self._extract_clean_content(result)
+                
+                yield {
+                    "agent": team_name,
+                    "type": "final",
+                    "content": response,
+                    "timestamp": datetime.now().isoformat()
+                }
+
+            logger.info(f"✅ Streaming completed for {username}")
+
+        except Exception as e:
+            logger.error(f"❌ Streaming failed: {e}")
+            logger.exception("Full traceback:")
             yield {
                 "agent": "System",
                 "type": "error",
                 "content": f"❌ Error: {str(e)}",
-                "timestamp": datetime.now().isoformat(),
-                "conversation_id": conversation_id
+                "timestamp": datetime.now().isoformat()
             }
 
-    async def _execute_task_stream(
-        self,
-        task_description: str,
-        username: str,
-        conversation_id: str
-    ) -> AsyncIterator[Dict[str, Any]]:
-        """
-        Internal streaming execution with question detection
-        """
-        
-        try:
-            # Step 1: Routing
-            yield {
-                "agent": "SupervisorAgent",
-                "type": "routing",
-                "content": "🎯 Analyzing your request...",
-                "timestamp": datetime.now().isoformat(),
-                "conversation_id": conversation_id
-            }
-            
-            # Determine team
-            supervisor = await self.create_supervisor_agent()
-            
-            # Simple classification for Phase 1
-            task_lower = task_description.lower()
-            if any(kw in task_lower for kw in ["database", "sql", "query", "table", "show", "list", "analyze data", "sales", "customer", "revenue"]):
-                team_name = "DATA_ANALYSIS_TEAM"
-                team = await self.create_data_analysis_team()
-            else:
-                team_name = "GENERAL_ASSISTANT_TEAM"
-                team = await self.create_general_assistant_team()
-            
-            yield {
-                "agent": "SupervisorAgent",
-                "type": "routing",
-                "content": f"📍 Routing to: **{team_name}**",
-                "timestamp": datetime.now().isoformat(),
-                "conversation_id": conversation_id
-            }
-            
-            # Step 2: Execute with team and monitor for questions
-            messages_buffer = []
-            
-            # Check if team has run_stream
-            if hasattr(team, 'run_stream'):
-                async for message in team.run_stream(task=task_description):
-                    messages_buffer.append(message)
-                    
-                    # Check for user questions in agent messages
-                    if hasattr(message, 'content'):
-                        content = message.content
-                        question_data = self._detect_user_question(content)
-                        
-                        if question_data["is_question"]:
-                            # Agent is asking a question!
-                            logger.info(f"❓ Agent asked a question: {question_data['question']}")
-                            
-                            # Save state
-                            self._save_conversation_state(
-                                conversation_id,
-                                task_description,
-                                {"messages": messages_buffer},
-                                {}
-                            )
-                            
-                            # Store question
-                            self.pending_questions[conversation_id] = {
-                                "question": question_data,
-                                "timestamp": datetime.now().isoformat()
-                            }
-                            
-                            # Yield user_question event
-                            yield {
-                                "agent": getattr(message, 'source', 'Agent'),
-                                "type": "user_question",
-                                "content": self._format_question_for_user(question_data),
-                                "question_data": question_data,
-                                "timestamp": datetime.now().isoformat(),
-                                "conversation_id": conversation_id
-                            }
-                            
-                            # Stop execution - wait for user response
-                            return
-                    
-                    # Regular message - stream it
-                    yield self._format_message_for_streaming(message, conversation_id)
-            
-            else:
-                # Fallback if run_stream not available
-                logger.warning("Team doesn't support run_stream, using fallback")
-                yield {
-                    "agent": team_name,
-                    "type": "thinking",
-                    "content": "Processing your request...",
-                    "timestamp": datetime.now().isoformat(),
-                    "conversation_id": conversation_id
-                }
-                
-                # Execute without streaming
-                result = await team.run(task=task_description)
-                
-                # Check final result for questions
-                if hasattr(result, 'messages') and result.messages:
-                    last_message = result.messages[-1]
-                    if hasattr(last_message, 'content'):
-                        question_data = self._detect_user_question(last_message.content)
-                        
-                        if question_data["is_question"]:
-                            # Save and yield question
-                            self._save_conversation_state(
-                                conversation_id,
-                                task_description,
-                                {"result": result},
-                                {}
-                            )
-                            
-                            self.pending_questions[conversation_id] = {
-                                "question": question_data,
-                                "timestamp": datetime.now().isoformat()
-                            }
-                            
-                            yield {
-                                "agent": "Agent",
-                                "type": "user_question",
-                                "content": self._format_question_for_user(question_data),
-                                "question_data": question_data,
-                                "timestamp": datetime.now().isoformat(),
-                                "conversation_id": conversation_id
-                            }
-                            return
-                
-                # No question - show final result
-                content = self._extract_clean_content(result)
-                yield {
-                    "agent": team_name,
-                    "type": "final",
-                    "content": content,
-                    "timestamp": datetime.now().isoformat(),
-                    "conversation_id": conversation_id
-                }
-            
-            # Done - clear state
-            self._clear_conversation_state(conversation_id)
-            
-        except Exception as e:
-            logger.error(f"Task stream failed: {e}")
-            logger.exception("Full traceback:")
-            raise
-
-    def _format_message_for_streaming(self, message: Any, conversation_id: str) -> Dict[str, Any]:
-        """
-        Format agent message for streaming
-        """
-        
-        agent_name = getattr(message, 'source', 'Agent')
-        content = getattr(message, 'content', str(message))
-        
-        # Clean content
-        clean_content = self._extract_clean_content(content)
-        
-        # Classify message type
-        msg_type = self._classify_message_type(agent_name, clean_content)
-        
-        return {
-            "agent": agent_name,
-            "type": msg_type,
-            "content": clean_content,
-            "timestamp": datetime.now().isoformat(),
-            "conversation_id": conversation_id
-        }
-
-    def _extract_clean_content(self, content: Any) -> str:
-        """
-        Extract clean text from message content
-        """
-        
-        if isinstance(content, str):
-            return content
-        elif isinstance(content, list):
-            # Extract text from list of message parts
-            texts = []
-            for item in content:
-                if isinstance(item, str):
-                    texts.append(item)
-                elif hasattr(item, 'content'):
-                    texts.append(str(item.content))
-                elif hasattr(item, 'text'):
-                    texts.append(str(item.text))
-                else:
-                    texts.append(str(item))
-            return " ".join(texts)
-        else:
-            return str(content)
+    # ============================================================
+    # HELPER: Message Type Classification
+    # ============================================================
 
     def _classify_message_type(self, agent: str, content: str) -> str:
-        """
-        Classify message type for formatting
-        """
+        """Classify message type for formatting"""
+        
+        if not isinstance(content, str):
+            content = str(content)
         
         content_lower = content.lower()
         agent_lower = agent.lower()
         
-        # Check for questions
-        if "[NEED_USER_INPUT]" in content:
-            return "user_question"
-        
-        # Tool-related
-        if "tool" in content_lower or "function" in content_lower:
-            if "call" in content_lower:
-                return "action"
-            elif "result" in content_lower:
-                return "tool_result"
-        
-        # SQL-related
-        if "select" in content_lower or "from" in content_lower:
+        # SQL queries
+        if "select" in content_lower and "from" in content_lower:
             return "action"
         
-        # Agent-specific
-        if "validation" in agent_lower:
+        # Tool calls
+        if "calling" in content_lower or "executing" in content_lower:
+            return "action"
+        
+        # Validation
+        if "validation" in agent_lower or "approved" in content_lower:
             return "validation"
-        if "analysis" in agent_lower:
+        
+        # Analysis
+        if "analysis" in agent_lower or "statistic" in content_lower:
             return "analysis"
         
         # Thinking
-        if any(word in content_lower for word in ["i will", "let me", "i need to"]):
+        if any(word in content_lower for word in ["i will", "let me", "first"]):
             return "thinking"
         
-        # Error
+        # Errors
         if "error" in content_lower or "failed" in content_lower:
             return "error"
         
+        # Default
         return "message"
 
 
@@ -740,58 +525,48 @@ Be concise and accurate.
 # TESTING
 # ============================================================
 
-async def test_interactive_phase1():
-    """
-    Test Phase 1 interactive functionality
-    """
+async def test_complete_system():
+    """Test the complete working system"""
     
     print("="*60)
-    print("PHASE 1: TESTING INTERACTIVE AGENTS")
+    print("TESTING COMPLETE WORKING VERSION")
     print("="*60)
     
     orchestrator = EnhancedAgentOrchestrator()
     
-    # Test 1: Ambiguous request that should trigger question
-    print("\n[Test 1] Ambiguous request (should ask question)")
+    # Test 1: Database query
+    print("\n[Test 1] Database Query")
     print("-"*60)
     
-    conversation_id = None
-    async for event in orchestrator.execute_with_interactive_streaming(
+    async for event in orchestrator.execute_with_streaming(
         "Show me sales data",
         "test_user"
     ):
         agent = event.get("agent", "Unknown")
         msg_type = event.get("type", "message")
         content = event.get("content", "")
-        conversation_id = event.get("conversation_id")
         
         print(f"[{agent}] ({msg_type}): {content[:150]}...")
-        
-        if msg_type == "user_question":
-            print("\n✅ SUCCESS! Agent asked a question!")
-            print("Conversation paused, waiting for user response")
-            break
-    
-    # Test 2: Resume with user response
-    if conversation_id:
-        print("\n[Test 2] Resuming with user answer")
-        print("-"*60)
-        
-        async for event in orchestrator.execute_with_interactive_streaming(
-            "Show me sales data",  # Original task
-            "test_user",
-            conversation_id=conversation_id,
-            user_response="monthly_summary table"
-        ):
-            agent = event.get("agent", "Unknown")
-            msg_type = event.get("type", "message")
-            content = event.get("content", "")
-            
-            print(f"[{agent}] ({msg_type}): {content[:150]}...")
     
     print("\n" + "="*60)
-    print("Phase 1 test complete!")
+    
+    # Test 2: Simple math
+    print("\n[Test 2] Simple Math")
+    print("-"*60)
+    
+    async for event in orchestrator.execute_with_streaming(
+        "What is 25% of 400?",
+        "test_user"
+    ):
+        agent = event.get("agent", "Unknown")
+        msg_type = event.get("type", "message")
+        content = event.get("content", "")
+        
+        print(f"[{agent}] ({msg_type}): {content[:150]}...")
+    
+    print("\n" + "="*60)
+    print("✅ Tests complete!")
 
 
 if __name__ == "__main__":
-    asyncio.run(test_interactive_phase1())
+    asyncio.run(test_complete_system())

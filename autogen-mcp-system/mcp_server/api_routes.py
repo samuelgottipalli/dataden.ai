@@ -1,9 +1,8 @@
 # ============================================================
-# PHASE 1: INTERACTIVE API ROUTES
-# Updated streaming API with user question/answer support
+# COMPLETE API Routes - Matches Working Orchestrator
 # ============================================================
 
-from fastapi import APIRouter, Header, HTTPException, Request
+from fastapi import APIRouter, Header, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
@@ -12,7 +11,6 @@ import asyncio
 from datetime import datetime
 from loguru import logger
 
-# Import Phase 1 orchestrator
 from agents.enhanced_orchestrator import EnhancedAgentOrchestrator
 from config.settings import settings
 
@@ -20,27 +18,23 @@ router = APIRouter(prefix="/api/v1", tags=["openwebui"])
 
 
 # ============================================================
-# Request/Response Models
+# Models
 # ============================================================
 
-
 class Message(BaseModel):
-    """Single message in conversation"""
-    role: str  # "user", "assistant", "system"
+    role: str
     content: str
 
 
 class ChatRequest(BaseModel):
-    """OpenAI-compatible chat request"""
     model: str = "autogen-agents"
     messages: List[Message]
     stream: bool = True
-    temperature: Optional[float] = 0.3
-    max_tokens: Optional[int] = 4000
+    temperature: Optional[float] = 0.7
+    max_tokens: Optional[int] = 2000
 
 
 class ChatResponse(BaseModel):
-    """OpenAI-compatible chat response"""
     id: str
     object: str = "chat.completion"
     created: int
@@ -49,149 +43,66 @@ class ChatResponse(BaseModel):
 
 
 # ============================================================
-# PHASE 1: Conversation ID Management
+# Authentication - Handles both formats
 # ============================================================
-
-# Store conversation IDs per user session
-# In production, this should be Redis or database
-conversation_tracking = {}
-
-
-def get_or_create_conversation_id(user_id: str, session_hint: Optional[str] = None) -> str:
-    """
-    Get existing conversation ID or create new one
-    
-    Args:
-        user_id: User identifier
-        session_hint: Optional hint from client (e.g. OpenWebUI session)
-    
-    Returns:
-        conversation_id to use
-    """
-
-    if session_hint and session_hint in conversation_tracking:
-        return conversation_tracking[session_hint]["conversation_id"]
-
-    # Create new conversation
-    import uuid
-    conversation_id = f"conv-{uuid.uuid4()}"
-
-    if session_hint:
-        conversation_tracking[session_hint] = {
-            "conversation_id": conversation_id,
-            "user_id": user_id,
-            "created": datetime.now().isoformat()
-        }
-
-    return conversation_id
-
-
-# ============================================================
-# Authentication
-# ============================================================
-
 
 def verify_api_key(
-    x_api_key: Optional[str] = None, authorization: Optional[str] = None
+    x_api_key: Optional[str] = None,
+    authorization: Optional[str] = None
 ) -> bool:
-    """
-    Verify API key from OpenWebUI
-
-    OpenWebUI sends API key as: Authorization: Bearer <key>
-    Some tools send as: X-API-Key: <key>
-
-    This handles both formats.
-    """
-
-    # If no API key configured, allow all (for testing)
+    """Verify API key from X-API-Key or Authorization Bearer"""
+    
     if not settings.openwebui_api_key:
-        logger.warning("⚠️ No API key configured - allowing all requests")
+        logger.warning("⚠️ No API key configured")
         return True
-
-    # Extract API key from either header
+    
     received_key = None
-
-    # Try Authorization header first (OpenWebUI format)
     if authorization:
-        if authorization.startswith("Bearer "):
-            received_key = authorization.replace("Bearer ", "").strip()
-        else:
-            received_key = authorization.strip()
-
-    # Try X-API-Key header (curl/Postman format)
-    if not received_key and x_api_key:
+        received_key = authorization.replace("Bearer ", "").strip()
+    elif x_api_key:
         received_key = x_api_key.strip()
-
-    # Debug logging
-    logger.debug(f"🔑 Received key: {received_key[:20] if received_key else 'None'}...")
-    logger.debug(f"🔑 Expected key: {settings.openwebui_api_key[:20]}...")
-
-    # Validate
+    
     if not received_key:
-        logger.error("❌ No API key provided in request")
-        raise HTTPException(status_code=401, detail="API key required")
-
+        logger.error("❌ No API key")
+        raise HTTPException(401, "API key required")
+    
     if received_key != settings.openwebui_api_key:
-        logger.error(f"❌ Invalid API key. Received: {received_key[:20]}")
-        raise HTTPException(status_code=401, detail="Invalid API key")
-
-    logger.debug("✅ API key validated")
+        logger.error("❌ Invalid API key")
+        raise HTTPException(401, "Invalid API key")
+    
     return True
 
 
 # ============================================================
-# PHASE 1: MAIN CHAT ENDPOINT (with interactive support)
+# Main Chat Endpoint
 # ============================================================
-
 
 @router.post("/chat/completions")
 async def chat_completions(
     request: ChatRequest,
-    authorization: Optional[str] = Header(None),  # OpenWebUI uses this
-    x_api_key: Optional[str] = Header(None, alias="X-API-Key"),  # curl/Postman use this
+    authorization: Optional[str] = Header(None),
+    x_api_key: Optional[str] = Header(None, alias="X-API-Key"),
     x_user_id: Optional[str] = Header(None, alias="X-User-ID"),
     x_user_email: Optional[str] = Header(None, alias="X-User-Email"),
-    x_session_id: Optional[str] = Header(None, alias="X-Session-ID"),
 ):
-    """
-    Phase 1: Interactive Chat Completions
+    """Chat completions with streaming"""
 
-    Supports both OpenWebUI and direct API calls.
-
-    Headers:
-        Authorization: Bearer <key>  (OpenWebUI format)
-        OR
-        X-API-Key: <key>  (curl/Postman format)
-
-        X-User-ID: User identifier
-        X-User-Email: User email
-        X-Session-ID: Session tracking
-    """
-
-    # Verify API key from either header format
     verify_api_key(x_api_key=x_api_key, authorization=authorization)
 
     user_id = x_user_id or "anonymous"
     user_email = x_user_email or "unknown@example.com"
 
-    # Get user messages
     user_messages = [msg for msg in request.messages if msg.role == "user"]
     if not user_messages:
-        raise HTTPException(400, "No user message found")
+        raise HTTPException(400, "No user message")
 
     last_message = user_messages[-1].content
 
-    logger.info(f"💬 Chat request from {user_id}: {last_message[:100]}...")
+    logger.info(f"💬 Chat from {user_id}: {last_message[:100]}...")
 
-    # Stream response
     if request.stream:
         return StreamingResponse(
-            stream_interactive_response(
-                message=last_message,
-                user_id=user_id,
-                user_email=user_email,
-                session_id=x_session_id,
-            ),
+            stream_response(last_message, user_id),
             media_type="text/event-stream",
             headers={
                 "Cache-Control": "no-cache",
@@ -200,355 +111,172 @@ async def chat_completions(
             },
         )
     else:
-        # Non-streaming fallback
-        return await non_streaming_response(last_message, user_id, user_email)
+        return await non_streaming_response(last_message, user_id)
 
 
 # ============================================================
-# PHASE 1: INTERACTIVE STREAMING
+# Streaming Implementation
 # ============================================================
 
-
-async def stream_interactive_response(
-    message: str,
-    user_id: str,
-    user_email: str,
-    session_id: Optional[str] = None
-):
-    """
-    Phase 1: Stream agent responses with interactive Q&A support
-    
-    This function handles:
-    1. Normal streaming execution
-    2. Pausing when agent asks a question
-    3. Resuming when user provides an answer
-    
-    Yields:
-        Server-Sent Events in OpenAI format
-    """
+async def stream_response(message: str, user_id: str):
+    """Stream agent responses"""
 
     try:
         orchestrator = EnhancedAgentOrchestrator()
-        
-        # Get or create conversation ID
-        conversation_id = get_or_create_conversation_id(user_id, session_id)
-        
-        # Generate response ID
-        response_id = f"chatcmpl-{int(datetime.now().timestamp())}"
-        
-        logger.info(f"🎬 Starting interactive streaming for {user_id}")
-        logger.info(f"Conversation: {conversation_id}")
-        
-        # Check if this is a response to a pending question
-        user_response = None
-        if conversation_id in orchestrator.pending_questions:
-            logger.info(f"▶️ Detected response to pending question")
-            user_response = message
-        
-        # Execute with interactive capability
-        message_count = 0
-        async for event in orchestrator.execute_with_interactive_streaming(
+        conversation_id = f"chatcmpl-{datetime.now().timestamp()}"
+
+        logger.info(f"🎬 Streaming for {user_id}")
+
+        async for event in orchestrator.execute_with_streaming(
             task_description=message,
-            username=user_id,
-            conversation_id=conversation_id,
-            user_response=user_response
+            username=user_id
         ):
-            message_count += 1
-            
-            event_type = event.get("type", "message")
-            agent_name = event.get("agent", "Agent")
-            content = event.get("content", "")
-            
-            # Special handling for user_question events
-            if event_type == "user_question":
-                logger.info(f"❓ Agent asked question - pausing execution")
-                
-                # Format as complete message (not streaming)
-                # This tells OpenWebUI the response is complete and waiting for user
-                chunk = {
-                    "id": response_id,
-                    "object": "chat.completion.chunk",
-                    "created": int(datetime.now().timestamp()),
-                    "model": "autogen-agents",
-                    "choices": [{
-                        "index": 0,
-                        "delta": {
-                            "role": "assistant",
-                            "content": content
-                        },
-                        "finish_reason": "stop"  # Important: mark as complete
-                    }]
-                }
-                
-                yield f"data: {json.dumps(chunk)}\n\n"
-                yield "data: [DONE]\n\n"
-                
-                logger.info("⏸️ Streaming paused - waiting for user response")
-                return  # Stop streaming, wait for next user message
-            
-            # Format regular message for streaming
-            formatted_content = format_agent_message(agent_name, event_type, content)
-            
-            # Create streaming chunk
+            # Format as OpenAI chunk
             chunk = {
-                "id": response_id,
+                "id": conversation_id,
                 "object": "chat.completion.chunk",
                 "created": int(datetime.now().timestamp()),
                 "model": "autogen-agents",
-                "choices": [{
-                    "index": 0,
-                    "delta": {
-                        "role": "assistant",
-                        "content": formatted_content + "\n"
-                    },
-                    "finish_reason": None  # Still streaming
-                }]
+                "choices": [
+                    {
+                        "index": 0,
+                        "delta": {
+                            "role": "assistant",
+                            "content": format_message(event),
+                        },
+                        "finish_reason": None,
+                    }
+                ],
             }
-            
+
             yield f"data: {json.dumps(chunk)}\n\n"
-            
-            # Small delay for readability
-            await asyncio.sleep(0.05)
-        
+            await asyncio.sleep(0.01)
+
         # Final chunk
         final_chunk = {
-            "id": response_id,
+            "id": conversation_id,
             "object": "chat.completion.chunk",
             "created": int(datetime.now().timestamp()),
             "model": "autogen-agents",
-            "choices": [{
-                "index": 0,
-                "delta": {},
-                "finish_reason": "stop"
-            }]
+            "choices": [{"index": 0, "delta": {}, "finish_reason": "stop"}],
         }
-        
         yield f"data: {json.dumps(final_chunk)}\n\n"
         yield "data: [DONE]\n\n"
-        
-        logger.info(f"✅ Streaming complete: {message_count} events")
+
+        logger.info(f"✅ Streaming complete for {user_id}")
 
     except Exception as e:
-        logger.error(f"Streaming failed: {e}")
+        logger.error(f"❌ Streaming error: {e}")
         logger.exception("Full traceback:")
-        
+
         error_chunk = {
-            "id": response_id,
+            "id": conversation_id if 'conversation_id' in locals() else "error",
             "object": "chat.completion.chunk",
             "created": int(datetime.now().timestamp()),
             "model": "autogen-agents",
-            "choices": [{
-                "index": 0,
-                "delta": {
-                    "role": "assistant",
-                    "content": f"\n❌ **Error:** {str(e)}\n\nPlease try again.\n"
-                },
-                "finish_reason": "stop"
-            }]
+            "choices": [
+                {
+                    "index": 0,
+                    "delta": {"role": "assistant", "content": f"\n\n❌ Error: {str(e)}\n"},
+                    "finish_reason": "stop",
+                }
+            ],
         }
-        
         yield f"data: {json.dumps(error_chunk)}\n\n"
         yield "data: [DONE]\n\n"
 
 
-# ============================================================
-# Message Formatting
-# ============================================================
+def format_message(event: dict) -> str:
+    """Format event for display"""
 
+    agent = event.get("agent", "System")
+    msg_type = event.get("type", "message")
+    content = event.get("content", "")
 
-def format_agent_message(agent: str, msg_type: str, content: str) -> str:
-    """
-    Format agent message for display in OpenWebUI
-    
-    Phase 1: Adds visual indicators for different message types
-    """
-    
-    # Skip certain verbose message types
-    if msg_type in ["tool_result"] and len(content) > 500:
-        return ""  # Don't show very verbose tool results
-    
-    # Add emoji prefixes based on type
-    emoji_map = {
-        "routing": "🎯",
-        "thinking": "🤔",
-        "action": "⚡",
-        "validation": "🛡️",
-        "analysis": "📊",
-        "tool_result": "📦",
-        "error": "❌",
-        "user_response": "✅",
-        "user_question": "🤔",
-        "final": "✨"
-    }
-    
-    emoji = emoji_map.get(msg_type, "💬")
-    
-    # Format based on type
     if msg_type == "routing":
-        return f"{emoji} **{agent}:** {content}"
+        return f"\n{content}\n"
     elif msg_type == "thinking":
-        return f"{emoji} *{agent} is thinking...*"
+        return f"\n🤔 **{agent}** [Thinking]\n{content}\n"
     elif msg_type == "action":
-        return f"{emoji} **{agent}** executing..."
-    elif msg_type == "user_question":
-        # Questions are already formatted by orchestrator
-        return content
+        return f"\n⚡ **{agent}** [Action]\n```sql\n{content}\n```\n"
+    elif msg_type == "validation":
+        return f"\n🛡️ **{agent}**\n{content}\n"
+    elif msg_type == "analysis":
+        return f"\n📊 **{agent}**\n{content}\n"
     elif msg_type == "final":
-        return f"\n{emoji} **Final Result:**\n{content}"
+        return f"\n✅ **Result**\n{content}\n"
+    elif msg_type == "error":
+        return f"\n❌ **Error**\n{content}\n"
     else:
-        return f"{emoji} {content}"
+        return f"\n💬 **{agent}**\n{content}\n"
 
 
 # ============================================================
 # Non-Streaming Fallback
 # ============================================================
 
+async def non_streaming_response(message: str, user_id: str) -> ChatResponse:
+    """Non-streaming fallback"""
 
-async def non_streaming_response(message: str, user_id: str, user_email: str):
-    """
-    Non-streaming fallback (not recommended for Phase 1)
-    """
-    
-    logger.warning("Non-streaming mode requested - interactive features limited")
-    
+    logger.warning(f"⚠️ Non-streaming from {user_id}")
+
     try:
         orchestrator = EnhancedAgentOrchestrator()
         
-        # Execute without streaming
-        events = []
-        async for event in orchestrator.execute_with_interactive_streaming(
+        result = await orchestrator.execute_task_with_routing(
             task_description=message,
             username=user_id
-        ):
-            events.append(event)
-            
-            # If agent asks question, return immediately
-            if event.get("type") == "user_question":
-                content = event.get("content", "I need more information")
-                return ChatResponse(
-                    id=f"chatcmpl-{int(datetime.now().timestamp())}",
-                    created=int(datetime.now().timestamp()),
-                    model="autogen-agents",
-                    choices=[{
-                        "message": {
-                            "role": "assistant",
-                            "content": content
-                        },
-                        "finish_reason": "stop"
-                    }]
-                )
-        
-        # Combine all content
-        final_content = "\n".join(
-            format_agent_message(e.get("agent", ""), e.get("type", ""), e.get("content", ""))
-            for e in events
-            if e.get("content")
         )
-        
+
+        if result["success"]:
+            content = result.get("response", "Completed")
+        else:
+            content = f"Error: {result.get('error', 'Unknown')}"
+
         return ChatResponse(
-            id=f"chatcmpl-{int(datetime.now().timestamp())}",
+            id=f"chatcmpl-{datetime.now().timestamp()}",
             created=int(datetime.now().timestamp()),
             model="autogen-agents",
-            choices=[{
-                "message": {
-                    "role": "assistant",
-                    "content": final_content
-                },
-                "finish_reason": "stop"
-            }]
+            choices=[
+                {
+                    "index": 0,
+                    "message": {"role": "assistant", "content": content},
+                    "finish_reason": "stop",
+                }
+            ],
         )
-        
+
     except Exception as e:
-        logger.error(f"Non-streaming failed: {e}")
+        logger.error(f"❌ Non-streaming error: {e}")
         raise HTTPException(500, f"Execution failed: {str(e)}")
 
 
 # ============================================================
-# Health & Models Endpoints
+# Info Endpoints
 # ============================================================
+
+@router.get("/models")
+async def list_models():
+    """List models"""
+    return {
+        "object": "list",
+        "data": [
+            {
+                "id": "autogen-agents",
+                "object": "model",
+                "created": int(datetime.now().timestamp()),
+                "owned_by": "autogen-mcp-system",
+            }
+        ],
+    }
 
 
 @router.get("/health")
 async def health_check():
-    """Health check endpoint"""
+    """Health check"""
     return {
         "status": "healthy",
-        "service": "autogen-mcp-interactive",
-        "phase": "1",
-        "features": ["streaming", "interactive_qa", "multi_turn"],
-        "timestamp": datetime.now().isoformat()
-    }
-
-
-@router.get("/models")
-async def list_models():
-    """List available models"""
-    return {
-        "object": "list",
-        "data": [{
-            "id": "autogen-agents",
-            "object": "model",
-            "created": int(datetime.now().timestamp()),
-            "owned_by": "autogen-mcp-system",
-            "permission": [],
-            "root": "autogen-agents",
-            "parent": None,
-            "features": ["interactive", "streaming", "clarification"],
-            "phase": "1"
-        }]
-    }
-
-
-# ============================================================
-# PHASE 1: Conversation Management Endpoints
-# ============================================================
-
-
-@router.get("/conversations/{conversation_id}/status")
-async def get_conversation_status(
-    conversation_id: str,
-    x_api_key: Optional[str] = Header(None, alias="X-API-Key")
-):
-    """
-    Get status of a conversation
-    
-    Useful for checking if conversation is waiting for user input
-    """
-    
-    verify_api_key(x_api_key)
-    
-    orchestrator = EnhancedAgentOrchestrator()
-    
-    has_pending_question = conversation_id in orchestrator.pending_questions
-    state = orchestrator._get_conversation_state(conversation_id)
-    
-    return {
-        "conversation_id": conversation_id,
-        "has_pending_question": has_pending_question,
-        "status": state.get("status") if state else "not_found",
-        "pending_question": orchestrator.pending_questions.get(conversation_id),
-        "timestamp": datetime.now().isoformat()
-    }
-
-
-@router.post("/conversations/{conversation_id}/clear")
-async def clear_conversation(
-    conversation_id: str,
-    x_api_key: Optional[str] = Header(None, alias="X-API-Key")
-):
-    """
-    Clear a conversation's state
-    
-    Useful for starting fresh or cleaning up stale conversations
-    """
-    
-    verify_api_key(x_api_key)
-    
-    orchestrator = EnhancedAgentOrchestrator()
-    orchestrator._clear_conversation_state(conversation_id)
-    
-    return {
-        "conversation_id": conversation_id,
-        "status": "cleared",
-        "timestamp": datetime.now().isoformat()
+        "service": "autogen-mcp-system",
+        "version": "2.0-complete",
+        "timestamp": datetime.now().isoformat(),
     }
