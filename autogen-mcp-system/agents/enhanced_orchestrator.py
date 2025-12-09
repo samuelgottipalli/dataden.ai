@@ -19,6 +19,7 @@ from loguru import logger
 from mcp_server.database import db
 from mcp_server.tools import analyze_data_pandas, generate_and_execute_sql
 
+from utils.model_manager import model_manager
 
 class EnhancedAgentOrchestrator:
     """
@@ -31,15 +32,12 @@ class EnhancedAgentOrchestrator:
     """
 
     def __init__(self):
-        self.model_client = OllamaChatCompletionClient(
-            model=settings.ollama_model,
-            base_url=settings.ollama_host,
-            temperature=0.7,  # Good balance for creativity and consistency
-            max_tokens=2000,
-            model_info=settings.ollama_model_info,
-        )
-
-        logger.info(f"✨ Enhanced Orchestrator initialized with model: {settings.ollama_model}")
+        # Use model manager for automatic fallback
+        self.model_manager = model_manager
+        self.model_client = self.model_manager.get_model_client()
+        
+        logger.info(f"✨ Enhanced Orchestrator initialized")
+        logger.info(f"   Current model: {self.model_manager.current_model}")
 
     # ============================================================
     # MESSAGE FILTERING - Removes TextMessage junk
@@ -436,10 +434,42 @@ Keep it short.""",
                 team = await self.create_general_assistant_team()
 
             # Execute with enriched task (includes context)
+            # Execute with fallback support
             logger.info(f"⚙️ Executing with {team_name}")
-            result = await team.run(task=enriched_task)
+            
+            try:
+                result = await team.run(task=enriched_task)
+                
+                # Report success to model manager
+                self.model_manager.report_success()
+                
+            except Exception as exec_error:
+                # Check if it's a rate limit error
+                if self.model_manager.handle_model_error(exec_error):
+                    logger.info("♻️ Retrying with fallback model...")
+                    
+                    # Get new client with fallback model
+                    self.model_client = self.model_manager.get_model_client()
+                    
+                    # Recreate team with fallback model
+                    if team_name == "DATA_ANALYSIS_TEAM":
+                        team = await self.create_data_analysis_team()
+                    else:
+                        team = await self.create_general_assistant_team()
+                    
+                    # Retry once
+                    try:
+                        result = await team.run(task=enriched_task)
+                        self.model_manager.report_success()
+                        logger.info("✅ Fallback succeeded!")
+                    except Exception as retry_error:
+                        logger.error(f"❌ Fallback also failed: {retry_error}")
+                        raise
+                else:
+                    # Not a rate limit error, propagate
+                    raise exec_error
 
-            # Extract clean response
+            # Extract clean response (continues as before)
             response_text = self._extract_clean_content(result)
 
             logger.info(f"✅ Task completed successfully")
@@ -449,17 +479,19 @@ Keep it short.""",
                 "success": True,
                 "response": response_text,
                 "routed_to": team_name,
-                "full_result": result,
+                "model_used": self.model_manager.current_model,  # NEW: Track which model was used
+                "full_result": result
             }
 
         except Exception as e:
             logger.error(f"❌ Task execution failed: {e}")
             logger.exception("Full traceback:")
-
+            
             return {
                 "success": False,
                 "error": str(e),
-                "routed_to": team_name if "team_name" in locals() else "Unknown",
+                "routed_to": team_name if 'team_name' in locals() else "Unknown",
+                "model_used": self.model_manager.current_model  # NEW: Track model even on failure
             }
 
 
@@ -515,36 +547,87 @@ Keep it short.""",
 
             # Stream execution with enriched task
             if hasattr(team, 'run_stream'):
-                async for message in team.run_stream(task=enriched_task):
-                    source = getattr(message, 'source', 'Unknown')
-                    raw_content = getattr(message, 'content', '')
+                try:
+                    async for message in team.run_stream(task=enriched_task):
+                        source = getattr(message, 'source', 'Unknown')
+                        raw_content = getattr(message, 'content', '')
+                        
+                        # Convert to string if needed
+                        if isinstance(raw_content, (list, dict)):
+                            content = str(raw_content)
+                        else:
+                            content = raw_content
+                        
+                        # FILTER: Only show relevant messages
+                        if not self._should_show_message(source, content):
+                            logger.debug(f"⏭️ Skipping internal message from {source}")
+                            continue
+                        
+                        # CLEAN: Extract user-friendly content
+                        clean_content = self._extract_clean_content(content)
+                        
+                        # Classify message type
+                        message_type = self._classify_message_type(source, clean_content)
+                        
+                        # Yield to user
+                        yield {
+                            "agent": source,
+                            "type": message_type,
+                            "content": clean_content,
+                            "timestamp": datetime.now().isoformat()
+                        }
+                        
+                        logger.debug(f"💬 [{source}] {clean_content[:100]}...")
+                    # Report success after streaming completes
+                    self.model_manager.report_success()
                     
-                    # Convert to string if needed
-                    if isinstance(raw_content, (list, dict)):
-                        content = str(raw_content)
+                except Exception as stream_error:
+                    # Check if it's a rate limit error
+                    if self.model_manager.handle_model_error(stream_error):
+                        yield {
+                            "agent": "System",
+                            "type": "routing",
+                            "content": f"♻️ Rate limit hit, switching to fallback model ({self.model_manager.fallback_model})...",
+                            "timestamp": datetime.now().isoformat()
+                        }
+                        
+                        # Get new client with fallback
+                        self.model_client = self.model_manager.get_model_client()
+                        
+                        # Recreate team
+                        if team_name == "DATA_ANALYSIS_TEAM":
+                            team = await self.create_data_analysis_team()
+                        else:
+                            team = await self.create_general_assistant_team()
+                        
+                        # Retry streaming with fallback
+                        async for message in team.run_stream(task=enriched_task):
+                            # ... same message processing ...
+                            source = getattr(message, 'source', 'Unknown')
+                            raw_content = getattr(message, 'content', '')
+                            
+                            if isinstance(raw_content, (list, dict)):
+                                content = str(raw_content)
+                            else:
+                                content = raw_content
+                            
+                            if not self._should_show_message(source, content):
+                                continue
+                            
+                            clean_content = self._extract_clean_content(content)
+                            message_type = self._classify_message_type(source, clean_content)
+                            
+                            yield {
+                                "agent": source,
+                                "type": message_type,
+                                "content": clean_content,
+                                "timestamp": datetime.now().isoformat()
+                            }
+                        
+                        self.model_manager.report_success()
                     else:
-                        content = raw_content
-                    
-                    # FILTER: Only show relevant messages
-                    if not self._should_show_message(source, content):
-                        logger.debug(f"⏭️ Skipping internal message from {source}")
-                        continue
-                    
-                    # CLEAN: Extract user-friendly content
-                    clean_content = self._extract_clean_content(content)
-                    
-                    # Classify message type
-                    message_type = self._classify_message_type(source, clean_content)
-                    
-                    # Yield to user
-                    yield {
-                        "agent": source,
-                        "type": message_type,
-                        "content": clean_content,
-                        "timestamp": datetime.now().isoformat()
-                    }
-                    
-                    logger.debug(f"💬 [{source}] {clean_content[:100]}...")
+                        # Not a rate limit error
+                        raise stream_error
 
             else:
                 # Fallback: execute and return result

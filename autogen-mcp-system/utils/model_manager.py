@@ -1,134 +1,193 @@
-# Simple Model Manager with Rate Limit Fallback
-# File: utils/model_manager.py
+# ============================================================
+# Model Manager - Automatic Fallback on Rate Limits
+# Place in: utils/model_manager.py
+# ============================================================
 
-from loguru import logger
 from autogen_ext.models.ollama import OllamaChatCompletionClient
 from config.settings import settings
-import time
-from typing import Optional
+from loguru import logger
+from datetime import datetime, timedelta
+import json
+from pathlib import Path
 
 
 class ModelManager:
     """
     Manages model selection with automatic fallback
-
-    Primary: gpt-oss:120b-cloud (powerful, shared, rate limited)
-    Fallback: qwen3-vl (local, no rate limit, slower)
+    
+    Features:
+    - Detects rate limit errors
+    - Automatically switches to fallback model (qwen3-vl)
+    - Returns to primary model after cooldown period
+    - Tracks usage and failures
     """
-
+    
     def __init__(self):
-        self.primary_model = settings.ollama_model  # gpt-oss:120b-cloud from settings
-        self.fallback_model = "qwen3-vl"  # Local model as fallback
-
-        self.fallback_active = False
+        self.primary_model = settings.ollama_model  # gpt-oss:120b-cloud
+        self.fallback_model = "qwen3-vl"  # Local fallback
+        
+        self.current_model = self.primary_model
+        self.using_fallback = False
+        
+        self.rate_limit_cooldown = 60  # minutes
         self.rate_limit_until = None
+        
         self.failure_count = 0
-
-        logger.info(f"📊 Model Manager initialized")
-        logger.info(f"  Primary model: {self.primary_model}")
-        logger.info(f"  Fallback model: {self.fallback_model}")
-
+        self.failure_threshold = 3  # Switch after 3 failures
+        
+        self.usage_file = Path("logs/model_usage.json")
+        self.usage_file.parent.mkdir(exist_ok=True)
+        
+        logger.info(f"🎮 ModelManager initialized")
+        logger.info(f"   Primary: {self.primary_model}")
+        logger.info(f"   Fallback: {self.fallback_model}")
+    
     def get_model_client(self) -> OllamaChatCompletionClient:
         """
-        Get appropriate model client
-
-        Automatically uses fallback if primary is rate limited
+        Get current model client
+        
+        Returns appropriate model based on:
+        - Rate limit status
+        - Failure count
+        - Cooldown period
         """
-
-        # Check if rate limit period expired
-        if self.rate_limit_until and time.time() > self.rate_limit_until:
-            logger.info(
-                "⏰ Rate limit cooldown expired, switching back to primary model"
-            )
-            self.fallback_active = False
-            self.rate_limit_until = None
-            self.failure_count = 0
-
+        
+        # Check if we should return to primary model
+        if self.using_fallback and self.rate_limit_until:
+            if datetime.now() > self.rate_limit_until:
+                logger.info(f"⏰ Cooldown expired, returning to primary model: {self.primary_model}")
+                self.using_fallback = False
+                self.current_model = self.primary_model
+                self.failure_count = 0
+                self.rate_limit_until = None
+        
         # Determine which model to use
-        model_name = self.fallback_model if self.fallback_active else self.primary_model
-
+        model_to_use = self.fallback_model if self.using_fallback else self.primary_model
+        
+        logger.debug(f"🎯 Using model: {model_to_use} (fallback={self.using_fallback})")
+        
         # Create client
         client = OllamaChatCompletionClient(
-            model=model_name,
+            model=model_to_use,
             base_url=settings.ollama_host,
             temperature=0.7,
             max_tokens=2000,
-            model_info=settings.ollama_model_info,
+            model_info=settings.ollama_model_info if model_to_use == self.primary_model else None
         )
-
-        if self.fallback_active:
-            logger.debug(f"🔄 Using fallback model: {model_name}")
-
+        
         return client
-
-    def handle_rate_limit(self, cooldown_minutes: int = 60):
+    
+    def handle_model_error(self, error: Exception) -> bool:
         """
-        Switch to fallback model due to rate limit
-
+        Handle model execution error
+        
         Args:
-            cooldown_minutes: How long to wait before retrying primary (default: 60 min)
-        """
-
-        if not self.fallback_active:
-            logger.warning(f"⚠️ RATE LIMIT DETECTED on {self.primary_model}")
-            logger.info(f"🔄 Switching to fallback model: {self.fallback_model}")
-            logger.info(f"⏰ Will retry primary model in {cooldown_minutes} minutes")
-            logger.info(
-                f"💡 Note: Fallback model is local and may be slower but has no rate limits"
-            )
-
-            self.fallback_active = True
-            self.rate_limit_until = time.time() + (cooldown_minutes * 60)
-            self.failure_count += 1
-
-    def handle_model_failure(self, error_message: str) -> bool:
-        """
-        Check if error indicates rate limit and handle it
-
+            error: The exception that occurred
+            
         Returns:
-            True if rate limit detected and handled, False otherwise
+            True if switched to fallback, False otherwise
         """
-
-        # Rate limit indicators
+        
+        error_str = str(error).lower()
+        
+        # Check for rate limit indicators
         rate_limit_keywords = [
             "rate limit",
             "too many requests",
-            "quota exceeded",
             "429",
-            "limit reached",
-            "throttle",
-            "capacity",
+            "quota exceeded",
+            "limit exceeded",
+            "throttle"
         ]
-
-        error_lower = str(error_message).lower()
-
-        # Check for rate limit indicators
-        for keyword in rate_limit_keywords:
-            if keyword in error_lower:
-                self.handle_rate_limit()
-                return True
-
+        
+        is_rate_limit = any(keyword in error_str for keyword in rate_limit_keywords)
+        
+        if is_rate_limit:
+            logger.warning(f"🚨 Rate limit detected: {error}")
+            self._switch_to_fallback("Rate limit exceeded")
+            return True
+        
+        # Check for repeated failures
+        self.failure_count += 1
+        logger.warning(f"⚠️ Model failure #{self.failure_count}: {error}")
+        
+        if self.failure_count >= self.failure_threshold:
+            logger.error(f"🚨 Failure threshold reached ({self.failure_threshold})")
+            self._switch_to_fallback(f"Too many failures ({self.failure_count})")
+            return True
+        
         return False
-
-    def is_using_fallback(self) -> bool:
-        """Check if currently using fallback model"""
-        return self.fallback_active
-
-    def get_current_model_name(self) -> str:
-        """Get name of currently active model"""
-        return self.fallback_model if self.fallback_active else self.primary_model
-
+    
+    def _switch_to_fallback(self, reason: str):
+        """Switch to fallback model"""
+        
+        if self.using_fallback:
+            logger.warning(f"⚠️ Already using fallback model")
+            return
+        
+        logger.warning(f"🔄 Switching to fallback model: {self.fallback_model}")
+        logger.warning(f"   Reason: {reason}")
+        logger.warning(f"   Cooldown: {self.rate_limit_cooldown} minutes")
+        
+        self.using_fallback = True
+        self.current_model = self.fallback_model
+        self.rate_limit_until = datetime.now() + timedelta(minutes=self.rate_limit_cooldown)
+        
+        self._log_usage("switched_to_fallback", reason)
+    
+    def report_success(self):
+        """Report successful execution"""
+        
+        # Reset failure count on success
+        if self.failure_count > 0:
+            logger.debug(f"✅ Success - resetting failure count (was {self.failure_count})")
+            self.failure_count = 0
+        
+        self._log_usage("success", self.current_model)
+    
+    def _log_usage(self, event: str, details: str):
+        """Log usage to file"""
+        
+        try:
+            # Load existing data
+            if self.usage_file.exists():
+                with open(self.usage_file, 'r') as f:
+                    data = json.load(f)
+            else:
+                data = {"events": []}
+            
+            # Add new event
+            data["events"].append({
+                "timestamp": datetime.now().isoformat(),
+                "event": event,
+                "details": details,
+                "current_model": self.current_model,
+                "using_fallback": self.using_fallback
+            })
+            
+            # Keep only last 1000 events
+            data["events"] = data["events"][-1000:]
+            
+            # Save
+            with open(self.usage_file, 'w') as f:
+                json.dump(data, f, indent=2)
+                
+        except Exception as e:
+            logger.error(f"Failed to log usage: {e}")
+    
     def get_status(self) -> dict:
-        """Get current status for debugging"""
+        """Get current manager status"""
+        
         return {
+            "current_model": self.current_model,
             "primary_model": self.primary_model,
             "fallback_model": self.fallback_model,
-            "active_model": self.get_current_model_name(),
-            "using_fallback": self.fallback_active,
-            "rate_limit_until": self.rate_limit_until,
+            "using_fallback": self.using_fallback,
             "failure_count": self.failure_count,
+            "rate_limit_until": self.rate_limit_until.isoformat() if self.rate_limit_until else None,
+            "cooldown_minutes": self.rate_limit_cooldown
         }
 
 
-# Global singleton instance
+# Singleton instance
 model_manager = ModelManager()
