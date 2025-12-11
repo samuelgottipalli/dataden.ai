@@ -35,7 +35,7 @@ class EnhancedAgentOrchestrator:
         # Use model manager for automatic fallback
         self.model_manager = model_manager
         self.model_client = self.model_manager.get_model_client()
-        
+
         logger.info(f"✨ Enhanced Orchestrator initialized")
         logger.info(f"   Current model: {self.model_manager.current_model}")
 
@@ -43,82 +43,234 @@ class EnhancedAgentOrchestrator:
     # MESSAGE FILTERING - Removes TextMessage junk
     # ============================================================
 
-    def _extract_clean_content(self, result) -> str:
+    # def _extract_clean_content(self, result) -> str:
+    #     """
+    #     Extract clean, user-friendly content from raw agent messages
+
+    #     This is the KEY to clean responses - filters out ALL internal junk
+    #     """
+
+    #     if isinstance(result, str):
+    #         # Check if it has TextMessage wrappers
+    #         if "TextMessage(" not in result:
+    #             return result
+
+    #         # Extract content from TextMessage format using regex
+    #         pattern = r"content='([^']+(?:''[^']+)*?)'"
+    #         matches = re.findall(pattern, result)
+
+    #         if matches:
+    #             # Get the LAST match (usually the final answer)
+    #             last_content = matches[-1]
+    #             # Clean up escaped quotes
+    #             last_content = last_content.replace("''", "'")
+
+    #             # If still too technical, try to extract just the answer
+    #             if len(last_content) > 1000:
+    #                 # Look for actual answer after planning
+    #                 answer_patterns = [
+    #                     r"(?:Final answer|Result|Answer):\s*(.+?)(?:TextMessage|$)",
+    #                     r"(?:Here(?:'s| is) the (?:result|answer)):\s*(.+?)(?:TextMessage|$)",
+    #                 ]
+    #                 for pattern in answer_patterns:
+    #                     answer_match = re.search(pattern, last_content, re.IGNORECASE | re.DOTALL)
+    #                     if answer_match:
+    #                         return answer_match.group(1).strip()
+
+    #             return last_content
+
+    #     # Handle object with messages attribute
+    #     if hasattr(result, 'messages'):
+    #         messages = result.messages
+    #         if messages:
+    #             # Get last message
+    #             last_message = messages[-1]
+    #             if hasattr(last_message, 'content'):
+    #                 content = last_message.content
+    #                 # Recursively clean if needed
+    #                 if isinstance(content, str) and "TextMessage(" in content:
+    #                     return self._extract_clean_content(content)
+    #                 return str(content)
+
+    #     # Fallback
+    #     return str(result)
+
+    # def _should_show_message(self, source: str, content: str) -> bool:
+    #     """
+    #     Determine if a message should be shown to user
+
+    #     Filters out internal orchestrator planning messages
+    #     """
+
+    #     # Skip internal orchestrator planning
+    #     if source == "MagenticOneOrchestrator":
+    #         # Only show if it's a final answer
+    #         if any(phrase in content.lower() for phrase in ["final", "answer", "result", "here is"]):
+    #             return True
+    #         return False
+
+    #     # Skip empty or very short messages
+    #     if not content or len(content.strip()) < 5:
+    #         return False
+
+    #     # Skip technical metadata messages
+    #     if any(keyword in content.lower() for keyword in ["textmessage(", "models_usage", "metadata={}"]):
+    #         return False
+
+    #     # Show everything else
+    #     return True
+
+    def _extract_clean_content(self, raw_content: Any) -> str:
         """
         Extract clean, user-friendly content from raw agent messages
         
-        This is the KEY to clean responses - filters out ALL internal junk
+        IMPROVED VERSION - Removes ALL TextMessage wrappers
+        
+        Handles:
+        - TextMessage(source='...', content='...')
+        - [TextMessage(...), TextMessage(...)]
+        - models_usage=None, metadata={}
+        - Nested TextMessages
+        - Multiple messages in lists
         """
 
-        if isinstance(result, str):
-            # Check if it has TextMessage wrappers
-            if "TextMessage(" not in result:
-                return result
+        # Convert to string if needed
+        if not isinstance(raw_content, str):
+            content_str = str(raw_content)
+        else:
+            content_str = raw_content
 
-            # Extract content from TextMessage format using regex
-            pattern = r"content='([^']+(?:''[^']+)*?)'"
-            matches = re.findall(pattern, result)
+        # Quick check: if no TextMessage wrapper, return as-is
+        if "TextMessage(" not in content_str and "models_usage" not in content_str:
+            return content_str
 
-            if matches:
-                # Get the LAST match (usually the final answer)
-                last_content = matches[-1]
-                # Clean up escaped quotes
-                last_content = last_content.replace("''", "'")
+        # Step 1: Extract all content='...' values
+        # This handles nested quotes and escaped quotes
+        content_pattern = r"content=['\"]([^'\"]+(?:['\"]['\"][^'\"]+)*?)['\"]"
+        content_matches = re.findall(content_pattern, content_str)
 
-                # If still too technical, try to extract just the answer
-                if len(last_content) > 1000:
-                    # Look for actual answer after planning
-                    answer_patterns = [
-                        r"(?:Final answer|Result|Answer):\s*(.+?)(?:TextMessage|$)",
-                        r"(?:Here(?:'s| is) the (?:result|answer)):\s*(.+?)(?:TextMessage|$)",
-                    ]
-                    for pattern in answer_patterns:
-                        answer_match = re.search(pattern, last_content, re.IGNORECASE | re.DOTALL)
-                        if answer_match:
-                            return answer_match.group(1).strip()
+        if content_matches:
+            # Get the last meaningful content (usually the final answer)
+            for match in reversed(content_matches):
+                # Skip if it's just metadata or empty
+                if match and len(match.strip()) > 5:
+                    # Clean up escaped quotes
+                    cleaned = match.replace("''", "'").replace('""', '"')
+                    return cleaned.strip()
 
-                return last_content
+        # Step 2: If no content= found, try removing wrappers directly
+        # Remove TextMessage(...) wrappers completely
+        cleaned = re.sub(r'TextMessage\([^)]+\)', '', content_str)
 
-        # Handle object with messages attribute
-        if hasattr(result, 'messages'):
-            messages = result.messages
-            if messages:
-                # Get last message
-                last_message = messages[-1]
-                if hasattr(last_message, 'content'):
-                    content = last_message.content
-                    # Recursively clean if needed
-                    if isinstance(content, str) and "TextMessage(" in content:
-                        return self._extract_clean_content(content)
-                    return str(content)
+        # Remove list brackets
+        cleaned = re.sub(r'^\[|\]$', '', cleaned)
 
-        # Fallback
-        return str(result)
+        # Remove metadata fields
+        cleaned = re.sub(r'models_usage\s*=\s*\w+', '', cleaned)
+        cleaned = re.sub(r'metadata\s*=\s*\{[^}]*\}', '', cleaned)
+        cleaned = re.sub(r'source\s*=\s*["\'][^"\']+["\']', '', cleaned)
+
+        # Remove extra commas and spaces
+        cleaned = re.sub(r'\s*,\s*', ' ', cleaned)
+        cleaned = re.sub(r'\s+', ' ', cleaned)
+
+        # Remove common prefixes that might remain
+        cleaned = re.sub(r'^messages\s*=\s*', '', cleaned)
+
+        cleaned = cleaned.strip()
+
+        # Step 3: If we got nothing or something too short, return original
+        if not cleaned or len(cleaned) < 5:
+            return content_str
+
+        return cleaned
 
     def _should_show_message(self, source: str, content: str) -> bool:
         """
         Determine if a message should be shown to user
         
-        Filters out internal orchestrator planning messages
+        IMPROVED VERSION - Better filtering of internal messages
+        
+        Filters out:
+        - Empty or very short messages
+        - Pure technical metadata
+        - Internal orchestrator planning (unless it's final answer)
+        - Messages that are just TextMessage wrappers
         """
 
-        # Skip internal orchestrator planning
-        if source == "MagenticOneOrchestrator":
-            # Only show if it's a final answer
-            if any(phrase in content.lower() for phrase in ["final", "answer", "result", "here is"]):
-                return True
-            return False
-
-        # Skip empty or very short messages
+        # Skip empty or very short
         if not content or len(content.strip()) < 5:
+            logger.debug(f"⏭️ Skipping empty message from {source}")
             return False
 
-        # Skip technical metadata messages
-        if any(keyword in content.lower() for keyword in ["textmessage(", "models_usage", "metadata={}"]):
+        content_lower = content.lower()
+
+        # Skip if it's still wrapped in TextMessage (filtering failed)
+        if "textmessage(" in content_lower and "content=" in content_lower:
+            logger.debug(f"⏭️ Skipping unfiltered TextMessage from {source}")
+            return False
+
+        # Skip if it's just metadata
+        if all(keyword in content_lower for keyword in ["models_usage", "metadata"]):
+            logger.debug(f"⏭️ Skipping metadata from {source}")
+            return False
+
+        # Handle MagenticOneOrchestrator messages
+        if source == "MagenticOneOrchestrator":
+            # Only show if it contains final answer indicators
+            final_indicators = [
+                "final", "answer", "result", "here is", "here are",
+                "completed", "summary", "conclusion"
+            ]
+            if any(indicator in content_lower for indicator in final_indicators):
+                return True
+            # Skip internal planning messages
+            planning_indicators = [
+                "we are working", "to answer this", "here is an initial",
+                "fact sheet", "assembled the following", "team:"
+            ]
+            if any(indicator in content_lower for indicator in planning_indicators):
+                logger.debug(f"⏭️ Skipping orchestrator planning from {source}")
+                return False
+
+        # Skip very long messages that look like dumps
+        if len(content) > 3000 and ("textmessage" in content_lower or "models_usage" in content_lower):
+            logger.debug(f"⏭️ Skipping long technical dump from {source}")
             return False
 
         # Show everything else
         return True
+
+    # ============================================================
+    # ADDITIONAL HELPER: Clean streaming messages in real-time
+    # ============================================================
+
+    def _clean_streaming_message(self, raw_message: Any) -> str:
+        """
+        Clean a streaming message before yielding to user
+        
+        This is called BEFORE _extract_clean_content for extra safety
+        """
+
+        # Get the content
+        if hasattr(raw_message, 'content'):
+            content = raw_message.content
+        else:
+            content = str(raw_message)
+
+        # Quick pre-cleaning
+        if isinstance(content, str):
+            # Remove obvious TextMessage patterns
+            if content.startswith("TextMessage("):
+                # Extract just the content part
+                match = re.search(r"content=['\"]([^'\"]+)['\"]", content)
+                if match:
+                    return match.group(1)
+
+            # Remove list markers
+            content = content.strip("[]")
+
+        return content
 
     # ============================================================
     # SUPERVISOR AGENT - Simple routing
@@ -436,27 +588,27 @@ Keep it short.""",
             # Execute with enriched task (includes context)
             # Execute with fallback support
             logger.info(f"⚙️ Executing with {team_name}")
-            
+
             try:
                 result = await team.run(task=enriched_task)
-                
+
                 # Report success to model manager
                 self.model_manager.report_success()
-                
+
             except Exception as exec_error:
                 # Check if it's a rate limit error
                 if self.model_manager.handle_model_error(exec_error):
                     logger.info("♻️ Retrying with fallback model...")
-                    
+
                     # Get new client with fallback model
                     self.model_client = self.model_manager.get_model_client()
-                    
+
                     # Recreate team with fallback model
                     if team_name == "DATA_ANALYSIS_TEAM":
                         team = await self.create_data_analysis_team()
                     else:
                         team = await self.create_general_assistant_team()
-                    
+
                     # Retry once
                     try:
                         result = await team.run(task=enriched_task)
@@ -486,14 +638,13 @@ Keep it short.""",
         except Exception as e:
             logger.error(f"❌ Task execution failed: {e}")
             logger.exception("Full traceback:")
-            
+
             return {
                 "success": False,
                 "error": str(e),
                 "routed_to": team_name if 'team_name' in locals() else "Unknown",
                 "model_used": self.model_manager.current_model  # NEW: Track model even on failure
             }
-
 
     # ============================================================
     # STREAMING SUPPORT
@@ -518,19 +669,19 @@ Keep it short.""",
             logger.info(f"{'='*60}")
             logger.info(f"🎬 STREAMING TASK from {username}")
             logger.info(f"📝 Task: {task_description}")
-            
+
             # Add context if available
             if conversation_history:
                 logger.info(f"📚 With {len(conversation_history)} previous messages")
                 enriched_task = self._build_context_prompt(task_description, conversation_history)
             else:
                 enriched_task = task_description
-                
+
             logger.info(f"{'='*60}")
 
             # Classify and route
             team_name = self._classify_task(enriched_task)
-            
+
             # Yield routing decision
             yield {
                 "agent": "SupervisorAgent",
@@ -551,24 +702,36 @@ Keep it short.""",
                     async for message in team.run_stream(task=enriched_task):
                         source = getattr(message, 'source', 'Unknown')
                         raw_content = getattr(message, 'content', '')
-                        
+
+                        # Pre-clean the message
+                        pre_cleaned = self._clean_streaming_message(message)
+
                         # Convert to string if needed
-                        if isinstance(raw_content, (list, dict)):
-                            content = str(raw_content)
+                        if isinstance(pre_cleaned, (list, dict)):
+                            content = str(pre_cleaned)
                         else:
-                            content = raw_content
-                        
+                            content = pre_cleaned
+
                         # FILTER: Only show relevant messages
                         if not self._should_show_message(source, content):
                             logger.debug(f"⏭️ Skipping internal message from {source}")
                             continue
-                        
+
                         # CLEAN: Extract user-friendly content
                         clean_content = self._extract_clean_content(content)
-                        
+
                         # Classify message type
                         message_type = self._classify_message_type(source, clean_content)
-                        
+
+                        # FINAL CHECK: Make sure we didn't leave any wrappers
+                        if "TextMessage(" in clean_content:
+                            logger.warning(f"⚠️ TextMessage wrapper still present, doing deep clean")
+                            # Try one more aggressive clean
+                            clean_content = re.sub(r'.*content=["\']([^"\']+)["\'].*', r'\1', clean_content)
+
+                        # Classify message type
+                        message_type = self._classify_message_type(source, clean_content)
+
                         # Yield to user
                         yield {
                             "agent": source,
@@ -576,11 +739,11 @@ Keep it short.""",
                             "content": clean_content,
                             "timestamp": datetime.now().isoformat()
                         }
-                        
+
                         logger.debug(f"💬 [{source}] {clean_content[:100]}...")
                     # Report success after streaming completes
                     self.model_manager.report_success()
-                    
+
                 except Exception as stream_error:
                     # Check if it's a rate limit error
                     if self.model_manager.handle_model_error(stream_error):
@@ -590,40 +753,40 @@ Keep it short.""",
                             "content": f"♻️ Rate limit hit, switching to fallback model ({self.model_manager.fallback_model})...",
                             "timestamp": datetime.now().isoformat()
                         }
-                        
+
                         # Get new client with fallback
                         self.model_client = self.model_manager.get_model_client()
-                        
+
                         # Recreate team
                         if team_name == "DATA_ANALYSIS_TEAM":
                             team = await self.create_data_analysis_team()
                         else:
                             team = await self.create_general_assistant_team()
-                        
+
                         # Retry streaming with fallback
                         async for message in team.run_stream(task=enriched_task):
                             # ... same message processing ...
                             source = getattr(message, 'source', 'Unknown')
                             raw_content = getattr(message, 'content', '')
-                            
+
                             if isinstance(raw_content, (list, dict)):
                                 content = str(raw_content)
                             else:
                                 content = raw_content
-                            
+
                             if not self._should_show_message(source, content):
                                 continue
-                            
+
                             clean_content = self._extract_clean_content(content)
                             message_type = self._classify_message_type(source, clean_content)
-                            
+
                             yield {
                                 "agent": source,
                                 "type": message_type,
                                 "content": clean_content,
                                 "timestamp": datetime.now().isoformat()
                             }
-                        
+
                         self.model_manager.report_success()
                     else:
                         # Not a rate limit error
@@ -633,7 +796,7 @@ Keep it short.""",
                 # Fallback: execute and return result
                 result = await team.run(task=enriched_task)
                 response = self._extract_clean_content(result)
-                
+
                 yield {
                     "agent": team_name,
                     "type": "final",
@@ -652,7 +815,6 @@ Keep it short.""",
                 "content": f"❌ Error: {str(e)}",
                 "timestamp": datetime.now().isoformat()
             }
-
 
     # ============================================================
     # HELPER: Message Type Classification

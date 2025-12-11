@@ -6,6 +6,76 @@
       "details": "gpt-oss:120b-cloud",
       "current_model": "gpt-oss:120b-cloud",
       "using_fallback": false
+    },
+    {
+      "timestamp": "2025-12-10T10:28:11.681691",
+      "event": "success",
+      "details": "gpt-oss:120b-cloud",
+      "current_model": "gpt-oss:120b-cloud",
+      "using_fallback": false
+    },
+    {
+      "timestamp": "2025-12-10T10:28:35.060113",
+      "event": "success",
+      "details": "gpt-oss:120b-cloud",
+      "current_model": "gpt-oss:120b-cloud",
+      "using_fallback": false
+    },
+    {
+      "timestamp": "2025-12-10T10:28:54.467168",
+      "event": "success",
+      "details": "gpt-oss:120b-cloud",
+      "current_model": "gpt-oss:120b-cloud",
+      "using_fallback": false
+    },
+    {
+      "timestamp": "2025-12-10T20:27:35.738269",
+      "event": "success",
+      "details": "gpt-oss:120b-cloud",
+      "current_model": "gpt-oss:120b-cloud",
+      "using_fallback": false
+    },
+    {
+      "timestamp": "2025-12-10T20:28:03.517136",
+      "event": "success",
+      "details": "gpt-oss:120b-cloud",
+      "current_model": "gpt-oss:120b-cloud",
+      "using_fallback": false
+    },
+    {
+      "timestamp": "2025-12-10T20:28:52.909983",
+      "event": "success",
+      "details": "gpt-oss:120b-cloud",
+      "current_model": "gpt-oss:120b-cloud",
+      "using_fallback": false
+    },
+    {
+      "timestamp": "2025-12-10T20:30:37.085301",
+      "event": "success",
+      "details": "gpt-oss:120b-cloud",
+      "current_model": "gpt-oss:120b-cloud",
+      "using_fallback": false
+    },
+    {
+      "timestamp": "2025-12-10T20:30:56.141680",
+      "event": "success",
+      "details": "gpt-oss:120b-cloud",
+      "current_model": "gpt-oss:120b-cloud",
+      "using_fallback": false
+    },
+    {
+      "timestamp": "2025-12-10T20:31:48.032362",
+      "event": "success",
+      "details": "gpt-oss:120b-cloud",
+      "current_model": "gpt-oss:120b-cloud",
+      "using_fallback": false
+    },
+    {
+      "timestamp": "2025-12-10T20:32:09.174486",
+      "event": "success",
+      "details": "gpt-oss:120b-cloud",
+      "current_model": "gpt-oss:120b-cloud",
+      "using_fallback": false
     }
   ]
 }
