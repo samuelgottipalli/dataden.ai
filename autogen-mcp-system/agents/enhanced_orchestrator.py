@@ -21,6 +21,7 @@ from mcp_server.tools import analyze_data_pandas, generate_and_execute_sql
 
 from utils.model_manager import model_manager
 
+
 class EnhancedAgentOrchestrator:
     """
     COMPLETE working orchestrator with all features:
@@ -123,9 +124,9 @@ class EnhancedAgentOrchestrator:
     def _extract_clean_content(self, raw_content: Any) -> str:
         """
         Extract clean, user-friendly content from raw agent messages
-        
+
         IMPROVED VERSION - Removes ALL TextMessage wrappers
-        
+
         Handles:
         - TextMessage(source='...', content='...')
         - [TextMessage(...), TextMessage(...)]
@@ -160,22 +161,22 @@ class EnhancedAgentOrchestrator:
 
         # Step 2: If no content= found, try removing wrappers directly
         # Remove TextMessage(...) wrappers completely
-        cleaned = re.sub(r'TextMessage\([^)]+\)', '', content_str)
+        cleaned = re.sub(r"TextMessage\([^)]+\)", "", content_str)
 
         # Remove list brackets
-        cleaned = re.sub(r'^\[|\]$', '', cleaned)
+        cleaned = re.sub(r"^\[|\]$", "", cleaned)
 
         # Remove metadata fields
-        cleaned = re.sub(r'models_usage\s*=\s*\w+', '', cleaned)
-        cleaned = re.sub(r'metadata\s*=\s*\{[^}]*\}', '', cleaned)
-        cleaned = re.sub(r'source\s*=\s*["\'][^"\']+["\']', '', cleaned)
+        cleaned = re.sub(r"models_usage\s*=\s*\w+", "", cleaned)
+        cleaned = re.sub(r"metadata\s*=\s*\{[^}]*\}", "", cleaned)
+        cleaned = re.sub(r'source\s*=\s*["\'][^"\']+["\']', "", cleaned)
 
         # Remove extra commas and spaces
-        cleaned = re.sub(r'\s*,\s*', ' ', cleaned)
-        cleaned = re.sub(r'\s+', ' ', cleaned)
+        cleaned = re.sub(r"\s*,\s*", " ", cleaned)
+        cleaned = re.sub(r"\s+", " ", cleaned)
 
         # Remove common prefixes that might remain
-        cleaned = re.sub(r'^messages\s*=\s*', '', cleaned)
+        cleaned = re.sub(r"^messages\s*=\s*", "", cleaned)
 
         cleaned = cleaned.strip()
 
@@ -188,9 +189,9 @@ class EnhancedAgentOrchestrator:
     def _should_show_message(self, source: str, content: str) -> bool:
         """
         Determine if a message should be shown to user
-        
+
         IMPROVED VERSION - Better filtering of internal messages
-        
+
         Filters out:
         - Empty or very short messages
         - Pure technical metadata
@@ -219,22 +220,34 @@ class EnhancedAgentOrchestrator:
         if source == "MagenticOneOrchestrator":
             # Only show if it contains final answer indicators
             final_indicators = [
-                "final", "answer", "result", "here is", "here are",
-                "completed", "summary", "conclusion"
+                "final",
+                "answer",
+                "result",
+                "here is",
+                "here are",
+                "completed",
+                "summary",
+                "conclusion",
             ]
             if any(indicator in content_lower for indicator in final_indicators):
                 return True
             # Skip internal planning messages
             planning_indicators = [
-                "we are working", "to answer this", "here is an initial",
-                "fact sheet", "assembled the following", "team:"
+                "we are working",
+                "to answer this",
+                "here is an initial",
+                "fact sheet",
+                "assembled the following",
+                "team:",
             ]
             if any(indicator in content_lower for indicator in planning_indicators):
                 logger.debug(f"⏭️ Skipping orchestrator planning from {source}")
                 return False
 
         # Skip very long messages that look like dumps
-        if len(content) > 3000 and ("textmessage" in content_lower or "models_usage" in content_lower):
+        if len(content) > 3000 and (
+            "textmessage" in content_lower or "models_usage" in content_lower
+        ):
             logger.debug(f"⏭️ Skipping long technical dump from {source}")
             return False
 
@@ -248,12 +261,12 @@ class EnhancedAgentOrchestrator:
     def _clean_streaming_message(self, raw_message: Any) -> str:
         """
         Clean a streaming message before yielding to user
-        
+
         This is called BEFORE _extract_clean_content for extra safety
         """
 
         # Get the content
-        if hasattr(raw_message, 'content'):
+        if hasattr(raw_message, "content"):
             content = raw_message.content
         else:
             content = str(raw_message)
@@ -339,7 +352,9 @@ Be concise and direct. Provide the answer clearly.""",
             logger.info(f"🔧 SQL Tool: {query_description}")
             return await generate_and_execute_sql(query_description, sql_script)
 
-        async def data_analysis_tool_wrapper(data_json: str, analysis_type: str) -> dict:
+        async def data_analysis_tool_wrapper(
+            data_json: str, analysis_type: str
+        ) -> dict:
             logger.info(f"📊 Analysis Tool: {analysis_type}")
             return await analyze_data_pandas(data_json, analysis_type)
 
@@ -349,12 +364,14 @@ Be concise and direct. Provide the answer clearly.""",
 
         async def list_all_tables_wrapper() -> dict:
             logger.info("📚 List Tables Tool")
-            result = db.execute_query("""
+            result = db.execute_query(
+                """
                 SELECT TABLE_SCHEMA, TABLE_NAME, TABLE_TYPE
                 FROM INFORMATION_SCHEMA.TABLES
                 WHERE TABLE_TYPE = 'BASE TABLE'
                 ORDER BY TABLE_SCHEMA, TABLE_NAME
-            """)
+            """
+            )
             return result
 
         # SQL Agent - DATABASE AWARE AND DIRECTIVE
@@ -443,7 +460,226 @@ Keep it short.""",
 
         return team
 
-    def _build_context_prompt(self, current_message: str, conversation_history: List[Dict]) -> str:
+    def _is_follow_up_question(
+        self, current_message: str, previous_messages: List[Dict]
+    ) -> bool:
+        """
+        Determine if current message is a follow-up to previous conversation
+
+        Returns True ONLY if:
+        - References previous topics (pronouns, "that", "it", "last year")
+        - Asks for clarification
+        - Continues same domain (both about sales, both about data)
+
+        Returns False if:
+        - Completely different topic
+        - Self-contained question
+        - Starts new conversation
+        """
+
+        if not previous_messages or len(previous_messages) == 0:
+            return False
+
+        current_lower = current_message.lower()
+
+        # STRONG indicators this is a follow-up (use context)
+        follow_up_indicators = [
+            # References to previous content
+            r"\bit\b",
+            r"\bthat\b",
+            r"\bthis\b",
+            r"\bthese\b",
+            r"\bthose\b",
+            r"\bthem\b",
+            r"\btheir\b",
+            # Temporal references assuming context
+            r"\blast\b",
+            r"\bprevious\b",
+            r"\bbefore\b",
+            r"\bearlier\b",
+            r"\babove\b",
+            r"\bmentioned\b",
+            # Comparative references
+            r"\bcompare\b",
+            r"\bvs\b",
+            r"\bversus\b",
+            r"\bagainst\b",
+            # Clarification requests
+            r"\bwhat about\b",
+            r"\bhow about\b",
+            r"\bwhat if\b",
+            r"\bmore\b.*\bdetails\b",
+            r"\bshow.*\bmore\b",
+            # Continuation words
+            r"\balso\b",
+            r"\btoo\b",
+            r"\badditionally\b",
+            r"\bfurthermore\b",
+            # Direct references
+            r"\bsame\b",
+            r"\bagain\b",
+            r"\banother\b",
+        ]
+
+        # Check if current message has follow-up indicators
+        has_followup = any(
+            re.search(pattern, current_lower) for pattern in follow_up_indicators
+        )
+
+        if not has_followup:
+            logger.info("📋 No follow-up indicators - treating as NEW conversation")
+            return False
+
+        # If it has indicators, check if topics are related
+        # Get last user message
+        last_user_msg = None
+        for msg in reversed(previous_messages):
+            if msg.get("role") == "user":
+                last_user_msg = msg.get("content", "").lower()
+                break
+
+        if not last_user_msg:
+            return False
+
+        # Check topic similarity (keywords overlap)
+        current_words = set(re.findall(r"\b\w{4,}\b", current_lower))  # Words 4+ chars
+        previous_words = set(re.findall(r"\b\w{4,}\b", last_user_msg))
+
+        # Remove common words
+        common_words = {
+            "what",
+            "when",
+            "where",
+            "which",
+            "show",
+            "tell",
+            "give",
+            "find",
+            "list",
+        }
+        current_words -= common_words
+        previous_words -= common_words
+
+        # Calculate overlap
+        if current_words and previous_words:
+            overlap = len(current_words & previous_words)
+            overlap_ratio = overlap / min(len(current_words), len(previous_words))
+
+            if overlap_ratio > 0.3:  # 30% overlap
+                logger.info(
+                    f"📋 Topics related ({overlap_ratio:.0%} overlap) - using context"
+                )
+                return True
+
+        # Has follow-up words but no topic overlap = AMBIGUOUS
+        # This is where we should ask for clarification
+        logger.info("⚠️ Follow-up indicators but unrelated topics - should clarify")
+        return False
+
+    def _build_context_prompt(
+        self, current_message: str, conversation_history: List[Dict]
+    ) -> str:
+        """
+        Build enriched prompt with conversation context
+
+        SMART VERSION - Only adds context when questions are related
+
+        Args:
+            current_message: The latest user message
+            conversation_history: List of previous messages
+
+        Returns:
+            Enhanced prompt with context (if relevant) or just the message
+        """
+
+        # Check if this is actually a follow-up
+        if not self._is_follow_up_question(current_message, conversation_history):
+            logger.info("📋 Independent question - NO context added")
+            return current_message
+
+        # It IS a follow-up - add MINIMAL context (last 2-3 exchanges only)
+        logger.info("📋 Follow-up detected - adding minimal context")
+
+        # Get only the most recent 4 messages (2 exchanges)
+        recent_history = (
+            conversation_history[-4:]
+            if len(conversation_history) > 4
+            else conversation_history
+        )
+
+        # Build compact context
+        context_lines = []
+
+        for msg in recent_history:
+            role = msg.get("role", "unknown")
+            content = msg.get("content", "")
+
+            # Truncate long messages
+            if len(content) > 150:
+                content = content[:150] + "..."
+
+            if role == "user":
+                context_lines.append(f"Previous: {content}")
+            elif role == "assistant":
+                context_lines.append(f"Response: {content}")
+
+        # Very compact format
+        context = "\n".join(context_lines)
+
+        enhanced_prompt = f"""[Context from previous exchange]
+    {context}
+
+    [Current question]
+    {current_message}"""
+
+        logger.info(f"📋 Added {len(recent_history)} messages as context")
+
+        return enhanced_prompt
+
+    def _should_ask_for_clarification(
+        self, current_message: str, conversation_history: List[Dict]
+    ) -> Optional[str]:
+        """
+        Determine if we should ask user for clarification
+
+        Returns clarification question if ambiguous, None otherwise
+        """
+
+        if not conversation_history or len(conversation_history) == 0:
+            return None
+
+        current_lower = current_message.lower()
+
+        # Check for ambiguous references
+        ambiguous_indicators = [
+            (r"\bit\b", "What are you referring to?"),
+            (r"\bthat\b", "Which specific item are you asking about?"),
+            (r"\bthis\b", "Can you clarify what you mean by 'this'?"),
+            (r"\bcompare\b.*\bto\b", "What would you like me to compare?"),
+            (r"\bwhat about\b", "What aspect would you like to know about?"),
+        ]
+
+        for pattern, question in ambiguous_indicators:
+            if re.search(pattern, current_lower):
+                # Check if topics are unrelated
+                last_user_msg = None
+                for msg in reversed(conversation_history):
+                    if msg.get("role") == "user":
+                        last_user_msg = msg.get("content", "").lower()
+                        break
+
+                if last_user_msg:
+                    # Simple topic check
+                    current_words = set(re.findall(r"\b\w{5,}\b", current_lower))
+                    previous_words = set(re.findall(r"\b\w{5,}\b", last_user_msg))
+
+                    overlap = len(current_words & previous_words)
+
+                    if overlap == 0:  # No overlap = totally different topics
+                        return f"I noticed you asked about something different earlier. {question}"
+
+        return None
+        # def _build_context_prompt(self, current_message: str, conversation_history: List[Dict]) -> str:
         """
         Build enriched prompt with conversation context
         
@@ -464,7 +700,11 @@ Keep it short.""",
         context_lines.append("**Previous conversation context:**")
 
         # Get last 3-5 exchanges (6-10 messages)
-        recent_history = conversation_history[-10:] if len(conversation_history) > 10 else conversation_history
+        recent_history = (
+            conversation_history[-10:]
+            if len(conversation_history) > 10
+            else conversation_history
+        )
 
         for msg in recent_history:
             role = msg.get("role", "unknown")
@@ -482,7 +722,9 @@ Keep it short.""",
 
         enhanced_prompt = "\n".join(context_lines)
 
-        logger.info(f"📚 Added conversation context ({len(recent_history)} previous messages)")
+        logger.info(
+            f"📚 Added conversation context ({len(recent_history)} previous messages)"
+        )
         logger.debug(f"Context: {enhanced_prompt[:500]}...")
 
         return enhanced_prompt
@@ -494,7 +736,7 @@ Keep it short.""",
     def _classify_task(self, task: str) -> str:
         """
         Two-tier classification for better routing
-        
+
         Tier 1: Check for STRONG database indicators
         Tier 2: Check for simple task indicators
         """
@@ -504,33 +746,64 @@ Keep it short.""",
         # TIER 1: Strong database/data indicators (prioritize these)
         complex_indicators = [
             # Action verbs
-            "show", "list", "display", "get", "fetch", "find", "retrieve",
-            "analyze", "compare", "calculate from", "query",
-            
+            "show",
+            "list",
+            "display",
+            "get",
+            "fetch",
+            "find",
+            "retrieve",
+            "analyze",
+            "compare",
+            "calculate from",
+            "query",
             # Question starters
-            "how many", "what are", "which", "who are",
-            
+            "how many",
+            "what are",
+            "which",
+            "who are",
             # Database terms
-            "table", "database", "sql", "data",
-            
+            "table",
+            "database",
+            "sql",
+            "data",
             # Business entities
-            "sales", "customer", "product", "order", "revenue",
-            "employee", "supplier", "inventory", "transaction",
+            "sales",
+            "customer",
+            "product",
+            "order",
+            "revenue",
+            "employee",
+            "supplier",
+            "inventory",
+            "transaction",
         ]
 
         if any(indicator in task_lower for indicator in complex_indicators):
-            logger.info(f"🎯 Classified as DATA (found: {[i for i in complex_indicators if i in task_lower]})")
+            logger.info(
+                f"🎯 Classified as DATA (found: {[i for i in complex_indicators if i in task_lower]})"
+            )
             return "DATA_ANALYSIS_TEAM"
 
         # TIER 2: Simple task indicators (only if no complex indicators found)
         simple_indicators = [
-            "what is", "calculate", "compute", "convert",
-            "how much", "percentage", "sum", "multiply", "divide"
+            "what is",
+            "calculate",
+            "compute",
+            "convert",
+            "how much",
+            "percentage",
+            "sum",
+            "multiply",
+            "divide",
         ]
 
         if any(indicator in task_lower for indicator in simple_indicators):
             # Double-check it's not actually a database query
-            if not any(entity in task_lower for entity in ["sales", "customer", "data", "table", "from"]):
+            if not any(
+                entity in task_lower
+                for entity in ["sales", "customer", "data", "table", "from"]
+            ):
                 logger.info(f"🎯 Classified as GENERAL (simple task)")
                 return "GENERAL_ASSISTANT_TEAM"
 
@@ -563,8 +836,22 @@ Keep it short.""",
 
         # Add context if available
         if conversation_history:
-            logger.info(f"📚 With {len(conversation_history)} previous messages")
-            # Build enhanced prompt with context
+            logger.info(f"📚 Received {len(conversation_history)} previous messages")
+
+            # Check if we should ask for clarification FIRST
+            clarification = self._should_ask_for_clarification(
+                task_description, conversation_history
+            )
+            if clarification:
+                logger.info(f"💬 Asking for clarification")
+                yield {
+                    "success": True,
+                    "response": clarification,
+                    "routed_to": "CLARIFICATION",
+                    "needs_clarification": True,
+                }
+
+            # Build enhanced prompt (only if questions are related)
             enriched_task = self._build_context_prompt(
                 task_description, conversation_history
             )
@@ -627,23 +914,23 @@ Keep it short.""",
             logger.info(f"✅ Task completed successfully")
             logger.info(f"📤 Response: {response_text[:200]}...")
 
-            return {
+            yield {
                 "success": True,
                 "response": response_text,
                 "routed_to": team_name,
-                "model_used": self.model_manager.current_model,  # NEW: Track which model was used
-                "full_result": result
+                "model_used": self.model_manager.current_model,
+                "full_result": result,
             }
 
         except Exception as e:
             logger.error(f"❌ Task execution failed: {e}")
             logger.exception("Full traceback:")
 
-            return {
+            yield {
                 "success": False,
                 "error": str(e),
-                "routed_to": team_name if 'team_name' in locals() else "Unknown",
-                "model_used": self.model_manager.current_model  # NEW: Track model even on failure
+                "routed_to": team_name if "team_name" in locals() else "Unknown",
+                "model_used": self.model_manager.current_model,
             }
 
     # ============================================================
@@ -651,17 +938,17 @@ Keep it short.""",
     # ============================================================
 
     async def execute_with_streaming(
-        self, 
-        task_description: str, 
+        self,
+        task_description: str,
         username: str = "system",
-        conversation_history: Optional[List[Dict]] = None
+        conversation_history: Optional[List[Dict]] = None,
     ):
         """
         Execute with streaming and conversation context
-        
+
         Args:
             task_description: Current user message
-            username: User identifier  
+            username: User identifier
             conversation_history: Previous messages for context
         """
 
@@ -672,7 +959,20 @@ Keep it short.""",
 
             # Add context if available
             if conversation_history:
-                logger.info(f"📚 With {len(conversation_history)} previous messages")
+                logger.info(f"📚 Received {len(conversation_history)} previous messages")
+                
+                # Check if we should ask for clarification FIRST
+                clarification = self._should_ask_for_clarification(task_description, conversation_history)
+                if clarification:
+                    logger.info(f"💬 Asking for clarification")
+                    yield {
+                        "success": True,
+                        "response": clarification,
+                        "routed_to": "CLARIFICATION",
+                        "needs_clarification": True
+                    }
+                
+                # Build enhanced prompt (only if questions are related)
                 enriched_task = self._build_context_prompt(task_description, conversation_history)
             else:
                 enriched_task = task_description
@@ -687,7 +987,7 @@ Keep it short.""",
                 "agent": "SupervisorAgent",
                 "type": "routing",
                 "content": f"🎯 Routing to: **{team_name.replace('_', ' ').title()}**",
-                "timestamp": datetime.now().isoformat()
+                "timestamp": datetime.now().isoformat(),
             }
 
             # Create team
@@ -697,14 +997,14 @@ Keep it short.""",
                 team = await self.create_general_assistant_team()
 
             # Stream execution with enriched task
-            if hasattr(team, 'run_stream'):
+            if hasattr(team, "run_stream"):
                 try:
                     async for message in team.run_stream(task=enriched_task):
-                        source = getattr(message, 'source', 'Unknown')
-                        raw_content = getattr(message, 'content', '')
+                        source = getattr(message, "source", "Unknown")
+                        raw_content = getattr(message, "content", "")
 
                         # Pre-clean the message
-                        pre_cleaned = self._clean_streaming_message(message)
+                        pre_cleaned = self._clean_streaming_message(raw_content)
 
                         # Convert to string if needed
                         if isinstance(pre_cleaned, (list, dict)):
@@ -721,23 +1021,31 @@ Keep it short.""",
                         clean_content = self._extract_clean_content(content)
 
                         # Classify message type
-                        message_type = self._classify_message_type(source, clean_content)
+                        message_type = self._classify_message_type(
+                            source, clean_content
+                        )
 
                         # FINAL CHECK: Make sure we didn't leave any wrappers
                         if "TextMessage(" in clean_content:
-                            logger.warning(f"⚠️ TextMessage wrapper still present, doing deep clean")
+                            logger.warning(
+                                f"⚠️ TextMessage wrapper still present, doing deep clean"
+                            )
                             # Try one more aggressive clean
-                            clean_content = re.sub(r'.*content=["\']([^"\']+)["\'].*', r'\1', clean_content)
+                            clean_content = re.sub(
+                                r'.*content=["\']([^"\']+)["\'].*', r"\1", clean_content
+                            )
 
                         # Classify message type
-                        message_type = self._classify_message_type(source, clean_content)
+                        message_type = self._classify_message_type(
+                            source, clean_content
+                        )
 
                         # Yield to user
                         yield {
                             "agent": source,
                             "type": message_type,
                             "content": clean_content,
-                            "timestamp": datetime.now().isoformat()
+                            "timestamp": datetime.now().isoformat(),
                         }
 
                         logger.debug(f"💬 [{source}] {clean_content[:100]}...")
@@ -751,7 +1059,7 @@ Keep it short.""",
                             "agent": "System",
                             "type": "routing",
                             "content": f"♻️ Rate limit hit, switching to fallback model ({self.model_manager.fallback_model})...",
-                            "timestamp": datetime.now().isoformat()
+                            "timestamp": datetime.now().isoformat(),
                         }
 
                         # Get new client with fallback
@@ -766,25 +1074,51 @@ Keep it short.""",
                         # Retry streaming with fallback
                         async for message in team.run_stream(task=enriched_task):
                             # ... same message processing ...
-                            source = getattr(message, 'source', 'Unknown')
-                            raw_content = getattr(message, 'content', '')
+                            source = getattr(message, "source", "Unknown")
+                            raw_content = getattr(message, "content", "")
 
-                            if isinstance(raw_content, (list, dict)):
-                                content = str(raw_content)
+                            # Pre-clean the message
+                            pre_cleaned = self._clean_streaming_message(raw_content)
+
+                            # Convert to string if needed
+                            if isinstance(pre_cleaned, (list, dict)):
+                                content = str(pre_cleaned)
                             else:
-                                content = raw_content
+                                content = pre_cleaned
 
+                            # FILTER: Only show relevant messages
                             if not self._should_show_message(source, content):
+                                logger.debug(
+                                    f"⏭️ Skipping internal message from {source}"
+                                )
                                 continue
 
+                            # CLEAN: Extract user-friendly content
                             clean_content = self._extract_clean_content(content)
-                            message_type = self._classify_message_type(source, clean_content)
 
+                            # FINAL CHECK: Make sure we didn't leave any wrappers
+                            if "TextMessage(" in clean_content:
+                                logger.warning(
+                                    f"⚠️ TextMessage wrapper still present, doing deep clean"
+                                )
+                                # Try one more aggressive clean
+                                clean_content = re.sub(
+                                    r'.*content=["\']([^"\']+)["\'].*',
+                                    r"\1",
+                                    clean_content,
+                                )
+
+                            # Classify message type
+                            message_type = self._classify_message_type(
+                                source, clean_content
+                            )
+
+                            # Yield to user
                             yield {
                                 "agent": source,
                                 "type": message_type,
                                 "content": clean_content,
-                                "timestamp": datetime.now().isoformat()
+                                "timestamp": datetime.now().isoformat(),
                             }
 
                         self.model_manager.report_success()
@@ -801,7 +1135,7 @@ Keep it short.""",
                     "agent": team_name,
                     "type": "final",
                     "content": response,
-                    "timestamp": datetime.now().isoformat()
+                    "timestamp": datetime.now().isoformat(),
                 }
 
             logger.info(f"✅ Streaming completed for {username}")
@@ -813,7 +1147,7 @@ Keep it short.""",
                 "agent": "System",
                 "type": "error",
                 "content": f"❌ Error: {str(e)}",
-                "timestamp": datetime.now().isoformat()
+                "timestamp": datetime.now().isoformat(),
             }
 
     # ============================================================
@@ -861,46 +1195,45 @@ Keep it short.""",
 # TESTING
 # ============================================================
 
+
 async def test_complete_system():
     """Test the complete working system"""
-    
-    print("="*60)
+
+    print("=" * 60)
     print("TESTING COMPLETE WORKING VERSION")
-    print("="*60)
-    
+    print("=" * 60)
+
     orchestrator = EnhancedAgentOrchestrator()
-    
+
     # Test 1: Database query
     print("\n[Test 1] Database Query")
-    print("-"*60)
-    
+    print("-" * 60)
+
     async for event in orchestrator.execute_with_streaming(
-        "Show me sales data",
-        "test_user"
+        "Show me sales data", "test_user"
     ):
         agent = event.get("agent", "Unknown")
         msg_type = event.get("type", "message")
         content = event.get("content", "")
-        
+
         print(f"[{agent}] ({msg_type}): {content[:150]}...")
-    
-    print("\n" + "="*60)
-    
+
+    print("\n" + "=" * 60)
+
     # Test 2: Simple math
     print("\n[Test 2] Simple Math")
-    print("-"*60)
-    
+    print("-" * 60)
+
     async for event in orchestrator.execute_with_streaming(
-        "What is 25% of 400?",
-        "test_user"
+        "What is 25% of 400?", "test_user"
     ):
         agent = event.get("agent", "Unknown")
         msg_type = event.get("type", "message")
         content = event.get("content", "")
-        
+
         print(f"[{agent}] ({msg_type}): {content[:150]}...")
-    
-    print("\n" + "="*60)
+
+    print("\n" + "=" * 60)
     print("✅ Tests complete!")
 
 
