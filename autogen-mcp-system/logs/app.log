@@ -25520,3 +25520,964 @@ Let me know if you’d like any other percentages calculated or more details abo
 2025-12-10 20:32:58 | INFO     | agents.enhanced_orchestrator:_build_context_prompt - 📚 Added conversation context (7 previous messages)
 2025-12-10 20:32:58 | INFO     | agents.enhanced_orchestrator:execute_with_streaming - ============================================================
 2025-12-10 20:32:58 | INFO     | agents.enhanced_orchestrator:_classify_task - 🎯 Classified as DATA (found: ['show', 'data', 'sales'])
+2025-12-10 21:15:30 | INFO     | __main__:<module> - CORS configured for OpenWebUI integration
+2025-12-10 21:15:30 | INFO     | __main__:<module> - OpenWebUI API routes registered at /api/v1
+2025-12-10 21:15:30 | INFO     | __main__:<module> - Starting MCP Server on 0.0.0.0:8000
+2025-12-10 21:16:21 | INFO     | mcp_server.api_routes:chat_completions - 💬 Chat from anonymous: what is a demogorgon?...
+2025-12-10 21:16:21 | INFO     | mcp_server.api_routes:chat_completions - 📚 With 1 previous messages in context
+2025-12-10 21:16:21 | INFO     | agents.enhanced_orchestrator:__init__ - ✨ Enhanced Orchestrator initialized
+2025-12-10 21:16:21 | INFO     | agents.enhanced_orchestrator:__init__ -    Current model: gpt-oss:120b-cloud
+2025-12-10 21:16:21 | INFO     | mcp_server.api_routes:stream_response - 🎬 Streaming for anonymous
+2025-12-10 21:16:21 | INFO     | mcp_server.api_routes:stream_response - 📚 Context: 1 previous messages
+2025-12-10 21:16:21 | INFO     | agents.enhanced_orchestrator:execute_with_streaming - ============================================================
+2025-12-10 21:16:21 | INFO     | agents.enhanced_orchestrator:execute_with_streaming - 🎬 STREAMING TASK from anonymous
+2025-12-10 21:16:21 | INFO     | agents.enhanced_orchestrator:execute_with_streaming - 📝 Task: what is a demogorgon?
+2025-12-10 21:16:21 | INFO     | agents.enhanced_orchestrator:execute_with_streaming - 📚 Received 1 previous messages
+2025-12-10 21:16:21 | INFO     | agents.enhanced_orchestrator:_is_follow_up_question - 📋 No follow-up indicators - treating as NEW conversation
+2025-12-10 21:16:21 | INFO     | agents.enhanced_orchestrator:_build_context_prompt - 📋 Independent question - NO context added
+2025-12-10 21:16:21 | INFO     | agents.enhanced_orchestrator:execute_with_streaming - ============================================================
+2025-12-10 21:16:21 | INFO     | agents.enhanced_orchestrator:_classify_task - 🎯 Classified as GENERAL (simple task)
+2025-12-10 21:17:01 | INFO     | agents.enhanced_orchestrator:execute_with_streaming - ✅ Streaming completed for anonymous
+2025-12-10 21:17:01 | INFO     | mcp_server.api_routes:stream_response - ✅ Streaming complete for anonymous
+2025-12-10 21:17:01 | INFO     | mcp_server.api_routes:chat_completions - 💬 Chat from anonymous: ### Task:
+Suggest 3-5 relevant follow-up questions or prompts that the user might naturally ask next...
+2025-12-10 21:17:01 | WARNING  | mcp_server.api_routes:non_streaming_response - ⚠️ Non-streaming from anonymous
+2025-12-10 21:17:01 | INFO     | agents.enhanced_orchestrator:__init__ - ✨ Enhanced Orchestrator initialized
+2025-12-10 21:17:01 | INFO     | agents.enhanced_orchestrator:__init__ -    Current model: gpt-oss:120b-cloud
+2025-12-10 21:17:01 | ERROR    | mcp_server.api_routes:non_streaming_response - ❌ Non-streaming error: object async_generator can't be used in 'await' expression
+2025-12-10 21:17:02 | INFO     | mcp_server.api_routes:chat_completions - 💬 Chat from anonymous: ### Task:
+Generate a concise, 3-5 word title with an emoji summarizing the chat history.
+### Guideli...
+2025-12-10 21:17:02 | WARNING  | mcp_server.api_routes:non_streaming_response - ⚠️ Non-streaming from anonymous
+2025-12-10 21:17:02 | INFO     | agents.enhanced_orchestrator:__init__ - ✨ Enhanced Orchestrator initialized
+2025-12-10 21:17:02 | INFO     | agents.enhanced_orchestrator:__init__ -    Current model: gpt-oss:120b-cloud
+2025-12-10 21:17:02 | ERROR    | mcp_server.api_routes:non_streaming_response - ❌ Non-streaming error: object async_generator can't be used in 'await' expression
+2025-12-10 21:17:44 | INFO     | mcp_server.api_routes:chat_completions - 💬 Chat from anonymous: what is 25 % of 400?...
+2025-12-10 21:17:44 | INFO     | mcp_server.api_routes:chat_completions - 📚 With 3 previous messages in context
+2025-12-10 21:17:44 | INFO     | agents.enhanced_orchestrator:__init__ - ✨ Enhanced Orchestrator initialized
+2025-12-10 21:17:44 | INFO     | agents.enhanced_orchestrator:__init__ -    Current model: gpt-oss:120b-cloud
+2025-12-10 21:17:44 | INFO     | mcp_server.api_routes:stream_response - 🎬 Streaming for anonymous
+2025-12-10 21:17:44 | INFO     | mcp_server.api_routes:stream_response - 📚 Context: 3 previous messages
+2025-12-10 21:17:44 | INFO     | agents.enhanced_orchestrator:execute_with_streaming - ============================================================
+2025-12-10 21:17:44 | INFO     | agents.enhanced_orchestrator:execute_with_streaming - 🎬 STREAMING TASK from anonymous
+2025-12-10 21:17:44 | INFO     | agents.enhanced_orchestrator:execute_with_streaming - 📝 Task: what is 25 % of 400?
+2025-12-10 21:17:44 | INFO     | agents.enhanced_orchestrator:execute_with_streaming - 📚 Received 3 previous messages
+2025-12-10 21:17:44 | INFO     | agents.enhanced_orchestrator:_is_follow_up_question - 📋 No follow-up indicators - treating as NEW conversation
+2025-12-10 21:17:44 | INFO     | agents.enhanced_orchestrator:_build_context_prompt - 📋 Independent question - NO context added
+2025-12-10 21:17:44 | INFO     | agents.enhanced_orchestrator:execute_with_streaming - ============================================================
+2025-12-10 21:17:44 | INFO     | agents.enhanced_orchestrator:_classify_task - 🎯 Classified as GENERAL (simple task)
+2025-12-10 21:18:02 | INFO     | agents.enhanced_orchestrator:execute_with_streaming - ✅ Streaming completed for anonymous
+2025-12-10 21:18:02 | INFO     | mcp_server.api_routes:stream_response - ✅ Streaming complete for anonymous
+2025-12-10 21:18:02 | INFO     | mcp_server.api_routes:chat_completions - 💬 Chat from anonymous: ### Task:
+Suggest 3-5 relevant follow-up questions or prompts that the user might naturally ask next...
+2025-12-10 21:18:02 | WARNING  | mcp_server.api_routes:non_streaming_response - ⚠️ Non-streaming from anonymous
+2025-12-10 21:18:02 | INFO     | agents.enhanced_orchestrator:__init__ - ✨ Enhanced Orchestrator initialized
+2025-12-10 21:18:02 | INFO     | agents.enhanced_orchestrator:__init__ -    Current model: gpt-oss:120b-cloud
+2025-12-10 21:18:02 | ERROR    | mcp_server.api_routes:non_streaming_response - ❌ Non-streaming error: object async_generator can't be used in 'await' expression
+2025-12-10 21:18:25 | INFO     | mcp_server.api_routes:chat_completions - 💬 Chat from anonymous: what about 18 %?...
+2025-12-10 21:18:25 | INFO     | mcp_server.api_routes:chat_completions - 📚 With 5 previous messages in context
+2025-12-10 21:18:25 | INFO     | agents.enhanced_orchestrator:__init__ - ✨ Enhanced Orchestrator initialized
+2025-12-10 21:18:25 | INFO     | agents.enhanced_orchestrator:__init__ -    Current model: gpt-oss:120b-cloud
+2025-12-10 21:18:25 | INFO     | mcp_server.api_routes:stream_response - 🎬 Streaming for anonymous
+2025-12-10 21:18:25 | INFO     | mcp_server.api_routes:stream_response - 📚 Context: 5 previous messages
+2025-12-10 21:18:25 | INFO     | agents.enhanced_orchestrator:execute_with_streaming - ============================================================
+2025-12-10 21:18:25 | INFO     | agents.enhanced_orchestrator:execute_with_streaming - 🎬 STREAMING TASK from anonymous
+2025-12-10 21:18:25 | INFO     | agents.enhanced_orchestrator:execute_with_streaming - 📝 Task: what about 18 %?
+2025-12-10 21:18:25 | INFO     | agents.enhanced_orchestrator:execute_with_streaming - 📚 Received 5 previous messages
+2025-12-10 21:18:25 | INFO     | agents.enhanced_orchestrator:execute_with_streaming - 💬 Asking for clarification
+2025-12-10 21:18:25 | INFO     | agents.enhanced_orchestrator:_is_follow_up_question - ⚠️ Follow-up indicators but unrelated topics - should clarify
+2025-12-10 21:18:25 | INFO     | agents.enhanced_orchestrator:_build_context_prompt - 📋 Independent question - NO context added
+2025-12-10 21:18:25 | INFO     | agents.enhanced_orchestrator:execute_with_streaming - ============================================================
+2025-12-10 21:18:25 | INFO     | agents.enhanced_orchestrator:_classify_task - 🎯 Classified as GENERAL (default)
+2025-12-10 21:18:57 | INFO     | agents.enhanced_orchestrator:execute_with_streaming - ✅ Streaming completed for anonymous
+2025-12-10 21:18:57 | INFO     | mcp_server.api_routes:stream_response - ✅ Streaming complete for anonymous
+2025-12-10 21:18:58 | INFO     | mcp_server.api_routes:chat_completions - 💬 Chat from anonymous: ### Task:
+Suggest 3-5 relevant follow-up questions or prompts that the user might naturally ask next...
+2025-12-10 21:18:58 | WARNING  | mcp_server.api_routes:non_streaming_response - ⚠️ Non-streaming from anonymous
+2025-12-10 21:18:58 | INFO     | agents.enhanced_orchestrator:__init__ - ✨ Enhanced Orchestrator initialized
+2025-12-10 21:18:58 | INFO     | agents.enhanced_orchestrator:__init__ -    Current model: gpt-oss:120b-cloud
+2025-12-10 21:18:58 | ERROR    | mcp_server.api_routes:non_streaming_response - ❌ Non-streaming error: object async_generator can't be used in 'await' expression
+2025-12-10 21:19:30 | INFO     | mcp_server.api_routes:chat_completions - 💬 Chat from anonymous: context is the previous question....
+2025-12-10 21:19:30 | INFO     | mcp_server.api_routes:chat_completions - 📚 With 7 previous messages in context
+2025-12-10 21:19:30 | INFO     | agents.enhanced_orchestrator:__init__ - ✨ Enhanced Orchestrator initialized
+2025-12-10 21:19:30 | INFO     | agents.enhanced_orchestrator:__init__ -    Current model: gpt-oss:120b-cloud
+2025-12-10 21:19:30 | INFO     | mcp_server.api_routes:stream_response - 🎬 Streaming for anonymous
+2025-12-10 21:19:30 | INFO     | mcp_server.api_routes:stream_response - 📚 Context: 7 previous messages
+2025-12-10 21:19:30 | INFO     | agents.enhanced_orchestrator:execute_with_streaming - ============================================================
+2025-12-10 21:19:30 | INFO     | agents.enhanced_orchestrator:execute_with_streaming - 🎬 STREAMING TASK from anonymous
+2025-12-10 21:19:30 | INFO     | agents.enhanced_orchestrator:execute_with_streaming - 📝 Task: context is the previous question.
+2025-12-10 21:19:30 | INFO     | agents.enhanced_orchestrator:execute_with_streaming - 📚 Received 7 previous messages
+2025-12-10 21:19:30 | INFO     | agents.enhanced_orchestrator:_is_follow_up_question - ⚠️ Follow-up indicators but unrelated topics - should clarify
+2025-12-10 21:19:30 | INFO     | agents.enhanced_orchestrator:_build_context_prompt - 📋 Independent question - NO context added
+2025-12-10 21:19:30 | INFO     | agents.enhanced_orchestrator:execute_with_streaming - ============================================================
+2025-12-10 21:19:30 | INFO     | agents.enhanced_orchestrator:_classify_task - 🎯 Classified as GENERAL (default)
+2025-12-10 21:19:42 | INFO     | agents.enhanced_orchestrator:execute_with_streaming - ✅ Streaming completed for anonymous
+2025-12-10 21:19:42 | INFO     | mcp_server.api_routes:stream_response - ✅ Streaming complete for anonymous
+2025-12-10 21:19:42 | INFO     | mcp_server.api_routes:chat_completions - 💬 Chat from anonymous: ### Task:
+Suggest 3-5 relevant follow-up questions or prompts that the user might naturally ask next...
+2025-12-10 21:19:42 | WARNING  | mcp_server.api_routes:non_streaming_response - ⚠️ Non-streaming from anonymous
+2025-12-10 21:19:42 | INFO     | agents.enhanced_orchestrator:__init__ - ✨ Enhanced Orchestrator initialized
+2025-12-10 21:19:42 | INFO     | agents.enhanced_orchestrator:__init__ -    Current model: gpt-oss:120b-cloud
+2025-12-10 21:19:42 | ERROR    | mcp_server.api_routes:non_streaming_response - ❌ Non-streaming error: object async_generator can't be used in 'await' expression
+2025-12-11 16:22:28 | INFO     | __main__:<module> - CORS configured for OpenWebUI integration
+2025-12-11 16:22:28 | INFO     | __main__:<module> - OpenWebUI API routes registered at /api/v1
+2025-12-11 16:22:28 | INFO     | __main__:<module> - Starting MCP Server on 0.0.0.0:8000
+2025-12-11 16:34:07 | INFO     | __main__:<module> - CORS configured for OpenWebUI integration
+2025-12-11 16:34:07 | INFO     | __main__:<module> - OpenWebUI API routes registered at /api/v1
+2025-12-11 16:34:07 | INFO     | __main__:<module> - Starting MCP Server on 0.0.0.0:8000
+2025-12-11 16:35:08 | INFO     | mcp_server.api_routes:chat_completions - 💬 Chat from anonymous: what is a demogorgon?...
+2025-12-11 16:35:08 | INFO     | mcp_server.api_routes:chat_completions - 📚 With 1 previous messages in context
+2025-12-11 16:35:08 | INFO     | agents.enhanced_orchestrator:__init__ - ✨ Enhanced Orchestrator initialized
+2025-12-11 16:35:08 | INFO     | agents.enhanced_orchestrator:__init__ -    Current model: gpt-oss:120b-cloud
+2025-12-11 16:35:08 | INFO     | mcp_server.api_routes:stream_response - 🎬 Streaming for anonymous
+2025-12-11 16:35:08 | INFO     | mcp_server.api_routes:stream_response - 📚 Context: 1 previous messages
+2025-12-11 16:35:08 | INFO     | agents.enhanced_orchestrator:execute_with_streaming - ============================================================
+2025-12-11 16:35:08 | INFO     | agents.enhanced_orchestrator:execute_with_streaming - 🎬 STREAMING TASK from anonymous
+2025-12-11 16:35:08 | INFO     | agents.enhanced_orchestrator:execute_with_streaming - 📝 Task: what is a demogorgon?
+2025-12-11 16:35:08 | INFO     | agents.enhanced_orchestrator:execute_with_streaming - 📚 Received 1 previous messages
+2025-12-11 16:35:08 | INFO     | agents.enhanced_orchestrator:_is_follow_up_question - 📋 No follow-up indicators - treating as NEW conversation
+2025-12-11 16:35:08 | INFO     | agents.enhanced_orchestrator:_build_context_prompt - 📋 Independent question - NO context added
+2025-12-11 16:35:08 | INFO     | agents.enhanced_orchestrator:execute_with_streaming - ============================================================
+2025-12-11 16:35:08 | INFO     | agents.enhanced_orchestrator:_classify_task - 🎯 Classified as GENERAL (simple task)
+2025-12-11 16:35:32 | INFO     | agents.enhanced_orchestrator:execute_with_streaming - ✅ Streaming completed for anonymous
+2025-12-11 16:35:32 | INFO     | mcp_server.api_routes:stream_response - ✅ Streaming complete for anonymous
+2025-12-11 16:35:32 | INFO     | mcp_server.api_routes:chat_completions - 💬 Chat from anonymous: ### Task:
+Suggest 3-5 relevant follow-up questions or prompts that the user might naturally ask next...
+2025-12-11 16:35:32 | WARNING  | mcp_server.api_routes:non_streaming_response - ⚠️ Non-streaming from anonymous
+2025-12-11 16:35:32 | INFO     | agents.enhanced_orchestrator:__init__ - ✨ Enhanced Orchestrator initialized
+2025-12-11 16:35:32 | INFO     | agents.enhanced_orchestrator:__init__ -    Current model: gpt-oss:120b-cloud
+2025-12-11 16:35:32 | ERROR    | mcp_server.api_routes:non_streaming_response - ❌ Non-streaming error: object async_generator can't be used in 'await' expression
+2025-12-11 16:35:32 | ERROR    | mcp_server.api_routes:non_streaming_response - Full traceback:
+Traceback (most recent call last):
+
+  File "G:\dataden.ai\autogen-mcp-system\mcp_server\main.py", line 225, in <module>
+    uvicorn.run(
+    │       └ <function run at 0x0000018093E38A40>
+    └ <module 'uvicorn' from 'G:\\dataden.ai\\venv\\Lib\\site-packages\\uvicorn\\__init__.py'>
+
+  File "G:\dataden.ai\venv\Lib\site-packages\uvicorn\main.py", line 593, in run
+    server.run()
+    │      └ <function Server.run at 0x0000018093E7C7C0>
+    └ <uvicorn.server.Server object at 0x000001809547C3D0>
+  File "G:\dataden.ai\venv\Lib\site-packages\uvicorn\server.py", line 67, in run
+    return asyncio_run(self.serve(sockets=sockets), loop_factory=self.config.get_loop_factory())
+           │           │    │             │                      │    │      └ <function Config.get_loop_factory at 0x0000018093E06020>
+           │           │    │             │                      │    └ <uvicorn.config.Config object at 0x00000180980CE590>
+           │           │    │             │                      └ <uvicorn.server.Server object at 0x000001809547C3D0>
+           │           │    │             └ None
+           │           │    └ <function Server.serve at 0x0000018093E7C860>
+           │           └ <uvicorn.server.Server object at 0x000001809547C3D0>
+           └ <function asyncio_run at 0x0000018093E7C720>
+  File "G:\dataden.ai\venv\Lib\site-packages\uvicorn\_compat.py", line 23, in asyncio_run
+    return runner.run(main)
+           │      │   └ <coroutine object Server.serve at 0x0000018098022890>
+           │      └ <function Runner.run at 0x0000018093B14220>
+           └ <asyncio.runners.Runner object at 0x00000180980C3B50>
+  File "C:\Users\sgottipalli\AppData\Local\Programs\Python\Python311\Lib\asyncio\runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           │    │     │                  └ <Task pending name='Task-1' coro=<Server.serve() running at G:\dataden.ai\venv\Lib\site-packages\uvicorn\server.py:71> wait_f...
+           │    │     └ <function BaseEventLoop.run_until_complete at 0x0000018093B11DA0>
+           │    └ <ProactorEventLoop running=True closed=False debug=False>
+           └ <asyncio.runners.Runner object at 0x00000180980C3B50>
+  File "C:\Users\sgottipalli\AppData\Local\Programs\Python\Python311\Lib\asyncio\base_events.py", line 640, in run_until_complete
+    self.run_forever()
+    │    └ <function ProactorEventLoop.run_forever at 0x0000018093BE1EE0>
+    └ <ProactorEventLoop running=True closed=False debug=False>
+  File "C:\Users\sgottipalli\AppData\Local\Programs\Python\Python311\Lib\asyncio\windows_events.py", line 321, in run_forever
+    super().run_forever()
+  File "C:\Users\sgottipalli\AppData\Local\Programs\Python\Python311\Lib\asyncio\base_events.py", line 607, in run_forever
+    self._run_once()
+    │    └ <function BaseEventLoop._run_once at 0x0000018093B13B00>
+    └ <ProactorEventLoop running=True closed=False debug=False>
+  File "C:\Users\sgottipalli\AppData\Local\Programs\Python\Python311\Lib\asyncio\base_events.py", line 1922, in _run_once
+    handle._run()
+    │      └ <function Handle._run at 0x0000018093659760>
+    └ <Handle Task.task_wakeup(<Future finished result=None>)>
+  File "C:\Users\sgottipalli\AppData\Local\Programs\Python\Python311\Lib\asyncio\events.py", line 80, in _run
+    self._context.run(self._callback, *self._args)
+    │    │            │    │           │    └ <member '_args' of 'Handle' objects>
+    │    │            │    │           └ <Handle Task.task_wakeup(<Future finished result=None>)>
+    │    │            │    └ <member '_callback' of 'Handle' objects>
+    │    │            └ <Handle Task.task_wakeup(<Future finished result=None>)>
+    │    └ <member '_context' of 'Handle' objects>
+    └ <Handle Task.task_wakeup(<Future finished result=None>)>
+  File "G:\dataden.ai\venv\Lib\site-packages\starlette\middleware\base.py", line 141, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+          │    │   │      │                      └ <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.send_no_error at 0x000001809820F100>
+          │    │   │      └ <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x000001809820DDA0>
+          │    │   └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+          │    └ <starlette.middleware.exceptions.ExceptionMiddleware object at 0x00000180981A2950>
+          └ <starlette.middleware.base.BaseHTTPMiddleware object at 0x00000180981A29D0>
+  File "G:\dataden.ai\venv\Lib\site-packages\starlette\middleware\exceptions.py", line 62, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+          │                            │    │    │     │      │        └ <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.send_no_error at 0x000001809820F100>
+          │                            │    │    │     │      └ <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x000001809820DDA0>
+          │                            │    │    │     └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+          │                            │    │    └ <starlette.requests.Request object at 0x000001809821F690>
+          │                            │    └ <fastapi.middleware.asyncexitstack.AsyncExitStackMiddleware object at 0x00000180981A2910>
+          │                            └ <starlette.middleware.exceptions.ExceptionMiddleware object at 0x00000180981A2950>
+          └ <function wrap_app_handling_exceptions at 0x00000180950F0900>
+  File "G:\dataden.ai\venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+          │   │      │        └ <function wrap_app_handling_exceptions.<locals>.wrapped_app.<locals>.sender at 0x000001809820E480>
+          │   │      └ <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x000001809820DDA0>
+          │   └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+          └ <fastapi.middleware.asyncexitstack.AsyncExitStackMiddleware object at 0x00000180981A2910>
+  File "G:\dataden.ai\venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+          │    │   │      │        └ <function wrap_app_handling_exceptions.<locals>.wrapped_app.<locals>.sender at 0x000001809820E480>
+          │    │   │      └ <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x000001809820DDA0>
+          │    │   └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+          │    └ <fastapi.routing.APIRouter object at 0x00000180980A3C90>
+          └ <fastapi.middleware.asyncexitstack.AsyncExitStackMiddleware object at 0x00000180981A2910>
+  File "G:\dataden.ai\venv\Lib\site-packages\starlette\routing.py", line 715, in __call__
+    await self.middleware_stack(scope, receive, send)
+          │    │                │      │        └ <function wrap_app_handling_exceptions.<locals>.wrapped_app.<locals>.sender at 0x000001809820E480>
+          │    │                │      └ <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x000001809820DDA0>
+          │    │                └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+          │    └ <bound method Router.app of <fastapi.routing.APIRouter object at 0x00000180980A3C90>>
+          └ <fastapi.routing.APIRouter object at 0x00000180980A3C90>
+  File "G:\dataden.ai\venv\Lib\site-packages\starlette\routing.py", line 735, in app
+    await route.handle(scope, receive, send)
+          │     │      │      │        └ <function wrap_app_handling_exceptions.<locals>.wrapped_app.<locals>.sender at 0x000001809820E480>
+          │     │      │      └ <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x000001809820DDA0>
+          │     │      └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+          │     └ <function Route.handle at 0x00000180950F1E40>
+          └ APIRoute(path='/api/v1/chat/completions', name='chat_completions', methods=['POST'])
+  File "G:\dataden.ai\venv\Lib\site-packages\starlette\routing.py", line 288, in handle
+    await self.app(scope, receive, send)
+          │    │   │      │        └ <function wrap_app_handling_exceptions.<locals>.wrapped_app.<locals>.sender at 0x000001809820E480>
+          │    │   │      └ <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x000001809820DDA0>
+          │    │   └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+          │    └ <function request_response.<locals>.app at 0x00000180980C5940>
+          └ APIRoute(path='/api/v1/chat/completions', name='chat_completions', methods=['POST'])
+  File "G:\dataden.ai\venv\Lib\site-packages\fastapi\routing.py", line 125, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+          │                            │    │        │      │        └ <function wrap_app_handling_exceptions.<locals>.wrapped_app.<locals>.sender at 0x000001809820E480>
+          │                            │    │        │      └ <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x000001809820DDA0>
+          │                            │    │        └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+          │                            │    └ <starlette.requests.Request object at 0x000001809821C5D0>
+          │                            └ <function request_response.<locals>.app.<locals>.app at 0x000001809820E200>
+          └ <function wrap_app_handling_exceptions at 0x00000180950F0900>
+  File "G:\dataden.ai\venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+          │   │      │        └ <function wrap_app_handling_exceptions.<locals>.wrapped_app.<locals>.sender at 0x000001809820E7A0>
+          │   │      └ <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x000001809820DDA0>
+          │   └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+          └ <function request_response.<locals>.app.<locals>.app at 0x000001809820E200>
+  File "G:\dataden.ai\venv\Lib\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+                     │ └ <starlette.requests.Request object at 0x000001809821C5D0>
+                     └ <function get_request_handler.<locals>.app at 0x00000180980C5800>
+  File "G:\dataden.ai\venv\Lib\site-packages\fastapi\routing.py", line 391, in app
+    raw_response = await run_endpoint_function(
+                         └ <function run_endpoint_function at 0x00000180950F3CE0>
+  File "G:\dataden.ai\venv\Lib\site-packages\fastapi\routing.py", line 290, in run_endpoint_function
+    return await dependant.call(**values)
+                 │         │      └ {'authorization': 'Bearer kEfuvjPcbj0ZvQe9HHDOjRpt9MT_GOv3xBM3j7CjIeM', 'x_api_key': None, 'x_user_id': None, 'x_user_email':...
+                 │         └ <function chat_completions at 0x00000180973FAA20>
+                 └ Dependant(path_params=[], query_params=[], header_params=[ModelField(field_info=Header(None), name='authorization', mode='val...
+
+  File "G:\dataden.ai\autogen-mcp-system\mcp_server\api_routes.py", line 128, in chat_completions
+    return await non_streaming_response(last_message, user_id, conversation_history)
+                 │                      │             │        └ []
+                 │                      │             └ 'anonymous'
+                 │                      └ '### Task:\nSuggest 3-5 relevant follow-up questions or prompts that the user might naturally ask next in this conversation a...
+                 └ <function non_streaming_response at 0x00000180973FACA0>
+
+> File "G:\dataden.ai\autogen-mcp-system\mcp_server\api_routes.py", line 256, in non_streaming_response
+    result = await orchestrator.execute_task_with_routing(
+                   │            └ <function EnhancedAgentOrchestrator.execute_task_with_routing at 0x00000180973FA840>
+                   └ <agents.enhanced_orchestrator.EnhancedAgentOrchestrator object at 0x0000018098246C90>
+
+TypeError: object async_generator can't be used in 'await' expression
+2025-12-11 16:35:33 | INFO     | mcp_server.api_routes:chat_completions - 💬 Chat from anonymous: ### Task:
+Generate a concise, 3-5 word title with an emoji summarizing the chat history.
+### Guideli...
+2025-12-11 16:35:33 | WARNING  | mcp_server.api_routes:non_streaming_response - ⚠️ Non-streaming from anonymous
+2025-12-11 16:35:33 | INFO     | agents.enhanced_orchestrator:__init__ - ✨ Enhanced Orchestrator initialized
+2025-12-11 16:35:33 | INFO     | agents.enhanced_orchestrator:__init__ -    Current model: gpt-oss:120b-cloud
+2025-12-11 16:35:33 | ERROR    | mcp_server.api_routes:non_streaming_response - ❌ Non-streaming error: object async_generator can't be used in 'await' expression
+2025-12-11 16:35:33 | ERROR    | mcp_server.api_routes:non_streaming_response - Full traceback:
+Traceback (most recent call last):
+
+  File "G:\dataden.ai\autogen-mcp-system\mcp_server\main.py", line 225, in <module>
+    uvicorn.run(
+    │       └ <function run at 0x0000018093E38A40>
+    └ <module 'uvicorn' from 'G:\\dataden.ai\\venv\\Lib\\site-packages\\uvicorn\\__init__.py'>
+
+  File "G:\dataden.ai\venv\Lib\site-packages\uvicorn\main.py", line 593, in run
+    server.run()
+    │      └ <function Server.run at 0x0000018093E7C7C0>
+    └ <uvicorn.server.Server object at 0x000001809547C3D0>
+  File "G:\dataden.ai\venv\Lib\site-packages\uvicorn\server.py", line 67, in run
+    return asyncio_run(self.serve(sockets=sockets), loop_factory=self.config.get_loop_factory())
+           │           │    │             │                      │    │      └ <function Config.get_loop_factory at 0x0000018093E06020>
+           │           │    │             │                      │    └ <uvicorn.config.Config object at 0x00000180980CE590>
+           │           │    │             │                      └ <uvicorn.server.Server object at 0x000001809547C3D0>
+           │           │    │             └ None
+           │           │    └ <function Server.serve at 0x0000018093E7C860>
+           │           └ <uvicorn.server.Server object at 0x000001809547C3D0>
+           └ <function asyncio_run at 0x0000018093E7C720>
+  File "G:\dataden.ai\venv\Lib\site-packages\uvicorn\_compat.py", line 23, in asyncio_run
+    return runner.run(main)
+           │      │   └ <coroutine object Server.serve at 0x0000018098022890>
+           │      └ <function Runner.run at 0x0000018093B14220>
+           └ <asyncio.runners.Runner object at 0x00000180980C3B50>
+  File "C:\Users\sgottipalli\AppData\Local\Programs\Python\Python311\Lib\asyncio\runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           │    │     │                  └ <Task pending name='Task-1' coro=<Server.serve() running at G:\dataden.ai\venv\Lib\site-packages\uvicorn\server.py:71> wait_f...
+           │    │     └ <function BaseEventLoop.run_until_complete at 0x0000018093B11DA0>
+           │    └ <ProactorEventLoop running=True closed=False debug=False>
+           └ <asyncio.runners.Runner object at 0x00000180980C3B50>
+  File "C:\Users\sgottipalli\AppData\Local\Programs\Python\Python311\Lib\asyncio\base_events.py", line 640, in run_until_complete
+    self.run_forever()
+    │    └ <function ProactorEventLoop.run_forever at 0x0000018093BE1EE0>
+    └ <ProactorEventLoop running=True closed=False debug=False>
+  File "C:\Users\sgottipalli\AppData\Local\Programs\Python\Python311\Lib\asyncio\windows_events.py", line 321, in run_forever
+    super().run_forever()
+  File "C:\Users\sgottipalli\AppData\Local\Programs\Python\Python311\Lib\asyncio\base_events.py", line 607, in run_forever
+    self._run_once()
+    │    └ <function BaseEventLoop._run_once at 0x0000018093B13B00>
+    └ <ProactorEventLoop running=True closed=False debug=False>
+  File "C:\Users\sgottipalli\AppData\Local\Programs\Python\Python311\Lib\asyncio\base_events.py", line 1922, in _run_once
+    handle._run()
+    │      └ <function Handle._run at 0x0000018093659760>
+    └ <Handle Task.task_wakeup(<Future finished result=None>)>
+  File "C:\Users\sgottipalli\AppData\Local\Programs\Python\Python311\Lib\asyncio\events.py", line 80, in _run
+    self._context.run(self._callback, *self._args)
+    │    │            │    │           │    └ <member '_args' of 'Handle' objects>
+    │    │            │    │           └ <Handle Task.task_wakeup(<Future finished result=None>)>
+    │    │            │    └ <member '_callback' of 'Handle' objects>
+    │    │            └ <Handle Task.task_wakeup(<Future finished result=None>)>
+    │    └ <member '_context' of 'Handle' objects>
+    └ <Handle Task.task_wakeup(<Future finished result=None>)>
+  File "G:\dataden.ai\venv\Lib\site-packages\starlette\middleware\base.py", line 141, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+          │    │   │      │                      └ <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.send_no_error at 0x000001809820E660>
+          │    │   │      └ <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x000001809820E520>
+          │    │   └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+          │    └ <starlette.middleware.exceptions.ExceptionMiddleware object at 0x00000180981A2950>
+          └ <starlette.middleware.base.BaseHTTPMiddleware object at 0x00000180981A29D0>
+  File "G:\dataden.ai\venv\Lib\site-packages\starlette\middleware\exceptions.py", line 62, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+          │                            │    │    │     │      │        └ <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.send_no_error at 0x000001809820E660>
+          │                            │    │    │     │      └ <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x000001809820E520>
+          │                            │    │    │     └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+          │                            │    │    └ <starlette.requests.Request object at 0x0000018098202890>
+          │                            │    └ <fastapi.middleware.asyncexitstack.AsyncExitStackMiddleware object at 0x00000180981A2910>
+          │                            └ <starlette.middleware.exceptions.ExceptionMiddleware object at 0x00000180981A2950>
+          └ <function wrap_app_handling_exceptions at 0x00000180950F0900>
+  File "G:\dataden.ai\venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+          │   │      │        └ <function wrap_app_handling_exceptions.<locals>.wrapped_app.<locals>.sender at 0x000001809820E5C0>
+          │   │      └ <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x000001809820E520>
+          │   └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+          └ <fastapi.middleware.asyncexitstack.AsyncExitStackMiddleware object at 0x00000180981A2910>
+  File "G:\dataden.ai\venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+          │    │   │      │        └ <function wrap_app_handling_exceptions.<locals>.wrapped_app.<locals>.sender at 0x000001809820E5C0>
+          │    │   │      └ <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x000001809820E520>
+          │    │   └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+          │    └ <fastapi.routing.APIRouter object at 0x00000180980A3C90>
+          └ <fastapi.middleware.asyncexitstack.AsyncExitStackMiddleware object at 0x00000180981A2910>
+  File "G:\dataden.ai\venv\Lib\site-packages\starlette\routing.py", line 715, in __call__
+    await self.middleware_stack(scope, receive, send)
+          │    │                │      │        └ <function wrap_app_handling_exceptions.<locals>.wrapped_app.<locals>.sender at 0x000001809820E5C0>
+          │    │                │      └ <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x000001809820E520>
+          │    │                └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+          │    └ <bound method Router.app of <fastapi.routing.APIRouter object at 0x00000180980A3C90>>
+          └ <fastapi.routing.APIRouter object at 0x00000180980A3C90>
+  File "G:\dataden.ai\venv\Lib\site-packages\starlette\routing.py", line 735, in app
+    await route.handle(scope, receive, send)
+          │     │      │      │        └ <function wrap_app_handling_exceptions.<locals>.wrapped_app.<locals>.sender at 0x000001809820E5C0>
+          │     │      │      └ <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x000001809820E520>
+          │     │      └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+          │     └ <function Route.handle at 0x00000180950F1E40>
+          └ APIRoute(path='/api/v1/chat/completions', name='chat_completions', methods=['POST'])
+  File "G:\dataden.ai\venv\Lib\site-packages\starlette\routing.py", line 288, in handle
+    await self.app(scope, receive, send)
+          │    │   │      │        └ <function wrap_app_handling_exceptions.<locals>.wrapped_app.<locals>.sender at 0x000001809820E5C0>
+          │    │   │      └ <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x000001809820E520>
+          │    │   └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+          │    └ <function request_response.<locals>.app at 0x00000180980C5940>
+          └ APIRoute(path='/api/v1/chat/completions', name='chat_completions', methods=['POST'])
+  File "G:\dataden.ai\venv\Lib\site-packages\fastapi\routing.py", line 125, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+          │                            │    │        │      │        └ <function wrap_app_handling_exceptions.<locals>.wrapped_app.<locals>.sender at 0x000001809820E5C0>
+          │                            │    │        │      └ <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x000001809820E520>
+          │                            │    │        └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+          │                            │    └ <starlette.requests.Request object at 0x0000018098202790>
+          │                            └ <function request_response.<locals>.app.<locals>.app at 0x000001809820E2A0>
+          └ <function wrap_app_handling_exceptions at 0x00000180950F0900>
+  File "G:\dataden.ai\venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+          │   │      │        └ <function wrap_app_handling_exceptions.<locals>.wrapped_app.<locals>.sender at 0x000001809820E3E0>
+          │   │      └ <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x000001809820E520>
+          │   └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+          └ <function request_response.<locals>.app.<locals>.app at 0x000001809820E2A0>
+  File "G:\dataden.ai\venv\Lib\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+                     │ └ <starlette.requests.Request object at 0x0000018098202790>
+                     └ <function get_request_handler.<locals>.app at 0x00000180980C5800>
+  File "G:\dataden.ai\venv\Lib\site-packages\fastapi\routing.py", line 391, in app
+    raw_response = await run_endpoint_function(
+                         └ <function run_endpoint_function at 0x00000180950F3CE0>
+  File "G:\dataden.ai\venv\Lib\site-packages\fastapi\routing.py", line 290, in run_endpoint_function
+    return await dependant.call(**values)
+                 │         │      └ {'authorization': 'Bearer kEfuvjPcbj0ZvQe9HHDOjRpt9MT_GOv3xBM3j7CjIeM', 'x_api_key': None, 'x_user_id': None, 'x_user_email':...
+                 │         └ <function chat_completions at 0x00000180973FAA20>
+                 └ Dependant(path_params=[], query_params=[], header_params=[ModelField(field_info=Header(None), name='authorization', mode='val...
+
+  File "G:\dataden.ai\autogen-mcp-system\mcp_server\api_routes.py", line 128, in chat_completions
+    return await non_streaming_response(last_message, user_id, conversation_history)
+                 │                      │             │        └ []
+                 │                      │             └ 'anonymous'
+                 │                      └ '### Task:\nGenerate a concise, 3-5 word title with an emoji summarizing the chat history.\n### Guidelines:\n- The title shou...
+                 └ <function non_streaming_response at 0x00000180973FACA0>
+
+> File "G:\dataden.ai\autogen-mcp-system\mcp_server\api_routes.py", line 256, in non_streaming_response
+    result = await orchestrator.execute_task_with_routing(
+                   │            └ <function EnhancedAgentOrchestrator.execute_task_with_routing at 0x00000180973FA840>
+                   └ <agents.enhanced_orchestrator.EnhancedAgentOrchestrator object at 0x00000180980C02D0>
+
+TypeError: object async_generator can't be used in 'await' expression
+2025-12-11 16:36:49 | INFO     | mcp_server.api_routes:chat_completions - 💬 Chat from anonymous: show me total of sales data for 2014 by category and product...
+2025-12-11 16:36:49 | INFO     | mcp_server.api_routes:chat_completions - 📚 With 3 previous messages in context
+2025-12-11 16:36:49 | INFO     | agents.enhanced_orchestrator:__init__ - ✨ Enhanced Orchestrator initialized
+2025-12-11 16:36:49 | INFO     | agents.enhanced_orchestrator:__init__ -    Current model: gpt-oss:120b-cloud
+2025-12-11 16:36:49 | INFO     | mcp_server.api_routes:stream_response - 🎬 Streaming for anonymous
+2025-12-11 16:36:49 | INFO     | mcp_server.api_routes:stream_response - 📚 Context: 3 previous messages
+2025-12-11 16:36:49 | INFO     | agents.enhanced_orchestrator:execute_with_streaming - ============================================================
+2025-12-11 16:36:49 | INFO     | agents.enhanced_orchestrator:execute_with_streaming - 🎬 STREAMING TASK from anonymous
+2025-12-11 16:36:49 | INFO     | agents.enhanced_orchestrator:execute_with_streaming - 📝 Task: show me total of sales data for 2014 by category and product
+2025-12-11 16:36:49 | INFO     | agents.enhanced_orchestrator:execute_with_streaming - 📚 Received 3 previous messages
+2025-12-11 16:36:49 | INFO     | agents.enhanced_orchestrator:_is_follow_up_question - 📋 No follow-up indicators - treating as NEW conversation
+2025-12-11 16:36:49 | INFO     | agents.enhanced_orchestrator:_build_context_prompt - 📋 Independent question - NO context added
+2025-12-11 16:36:49 | INFO     | agents.enhanced_orchestrator:execute_with_streaming - ============================================================
+2025-12-11 16:36:49 | INFO     | agents.enhanced_orchestrator:_classify_task - 🎯 Classified as DATA (found: ['show', 'data', 'sales', 'product'])
+2025-12-11 16:37:01 | INFO     | agents.enhanced_orchestrator:list_all_tables_wrapper - 📚 List Tables Tool
+2025-12-11 16:37:06 | INFO     | agents.enhanced_orchestrator:get_table_schema_wrapper - 📋 Schema Tool: FactInternetSales
+2025-12-11 16:37:10 | INFO     | agents.enhanced_orchestrator:get_table_schema_wrapper - 📋 Schema Tool: DimProduct
+2025-12-11 16:37:15 | INFO     | agents.enhanced_orchestrator:get_table_schema_wrapper - 📋 Schema Tool: DimDate
+2025-12-11 16:37:21 | INFO     | agents.enhanced_orchestrator:get_table_schema_wrapper - 📋 Schema Tool: DimProductSubcategory
+2025-12-11 16:37:27 | INFO     | agents.enhanced_orchestrator:get_table_schema_wrapper - 📋 Schema Tool: DimProductCategory
+2025-12-11 16:37:34 | INFO     | agents.enhanced_orchestrator:sql_tool_wrapper - 🔧 SQL Tool: Calculate total sales 2014 by category and product with rollup
+2025-12-11 16:37:34 | INFO     | mcp_server.tools:generate_and_execute_sql - SQL Tool called: Calculate total sales 2014 by category and product with rollup
+2025-12-11 16:37:34 | INFO     | utils.retry_handler:execute_with_retry - Attempt 1/3
+2025-12-11 16:37:34 | INFO     | utils.retry_handler:execute_with_retry - Query succeeded on attempt 1
+2025-12-11 16:37:39 | INFO     | agents.enhanced_orchestrator:sql_tool_wrapper - 🔧 SQL Tool: Fetch result rows for product sales 2014 with rollup limited to 200 rows
+2025-12-11 16:37:39 | INFO     | mcp_server.tools:generate_and_execute_sql - SQL Tool called: Fetch result rows for product sales 2014 with rollup limited to 200 rows
+2025-12-11 16:37:39 | INFO     | utils.retry_handler:execute_with_retry - Attempt 1/3
+2025-12-11 16:37:40 | INFO     | utils.retry_handler:execute_with_retry - Query succeeded on attempt 1
+2025-12-11 16:37:45 | INFO     | agents.enhanced_orchestrator:sql_tool_wrapper - 🔧 SQL Tool: Retrieve product sales 2014 with rollup
+2025-12-11 16:37:45 | INFO     | mcp_server.tools:generate_and_execute_sql - SQL Tool called: Retrieve product sales 2014 with rollup
+2025-12-11 16:37:45 | INFO     | utils.retry_handler:execute_with_retry - Attempt 1/3
+2025-12-11 16:37:45 | INFO     | utils.retry_handler:execute_with_retry - Query succeeded on attempt 1
+2025-12-11 16:37:57 | INFO     | agents.enhanced_orchestrator:sql_tool_wrapper - 🔧 SQL Tool: Get distinct CalendarYear from FactInternetSales join DimDate
+2025-12-11 16:37:57 | INFO     | mcp_server.tools:generate_and_execute_sql - SQL Tool called: Get distinct CalendarYear from FactInternetSales join DimDate
+2025-12-11 16:37:57 | INFO     | utils.retry_handler:execute_with_retry - Attempt 1/3
+2025-12-11 16:37:57 | INFO     | utils.retry_handler:execute_with_retry - Query succeeded on attempt 1
+2025-12-11 16:38:12 | INFO     | agents.enhanced_orchestrator:execute_with_streaming - ✅ Streaming completed for anonymous
+2025-12-11 16:38:12 | INFO     | mcp_server.api_routes:stream_response - ✅ Streaming complete for anonymous
+2025-12-11 16:38:12 | INFO     | mcp_server.api_routes:chat_completions - 💬 Chat from anonymous: ### Task:
+Suggest 3-5 relevant follow-up questions or prompts that the user might naturally ask next...
+2025-12-11 16:38:12 | WARNING  | mcp_server.api_routes:non_streaming_response - ⚠️ Non-streaming from anonymous
+2025-12-11 16:38:12 | INFO     | agents.enhanced_orchestrator:__init__ - ✨ Enhanced Orchestrator initialized
+2025-12-11 16:38:12 | INFO     | agents.enhanced_orchestrator:__init__ -    Current model: gpt-oss:120b-cloud
+2025-12-11 16:38:12 | ERROR    | mcp_server.api_routes:non_streaming_response - ❌ Non-streaming error: object async_generator can't be used in 'await' expression
+2025-12-11 16:38:12 | ERROR    | mcp_server.api_routes:non_streaming_response - Full traceback:
+Traceback (most recent call last):
+
+  File "G:\dataden.ai\autogen-mcp-system\mcp_server\main.py", line 225, in <module>
+    uvicorn.run(
+    │       └ <function run at 0x0000018093E38A40>
+    └ <module 'uvicorn' from 'G:\\dataden.ai\\venv\\Lib\\site-packages\\uvicorn\\__init__.py'>
+
+  File "G:\dataden.ai\venv\Lib\site-packages\uvicorn\main.py", line 593, in run
+    server.run()
+    │      └ <function Server.run at 0x0000018093E7C7C0>
+    └ <uvicorn.server.Server object at 0x000001809547C3D0>
+  File "G:\dataden.ai\venv\Lib\site-packages\uvicorn\server.py", line 67, in run
+    return asyncio_run(self.serve(sockets=sockets), loop_factory=self.config.get_loop_factory())
+           │           │    │             │                      │    │      └ <function Config.get_loop_factory at 0x0000018093E06020>
+           │           │    │             │                      │    └ <uvicorn.config.Config object at 0x00000180980CE590>
+           │           │    │             │                      └ <uvicorn.server.Server object at 0x000001809547C3D0>
+           │           │    │             └ None
+           │           │    └ <function Server.serve at 0x0000018093E7C860>
+           │           └ <uvicorn.server.Server object at 0x000001809547C3D0>
+           └ <function asyncio_run at 0x0000018093E7C720>
+  File "G:\dataden.ai\venv\Lib\site-packages\uvicorn\_compat.py", line 23, in asyncio_run
+    return runner.run(main)
+           │      │   └ <coroutine object Server.serve at 0x0000018098022890>
+           │      └ <function Runner.run at 0x0000018093B14220>
+           └ <asyncio.runners.Runner object at 0x00000180980C3B50>
+  File "C:\Users\sgottipalli\AppData\Local\Programs\Python\Python311\Lib\asyncio\runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           │    │     │                  └ <Task pending name='Task-1' coro=<Server.serve() running at G:\dataden.ai\venv\Lib\site-packages\uvicorn\server.py:71> wait_f...
+           │    │     └ <function BaseEventLoop.run_until_complete at 0x0000018093B11DA0>
+           │    └ <ProactorEventLoop running=True closed=False debug=False>
+           └ <asyncio.runners.Runner object at 0x00000180980C3B50>
+  File "C:\Users\sgottipalli\AppData\Local\Programs\Python\Python311\Lib\asyncio\base_events.py", line 640, in run_until_complete
+    self.run_forever()
+    │    └ <function ProactorEventLoop.run_forever at 0x0000018093BE1EE0>
+    └ <ProactorEventLoop running=True closed=False debug=False>
+  File "C:\Users\sgottipalli\AppData\Local\Programs\Python\Python311\Lib\asyncio\windows_events.py", line 321, in run_forever
+    super().run_forever()
+  File "C:\Users\sgottipalli\AppData\Local\Programs\Python\Python311\Lib\asyncio\base_events.py", line 607, in run_forever
+    self._run_once()
+    │    └ <function BaseEventLoop._run_once at 0x0000018093B13B00>
+    └ <ProactorEventLoop running=True closed=False debug=False>
+  File "C:\Users\sgottipalli\AppData\Local\Programs\Python\Python311\Lib\asyncio\base_events.py", line 1922, in _run_once
+    handle._run()
+    │      └ <function Handle._run at 0x0000018093659760>
+    └ <Handle Task.task_wakeup(<Future finished result=None>)>
+  File "C:\Users\sgottipalli\AppData\Local\Programs\Python\Python311\Lib\asyncio\events.py", line 80, in _run
+    self._context.run(self._callback, *self._args)
+    │    │            │    │           │    └ <member '_args' of 'Handle' objects>
+    │    │            │    │           └ <Handle Task.task_wakeup(<Future finished result=None>)>
+    │    │            │    └ <member '_callback' of 'Handle' objects>
+    │    │            └ <Handle Task.task_wakeup(<Future finished result=None>)>
+    │    └ <member '_context' of 'Handle' objects>
+    └ <Handle Task.task_wakeup(<Future finished result=None>)>
+  File "G:\dataden.ai\venv\Lib\site-packages\starlette\middleware\base.py", line 141, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+          │    │   │      │                      └ <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.send_no_error at 0x0000018098292700>
+          │    │   │      └ <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x00000180982920C0>
+          │    │   └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+          │    └ <starlette.middleware.exceptions.ExceptionMiddleware object at 0x00000180981A2950>
+          └ <starlette.middleware.base.BaseHTTPMiddleware object at 0x00000180981A29D0>
+  File "G:\dataden.ai\venv\Lib\site-packages\starlette\middleware\exceptions.py", line 62, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+          │                            │    │    │     │      │        └ <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.send_no_error at 0x0000018098292700>
+          │                            │    │    │     │      └ <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x00000180982920C0>
+          │                            │    │    │     └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+          │                            │    │    └ <starlette.requests.Request object at 0x0000018098355D10>
+          │                            │    └ <fastapi.middleware.asyncexitstack.AsyncExitStackMiddleware object at 0x00000180981A2910>
+          │                            └ <starlette.middleware.exceptions.ExceptionMiddleware object at 0x00000180981A2950>
+          └ <function wrap_app_handling_exceptions at 0x00000180950F0900>
+  File "G:\dataden.ai\venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+          │   │      │        └ <function wrap_app_handling_exceptions.<locals>.wrapped_app.<locals>.sender at 0x0000018098293740>
+          │   │      └ <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x00000180982920C0>
+          │   └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+          └ <fastapi.middleware.asyncexitstack.AsyncExitStackMiddleware object at 0x00000180981A2910>
+  File "G:\dataden.ai\venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+          │    │   │      │        └ <function wrap_app_handling_exceptions.<locals>.wrapped_app.<locals>.sender at 0x0000018098293740>
+          │    │   │      └ <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x00000180982920C0>
+          │    │   └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+          │    └ <fastapi.routing.APIRouter object at 0x00000180980A3C90>
+          └ <fastapi.middleware.asyncexitstack.AsyncExitStackMiddleware object at 0x00000180981A2910>
+  File "G:\dataden.ai\venv\Lib\site-packages\starlette\routing.py", line 715, in __call__
+    await self.middleware_stack(scope, receive, send)
+          │    │                │      │        └ <function wrap_app_handling_exceptions.<locals>.wrapped_app.<locals>.sender at 0x0000018098293740>
+          │    │                │      └ <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x00000180982920C0>
+          │    │                └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+          │    └ <bound method Router.app of <fastapi.routing.APIRouter object at 0x00000180980A3C90>>
+          └ <fastapi.routing.APIRouter object at 0x00000180980A3C90>
+  File "G:\dataden.ai\venv\Lib\site-packages\starlette\routing.py", line 735, in app
+    await route.handle(scope, receive, send)
+          │     │      │      │        └ <function wrap_app_handling_exceptions.<locals>.wrapped_app.<locals>.sender at 0x0000018098293740>
+          │     │      │      └ <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x00000180982920C0>
+          │     │      └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+          │     └ <function Route.handle at 0x00000180950F1E40>
+          └ APIRoute(path='/api/v1/chat/completions', name='chat_completions', methods=['POST'])
+  File "G:\dataden.ai\venv\Lib\site-packages\starlette\routing.py", line 288, in handle
+    await self.app(scope, receive, send)
+          │    │   │      │        └ <function wrap_app_handling_exceptions.<locals>.wrapped_app.<locals>.sender at 0x0000018098293740>
+          │    │   │      └ <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x00000180982920C0>
+          │    │   └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+          │    └ <function request_response.<locals>.app at 0x00000180980C5940>
+          └ APIRoute(path='/api/v1/chat/completions', name='chat_completions', methods=['POST'])
+  File "G:\dataden.ai\venv\Lib\site-packages\fastapi\routing.py", line 125, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+          │                            │    │        │      │        └ <function wrap_app_handling_exceptions.<locals>.wrapped_app.<locals>.sender at 0x0000018098293740>
+          │                            │    │        │      └ <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x00000180982920C0>
+          │                            │    │        └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+          │                            │    └ <starlette.requests.Request object at 0x00000180983547D0>
+          │                            └ <function request_response.<locals>.app.<locals>.app at 0x0000018098292CA0>
+          └ <function wrap_app_handling_exceptions at 0x00000180950F0900>
+  File "G:\dataden.ai\venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+          │   │      │        └ <function wrap_app_handling_exceptions.<locals>.wrapped_app.<locals>.sender at 0x0000018098292E80>
+          │   │      └ <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x00000180982920C0>
+          │   └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+          └ <function request_response.<locals>.app.<locals>.app at 0x0000018098292CA0>
+  File "G:\dataden.ai\venv\Lib\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+                     │ └ <starlette.requests.Request object at 0x00000180983547D0>
+                     └ <function get_request_handler.<locals>.app at 0x00000180980C5800>
+  File "G:\dataden.ai\venv\Lib\site-packages\fastapi\routing.py", line 391, in app
+    raw_response = await run_endpoint_function(
+                         └ <function run_endpoint_function at 0x00000180950F3CE0>
+  File "G:\dataden.ai\venv\Lib\site-packages\fastapi\routing.py", line 290, in run_endpoint_function
+    return await dependant.call(**values)
+                 │         │      └ {'authorization': 'Bearer kEfuvjPcbj0ZvQe9HHDOjRpt9MT_GOv3xBM3j7CjIeM', 'x_api_key': None, 'x_user_id': None, 'x_user_email':...
+                 │         └ <function chat_completions at 0x00000180973FAA20>
+                 └ Dependant(path_params=[], query_params=[], header_params=[ModelField(field_info=Header(None), name='authorization', mode='val...
+
+  File "G:\dataden.ai\autogen-mcp-system\mcp_server\api_routes.py", line 128, in chat_completions
+    return await non_streaming_response(last_message, user_id, conversation_history)
+                 │                      │             │        └ []
+                 │                      │             └ 'anonymous'
+                 │                      └ '### Task:\nSuggest 3-5 relevant follow-up questions or prompts that the user might naturally ask next in this conversation a...
+                 └ <function non_streaming_response at 0x00000180973FACA0>
+
+> File "G:\dataden.ai\autogen-mcp-system\mcp_server\api_routes.py", line 256, in non_streaming_response
+    result = await orchestrator.execute_task_with_routing(
+                   │            └ <function EnhancedAgentOrchestrator.execute_task_with_routing at 0x00000180973FA840>
+                   └ <agents.enhanced_orchestrator.EnhancedAgentOrchestrator object at 0x0000018098244810>
+
+TypeError: object async_generator can't be used in 'await' expression
+2025-12-11 16:39:02 | INFO     | mcp_server.api_routes:chat_completions - 💬 Chat from anonymous: excellent, now compare it with previous years and show me which of these products were profitable?...
+2025-12-11 16:39:02 | INFO     | mcp_server.api_routes:chat_completions - 📚 With 5 previous messages in context
+2025-12-11 16:39:02 | INFO     | agents.enhanced_orchestrator:__init__ - ✨ Enhanced Orchestrator initialized
+2025-12-11 16:39:02 | INFO     | agents.enhanced_orchestrator:__init__ -    Current model: gpt-oss:120b-cloud
+2025-12-11 16:39:02 | INFO     | mcp_server.api_routes:stream_response - 🎬 Streaming for anonymous
+2025-12-11 16:39:02 | INFO     | mcp_server.api_routes:stream_response - 📚 Context: 5 previous messages
+2025-12-11 16:39:02 | INFO     | agents.enhanced_orchestrator:execute_with_streaming - ============================================================
+2025-12-11 16:39:02 | INFO     | agents.enhanced_orchestrator:execute_with_streaming - 🎬 STREAMING TASK from anonymous
+2025-12-11 16:39:02 | INFO     | agents.enhanced_orchestrator:execute_with_streaming - 📝 Task: excellent, now compare it with previous years and show me which of these products were profitable?
+2025-12-11 16:39:02 | INFO     | agents.enhanced_orchestrator:execute_with_streaming - 📚 Received 5 previous messages
+2025-12-11 16:39:02 | INFO     | agents.enhanced_orchestrator:execute_with_streaming - 💬 Asking for clarification
+2025-12-11 16:39:02 | INFO     | agents.enhanced_orchestrator:_is_follow_up_question - ⚠️ Follow-up indicators but unrelated topics - should clarify
+2025-12-11 16:39:02 | INFO     | agents.enhanced_orchestrator:_build_context_prompt - 📋 Independent question - NO context added
+2025-12-11 16:39:02 | INFO     | agents.enhanced_orchestrator:execute_with_streaming - ============================================================
+2025-12-11 16:39:02 | INFO     | agents.enhanced_orchestrator:_classify_task - 🎯 Classified as DATA (found: ['show', 'compare', 'which', 'table', 'product'])
+2025-12-11 16:39:42 | INFO     | agents.enhanced_orchestrator:list_all_tables_wrapper - 📚 List Tables Tool
+2025-12-11 16:40:06 | INFO     | agents.enhanced_orchestrator:list_all_tables_wrapper - 📚 List Tables Tool
+2025-12-11 16:40:11 | INFO     | agents.enhanced_orchestrator:sql_tool_wrapper - 🔧 SQL Tool: Create temp tables #ProductSample and #RecentYears, then select them
+2025-12-11 16:40:11 | INFO     | mcp_server.tools:generate_and_execute_sql - SQL Tool called: Create temp tables #ProductSample and #RecentYears, then select them
+2025-12-11 16:40:11 | INFO     | utils.retry_handler:execute_with_retry - Attempt 1/3
+2025-12-11 16:40:11 | WARNING  | mcp_server.database:validate_sql - Query contains dangerous operation: CREATE
+2025-12-11 16:40:11 | WARNING  | utils.retry_handler:execute_with_retry - Attempt 1 failed: Query contains dangerous operation: CREATE
+2025-12-11 16:40:11 | INFO     | utils.retry_handler:execute_with_retry - Attempt 2/3
+2025-12-11 16:40:11 | WARNING  | mcp_server.database:validate_sql - Query contains dangerous operation: CREATE
+2025-12-11 16:40:11 | WARNING  | utils.retry_handler:execute_with_retry - Attempt 2 failed: Query contains dangerous operation: CREATE
+2025-12-11 16:40:11 | INFO     | utils.retry_handler:execute_with_retry - Attempt 3/3
+2025-12-11 16:40:11 | WARNING  | mcp_server.database:validate_sql - Query contains dangerous operation: CREATE
+2025-12-11 16:40:11 | WARNING  | utils.retry_handler:execute_with_retry - Attempt 3 failed: Query contains dangerous operation: CREATE
+2025-12-11 16:40:11 | ERROR    | utils.retry_handler:execute_with_retry - All 3 attempts failed. Escalating to human.
+2025-12-11 16:40:15 | INFO     | agents.enhanced_orchestrator:sql_tool_wrapper - 🔧 SQL Tool: Select first 10 products and three most recent fiscal years
+2025-12-11 16:40:15 | INFO     | mcp_server.tools:generate_and_execute_sql - SQL Tool called: Select first 10 products and three most recent fiscal years
+2025-12-11 16:40:15 | INFO     | utils.retry_handler:execute_with_retry - Attempt 1/3
+2025-12-11 16:40:15 | INFO     | utils.retry_handler:execute_with_retry - Query succeeded on attempt 1
+2025-12-11 16:40:18 | INFO     | agents.enhanced_orchestrator:execute_with_streaming - ✅ Streaming completed for anonymous
+2025-12-11 16:40:18 | INFO     | mcp_server.api_routes:stream_response - ✅ Streaming complete for anonymous
+2025-12-11 16:40:18 | INFO     | mcp_server.api_routes:chat_completions - 💬 Chat from anonymous: ### Task:
+Suggest 3-5 relevant follow-up questions or prompts that the user might naturally ask next...
+2025-12-11 16:40:18 | WARNING  | mcp_server.api_routes:non_streaming_response - ⚠️ Non-streaming from anonymous
+2025-12-11 16:40:18 | INFO     | agents.enhanced_orchestrator:__init__ - ✨ Enhanced Orchestrator initialized
+2025-12-11 16:40:18 | INFO     | agents.enhanced_orchestrator:__init__ -    Current model: gpt-oss:120b-cloud
+2025-12-11 16:40:18 | ERROR    | mcp_server.api_routes:non_streaming_response - ❌ Non-streaming error: object async_generator can't be used in 'await' expression
+2025-12-11 16:40:18 | ERROR    | mcp_server.api_routes:non_streaming_response - Full traceback:
+Traceback (most recent call last):
+
+  File "G:\dataden.ai\autogen-mcp-system\mcp_server\main.py", line 225, in <module>
+    uvicorn.run(
+    │       └ <function run at 0x0000018093E38A40>
+    └ <module 'uvicorn' from 'G:\\dataden.ai\\venv\\Lib\\site-packages\\uvicorn\\__init__.py'>
+
+  File "G:\dataden.ai\venv\Lib\site-packages\uvicorn\main.py", line 593, in run
+    server.run()
+    │      └ <function Server.run at 0x0000018093E7C7C0>
+    └ <uvicorn.server.Server object at 0x000001809547C3D0>
+  File "G:\dataden.ai\venv\Lib\site-packages\uvicorn\server.py", line 67, in run
+    return asyncio_run(self.serve(sockets=sockets), loop_factory=self.config.get_loop_factory())
+           │           │    │             │                      │    │      └ <function Config.get_loop_factory at 0x0000018093E06020>
+           │           │    │             │                      │    └ <uvicorn.config.Config object at 0x00000180980CE590>
+           │           │    │             │                      └ <uvicorn.server.Server object at 0x000001809547C3D0>
+           │           │    │             └ None
+           │           │    └ <function Server.serve at 0x0000018093E7C860>
+           │           └ <uvicorn.server.Server object at 0x000001809547C3D0>
+           └ <function asyncio_run at 0x0000018093E7C720>
+  File "G:\dataden.ai\venv\Lib\site-packages\uvicorn\_compat.py", line 23, in asyncio_run
+    return runner.run(main)
+           │      │   └ <coroutine object Server.serve at 0x0000018098022890>
+           │      └ <function Runner.run at 0x0000018093B14220>
+           └ <asyncio.runners.Runner object at 0x00000180980C3B50>
+  File "C:\Users\sgottipalli\AppData\Local\Programs\Python\Python311\Lib\asyncio\runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           │    │     │                  └ <Task pending name='Task-1' coro=<Server.serve() running at G:\dataden.ai\venv\Lib\site-packages\uvicorn\server.py:71> wait_f...
+           │    │     └ <function BaseEventLoop.run_until_complete at 0x0000018093B11DA0>
+           │    └ <ProactorEventLoop running=True closed=False debug=False>
+           └ <asyncio.runners.Runner object at 0x00000180980C3B50>
+  File "C:\Users\sgottipalli\AppData\Local\Programs\Python\Python311\Lib\asyncio\base_events.py", line 640, in run_until_complete
+    self.run_forever()
+    │    └ <function ProactorEventLoop.run_forever at 0x0000018093BE1EE0>
+    └ <ProactorEventLoop running=True closed=False debug=False>
+  File "C:\Users\sgottipalli\AppData\Local\Programs\Python\Python311\Lib\asyncio\windows_events.py", line 321, in run_forever
+    super().run_forever()
+  File "C:\Users\sgottipalli\AppData\Local\Programs\Python\Python311\Lib\asyncio\base_events.py", line 607, in run_forever
+    self._run_once()
+    │    └ <function BaseEventLoop._run_once at 0x0000018093B13B00>
+    └ <ProactorEventLoop running=True closed=False debug=False>
+  File "C:\Users\sgottipalli\AppData\Local\Programs\Python\Python311\Lib\asyncio\base_events.py", line 1922, in _run_once
+    handle._run()
+    │      └ <function Handle._run at 0x0000018093659760>
+    └ <Handle Task.task_wakeup(<Future finished result=None>)>
+  File "C:\Users\sgottipalli\AppData\Local\Programs\Python\Python311\Lib\asyncio\events.py", line 80, in _run
+    self._context.run(self._callback, *self._args)
+    │    │            │    │           │    └ <member '_args' of 'Handle' objects>
+    │    │            │    │           └ <Handle Task.task_wakeup(<Future finished result=None>)>
+    │    │            │    └ <member '_callback' of 'Handle' objects>
+    │    │            └ <Handle Task.task_wakeup(<Future finished result=None>)>
+    │    └ <member '_context' of 'Handle' objects>
+    └ <Handle Task.task_wakeup(<Future finished result=None>)>
+  File "G:\dataden.ai\venv\Lib\site-packages\starlette\middleware\base.py", line 141, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+          │    │   │      │                      └ <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.send_no_error at 0x0000018098292840>
+          │    │   │      └ <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x00000180982925C0>
+          │    │   └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+          │    └ <starlette.middleware.exceptions.ExceptionMiddleware object at 0x00000180981A2950>
+          └ <starlette.middleware.base.BaseHTTPMiddleware object at 0x00000180981A29D0>
+  File "G:\dataden.ai\venv\Lib\site-packages\starlette\middleware\exceptions.py", line 62, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+          │                            │    │    │     │      │        └ <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.send_no_error at 0x0000018098292840>
+          │                            │    │    │     │      └ <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x00000180982925C0>
+          │                            │    │    │     └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+          │                            │    │    └ <starlette.requests.Request object at 0x000001809832F9D0>
+          │                            │    └ <fastapi.middleware.asyncexitstack.AsyncExitStackMiddleware object at 0x00000180981A2910>
+          │                            └ <starlette.middleware.exceptions.ExceptionMiddleware object at 0x00000180981A2950>
+          └ <function wrap_app_handling_exceptions at 0x00000180950F0900>
+  File "G:\dataden.ai\venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+          │   │      │        └ <function wrap_app_handling_exceptions.<locals>.wrapped_app.<locals>.sender at 0x0000018098292700>
+          │   │      └ <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x00000180982925C0>
+          │   └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+          └ <fastapi.middleware.asyncexitstack.AsyncExitStackMiddleware object at 0x00000180981A2910>
+  File "G:\dataden.ai\venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+          │    │   │      │        └ <function wrap_app_handling_exceptions.<locals>.wrapped_app.<locals>.sender at 0x0000018098292700>
+          │    │   │      └ <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x00000180982925C0>
+          │    │   └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+          │    └ <fastapi.routing.APIRouter object at 0x00000180980A3C90>
+          └ <fastapi.middleware.asyncexitstack.AsyncExitStackMiddleware object at 0x00000180981A2910>
+  File "G:\dataden.ai\venv\Lib\site-packages\starlette\routing.py", line 715, in __call__
+    await self.middleware_stack(scope, receive, send)
+          │    │                │      │        └ <function wrap_app_handling_exceptions.<locals>.wrapped_app.<locals>.sender at 0x0000018098292700>
+          │    │                │      └ <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x00000180982925C0>
+          │    │                └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+          │    └ <bound method Router.app of <fastapi.routing.APIRouter object at 0x00000180980A3C90>>
+          └ <fastapi.routing.APIRouter object at 0x00000180980A3C90>
+  File "G:\dataden.ai\venv\Lib\site-packages\starlette\routing.py", line 735, in app
+    await route.handle(scope, receive, send)
+          │     │      │      │        └ <function wrap_app_handling_exceptions.<locals>.wrapped_app.<locals>.sender at 0x0000018098292700>
+          │     │      │      └ <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x00000180982925C0>
+          │     │      └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+          │     └ <function Route.handle at 0x00000180950F1E40>
+          └ APIRoute(path='/api/v1/chat/completions', name='chat_completions', methods=['POST'])
+  File "G:\dataden.ai\venv\Lib\site-packages\starlette\routing.py", line 288, in handle
+    await self.app(scope, receive, send)
+          │    │   │      │        └ <function wrap_app_handling_exceptions.<locals>.wrapped_app.<locals>.sender at 0x0000018098292700>
+          │    │   │      └ <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x00000180982925C0>
+          │    │   └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+          │    └ <function request_response.<locals>.app at 0x00000180980C5940>
+          └ APIRoute(path='/api/v1/chat/completions', name='chat_completions', methods=['POST'])
+  File "G:\dataden.ai\venv\Lib\site-packages\fastapi\routing.py", line 125, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+          │                            │    │        │      │        └ <function wrap_app_handling_exceptions.<locals>.wrapped_app.<locals>.sender at 0x0000018098292700>
+          │                            │    │        │      └ <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x00000180982925C0>
+          │                            │    │        └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+          │                            │    └ <starlette.requests.Request object at 0x000001809832EF90>
+          │                            └ <function request_response.<locals>.app.<locals>.app at 0x0000018098292CA0>
+          └ <function wrap_app_handling_exceptions at 0x00000180950F0900>
+  File "G:\dataden.ai\venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+          │   │      │        └ <function wrap_app_handling_exceptions.<locals>.wrapped_app.<locals>.sender at 0x00000180982936A0>
+          │   │      └ <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x00000180982925C0>
+          │   └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+          └ <function request_response.<locals>.app.<locals>.app at 0x0000018098292CA0>
+  File "G:\dataden.ai\venv\Lib\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+                     │ └ <starlette.requests.Request object at 0x000001809832EF90>
+                     └ <function get_request_handler.<locals>.app at 0x00000180980C5800>
+  File "G:\dataden.ai\venv\Lib\site-packages\fastapi\routing.py", line 391, in app
+    raw_response = await run_endpoint_function(
+                         └ <function run_endpoint_function at 0x00000180950F3CE0>
+  File "G:\dataden.ai\venv\Lib\site-packages\fastapi\routing.py", line 290, in run_endpoint_function
+    return await dependant.call(**values)
+                 │         │      └ {'authorization': 'Bearer kEfuvjPcbj0ZvQe9HHDOjRpt9MT_GOv3xBM3j7CjIeM', 'x_api_key': None, 'x_user_id': None, 'x_user_email':...
+                 │         └ <function chat_completions at 0x00000180973FAA20>
+                 └ Dependant(path_params=[], query_params=[], header_params=[ModelField(field_info=Header(None), name='authorization', mode='val...
+
+  File "G:\dataden.ai\autogen-mcp-system\mcp_server\api_routes.py", line 128, in chat_completions
+    return await non_streaming_response(last_message, user_id, conversation_history)
+                 │                      │             │        └ []
+                 │                      │             └ 'anonymous'
+                 │                      └ '### Task:\nSuggest 3-5 relevant follow-up questions or prompts that the user might naturally ask next in this conversation a...
+                 └ <function non_streaming_response at 0x00000180973FACA0>
+
+> File "G:\dataden.ai\autogen-mcp-system\mcp_server\api_routes.py", line 256, in non_streaming_response
+    result = await orchestrator.execute_task_with_routing(
+                   │            └ <function EnhancedAgentOrchestrator.execute_task_with_routing at 0x00000180973FA840>
+                   └ <agents.enhanced_orchestrator.EnhancedAgentOrchestrator object at 0x00000180983774D0>
+
+TypeError: object async_generator can't be used in 'await' expression
+2025-12-11 16:41:36 | INFO     | mcp_server.api_routes:chat_completions - 💬 Chat from anonymous: now what is the capital of france?...
+2025-12-11 16:41:36 | INFO     | mcp_server.api_routes:chat_completions - 📚 With 7 previous messages in context
+2025-12-11 16:41:36 | INFO     | agents.enhanced_orchestrator:__init__ - ✨ Enhanced Orchestrator initialized
+2025-12-11 16:41:36 | INFO     | agents.enhanced_orchestrator:__init__ -    Current model: gpt-oss:120b-cloud
+2025-12-11 16:41:36 | INFO     | mcp_server.api_routes:stream_response - 🎬 Streaming for anonymous
+2025-12-11 16:41:36 | INFO     | mcp_server.api_routes:stream_response - 📚 Context: 7 previous messages
+2025-12-11 16:41:36 | INFO     | agents.enhanced_orchestrator:execute_with_streaming - ============================================================
+2025-12-11 16:41:36 | INFO     | agents.enhanced_orchestrator:execute_with_streaming - 🎬 STREAMING TASK from anonymous
+2025-12-11 16:41:36 | INFO     | agents.enhanced_orchestrator:execute_with_streaming - 📝 Task: now what is the capital of france?
+2025-12-11 16:41:36 | INFO     | agents.enhanced_orchestrator:execute_with_streaming - 📚 Received 7 previous messages
+2025-12-11 16:41:36 | INFO     | agents.enhanced_orchestrator:_is_follow_up_question - 📋 No follow-up indicators - treating as NEW conversation
+2025-12-11 16:41:36 | INFO     | agents.enhanced_orchestrator:_build_context_prompt - 📋 Independent question - NO context added
+2025-12-11 16:41:36 | INFO     | agents.enhanced_orchestrator:execute_with_streaming - ============================================================
+2025-12-11 16:41:36 | INFO     | agents.enhanced_orchestrator:_classify_task - 🎯 Classified as GENERAL (simple task)
+2025-12-11 16:41:47 | INFO     | agents.enhanced_orchestrator:execute_with_streaming - ✅ Streaming completed for anonymous
+2025-12-11 16:41:47 | INFO     | mcp_server.api_routes:stream_response - ✅ Streaming complete for anonymous
+2025-12-11 16:41:48 | INFO     | mcp_server.api_routes:chat_completions - 💬 Chat from anonymous: ### Task:
+Suggest 3-5 relevant follow-up questions or prompts that the user might naturally ask next...
+2025-12-11 16:41:48 | WARNING  | mcp_server.api_routes:non_streaming_response - ⚠️ Non-streaming from anonymous
+2025-12-11 16:41:48 | INFO     | agents.enhanced_orchestrator:__init__ - ✨ Enhanced Orchestrator initialized
+2025-12-11 16:41:48 | INFO     | agents.enhanced_orchestrator:__init__ -    Current model: gpt-oss:120b-cloud
+2025-12-11 16:41:48 | ERROR    | mcp_server.api_routes:non_streaming_response - ❌ Non-streaming error: object async_generator can't be used in 'await' expression
+2025-12-11 16:41:48 | ERROR    | mcp_server.api_routes:non_streaming_response - Full traceback:
+Traceback (most recent call last):
+
+  File "G:\dataden.ai\autogen-mcp-system\mcp_server\main.py", line 225, in <module>
+    uvicorn.run(
+    │       └ <function run at 0x0000018093E38A40>
+    └ <module 'uvicorn' from 'G:\\dataden.ai\\venv\\Lib\\site-packages\\uvicorn\\__init__.py'>
+
+  File "G:\dataden.ai\venv\Lib\site-packages\uvicorn\main.py", line 593, in run
+    server.run()
+    │      └ <function Server.run at 0x0000018093E7C7C0>
+    └ <uvicorn.server.Server object at 0x000001809547C3D0>
+  File "G:\dataden.ai\venv\Lib\site-packages\uvicorn\server.py", line 67, in run
+    return asyncio_run(self.serve(sockets=sockets), loop_factory=self.config.get_loop_factory())
+           │           │    │             │                      │    │      └ <function Config.get_loop_factory at 0x0000018093E06020>
+           │           │    │             │                      │    └ <uvicorn.config.Config object at 0x00000180980CE590>
+           │           │    │             │                      └ <uvicorn.server.Server object at 0x000001809547C3D0>
+           │           │    │             └ None
+           │           │    └ <function Server.serve at 0x0000018093E7C860>
+           │           └ <uvicorn.server.Server object at 0x000001809547C3D0>
+           └ <function asyncio_run at 0x0000018093E7C720>
+  File "G:\dataden.ai\venv\Lib\site-packages\uvicorn\_compat.py", line 23, in asyncio_run
+    return runner.run(main)
+           │      │   └ <coroutine object Server.serve at 0x0000018098022890>
+           │      └ <function Runner.run at 0x0000018093B14220>
+           └ <asyncio.runners.Runner object at 0x00000180980C3B50>
+  File "C:\Users\sgottipalli\AppData\Local\Programs\Python\Python311\Lib\asyncio\runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           │    │     │                  └ <Task pending name='Task-1' coro=<Server.serve() running at G:\dataden.ai\venv\Lib\site-packages\uvicorn\server.py:71> wait_f...
+           │    │     └ <function BaseEventLoop.run_until_complete at 0x0000018093B11DA0>
+           │    └ <ProactorEventLoop running=True closed=False debug=False>
+           └ <asyncio.runners.Runner object at 0x00000180980C3B50>
+  File "C:\Users\sgottipalli\AppData\Local\Programs\Python\Python311\Lib\asyncio\base_events.py", line 640, in run_until_complete
+    self.run_forever()
+    │    └ <function ProactorEventLoop.run_forever at 0x0000018093BE1EE0>
+    └ <ProactorEventLoop running=True closed=False debug=False>
+  File "C:\Users\sgottipalli\AppData\Local\Programs\Python\Python311\Lib\asyncio\windows_events.py", line 321, in run_forever
+    super().run_forever()
+  File "C:\Users\sgottipalli\AppData\Local\Programs\Python\Python311\Lib\asyncio\base_events.py", line 607, in run_forever
+    self._run_once()
+    │    └ <function BaseEventLoop._run_once at 0x0000018093B13B00>
+    └ <ProactorEventLoop running=True closed=False debug=False>
+  File "C:\Users\sgottipalli\AppData\Local\Programs\Python\Python311\Lib\asyncio\base_events.py", line 1922, in _run_once
+    handle._run()
+    │      └ <function Handle._run at 0x0000018093659760>
+    └ <Handle Task.task_wakeup(<Future finished result=None>)>
+  File "C:\Users\sgottipalli\AppData\Local\Programs\Python\Python311\Lib\asyncio\events.py", line 80, in _run
+    self._context.run(self._callback, *self._args)
+    │    │            │    │           │    └ <member '_args' of 'Handle' objects>
+    │    │            │    │           └ <Handle Task.task_wakeup(<Future finished result=None>)>
+    │    │            │    └ <member '_callback' of 'Handle' objects>
+    │    │            └ <Handle Task.task_wakeup(<Future finished result=None>)>
+    │    └ <member '_context' of 'Handle' objects>
+    └ <Handle Task.task_wakeup(<Future finished result=None>)>
+  File "G:\dataden.ai\venv\Lib\site-packages\starlette\middleware\base.py", line 141, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+          │    │   │      │                      └ <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.send_no_error at 0x0000018098292840>
+          │    │   │      └ <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x00000180982925C0>
+          │    │   └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+          │    └ <starlette.middleware.exceptions.ExceptionMiddleware object at 0x00000180981A2950>
+          └ <starlette.middleware.base.BaseHTTPMiddleware object at 0x00000180981A29D0>
+  File "G:\dataden.ai\venv\Lib\site-packages\starlette\middleware\exceptions.py", line 62, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+          │                            │    │    │     │      │        └ <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.send_no_error at 0x0000018098292840>
+          │                            │    │    │     │      └ <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x00000180982925C0>
+          │                            │    │    │     └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+          │                            │    │    └ <starlette.requests.Request object at 0x00000180983A41D0>
+          │                            │    └ <fastapi.middleware.asyncexitstack.AsyncExitStackMiddleware object at 0x00000180981A2910>
+          │                            └ <starlette.middleware.exceptions.ExceptionMiddleware object at 0x00000180981A2950>
+          └ <function wrap_app_handling_exceptions at 0x00000180950F0900>
+  File "G:\dataden.ai\venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+          │   │      │        └ <function wrap_app_handling_exceptions.<locals>.wrapped_app.<locals>.sender at 0x0000018098293420>
+          │   │      └ <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x00000180982925C0>
+          │   └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+          └ <fastapi.middleware.asyncexitstack.AsyncExitStackMiddleware object at 0x00000180981A2910>
+  File "G:\dataden.ai\venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+          │    │   │      │        └ <function wrap_app_handling_exceptions.<locals>.wrapped_app.<locals>.sender at 0x0000018098293420>
+          │    │   │      └ <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x00000180982925C0>
+          │    │   └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+          │    └ <fastapi.routing.APIRouter object at 0x00000180980A3C90>
+          └ <fastapi.middleware.asyncexitstack.AsyncExitStackMiddleware object at 0x00000180981A2910>
+  File "G:\dataden.ai\venv\Lib\site-packages\starlette\routing.py", line 715, in __call__
+    await self.middleware_stack(scope, receive, send)
+          │    │                │      │        └ <function wrap_app_handling_exceptions.<locals>.wrapped_app.<locals>.sender at 0x0000018098293420>
+          │    │                │      └ <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x00000180982925C0>
+          │    │                └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+          │    └ <bound method Router.app of <fastapi.routing.APIRouter object at 0x00000180980A3C90>>
+          └ <fastapi.routing.APIRouter object at 0x00000180980A3C90>
+  File "G:\dataden.ai\venv\Lib\site-packages\starlette\routing.py", line 735, in app
+    await route.handle(scope, receive, send)
+          │     │      │      │        └ <function wrap_app_handling_exceptions.<locals>.wrapped_app.<locals>.sender at 0x0000018098293420>
+          │     │      │      └ <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x00000180982925C0>
+          │     │      └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+          │     └ <function Route.handle at 0x00000180950F1E40>
+          └ APIRoute(path='/api/v1/chat/completions', name='chat_completions', methods=['POST'])
+  File "G:\dataden.ai\venv\Lib\site-packages\starlette\routing.py", line 288, in handle
+    await self.app(scope, receive, send)
+          │    │   │      │        └ <function wrap_app_handling_exceptions.<locals>.wrapped_app.<locals>.sender at 0x0000018098293420>
+          │    │   │      └ <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x00000180982925C0>
+          │    │   └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+          │    └ <function request_response.<locals>.app at 0x00000180980C5940>
+          └ APIRoute(path='/api/v1/chat/completions', name='chat_completions', methods=['POST'])
+  File "G:\dataden.ai\venv\Lib\site-packages\fastapi\routing.py", line 125, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+          │                            │    │        │      │        └ <function wrap_app_handling_exceptions.<locals>.wrapped_app.<locals>.sender at 0x0000018098293420>
+          │                            │    │        │      └ <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x00000180982925C0>
+          │                            │    │        └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+          │                            │    └ <starlette.requests.Request object at 0x00000180983A4690>
+          │                            └ <function request_response.<locals>.app.<locals>.app at 0x0000018098293F60>
+          └ <function wrap_app_handling_exceptions at 0x00000180950F0900>
+  File "G:\dataden.ai\venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+          │   │      │        └ <function wrap_app_handling_exceptions.<locals>.wrapped_app.<locals>.sender at 0x00000180982936A0>
+          │   │      └ <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x00000180982925C0>
+          │   └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+          └ <function request_response.<locals>.app.<locals>.app at 0x0000018098293F60>
+  File "G:\dataden.ai\venv\Lib\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+                     │ └ <starlette.requests.Request object at 0x00000180983A4690>
+                     └ <function get_request_handler.<locals>.app at 0x00000180980C5800>
+  File "G:\dataden.ai\venv\Lib\site-packages\fastapi\routing.py", line 391, in app
+    raw_response = await run_endpoint_function(
+                         └ <function run_endpoint_function at 0x00000180950F3CE0>
+  File "G:\dataden.ai\venv\Lib\site-packages\fastapi\routing.py", line 290, in run_endpoint_function
+    return await dependant.call(**values)
+                 │         │      └ {'authorization': 'Bearer kEfuvjPcbj0ZvQe9HHDOjRpt9MT_GOv3xBM3j7CjIeM', 'x_api_key': None, 'x_user_id': None, 'x_user_email':...
+                 │         └ <function chat_completions at 0x00000180973FAA20>
+                 └ Dependant(path_params=[], query_params=[], header_params=[ModelField(field_info=Header(None), name='authorization', mode='val...
+
+  File "G:\dataden.ai\autogen-mcp-system\mcp_server\api_routes.py", line 128, in chat_completions
+    return await non_streaming_response(last_message, user_id, conversation_history)
+                 │                      │             │        └ []
+                 │                      │             └ 'anonymous'
+                 │                      └ '### Task:\nSuggest 3-5 relevant follow-up questions or prompts that the user might naturally ask next in this conversation a...
+                 └ <function non_streaming_response at 0x00000180973FACA0>
+
+> File "G:\dataden.ai\autogen-mcp-system\mcp_server\api_routes.py", line 256, in non_streaming_response
+    result = await orchestrator.execute_task_with_routing(
+                   │            └ <function EnhancedAgentOrchestrator.execute_task_with_routing at 0x00000180973FA840>
+                   └ <agents.enhanced_orchestrator.EnhancedAgentOrchestrator object at 0x0000018098236B10>
+
+TypeError: object async_generator can't be used in 'await' expression

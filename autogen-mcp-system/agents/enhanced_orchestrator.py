@@ -186,6 +186,22 @@ class EnhancedAgentOrchestrator:
 
         return cleaned
 
+    def _check_for_user_input_needed(self, content: str) -> Optional[str]:
+        """
+        Check if agent is asking for user input
+        
+        Returns question if found, None otherwise
+        """
+        if "[NEED_USER_INPUT:" in content:
+            # Extract the question
+            import re
+            match = re.search(r'\[NEED_USER_INPUT:\s*(.+?)\]', content)
+            if match:
+                question = match.group(1).strip()
+                logger.info(f"💬 Agent needs user input: {question}")
+                return question
+        return None
+
     def _should_show_message(self, source: str, content: str) -> bool:
         """
         Determine if a message should be shown to user
@@ -306,7 +322,17 @@ Respond with ONE of:
 - DATA_ANALYSIS_TEAM
 - GENERAL_ASSISTANT_TEAM
 
-No explanations.""",
+No explanations.
+
+If you need clarification from the user, respond with:
+[NEED_USER_INPUT: your question here]
+
+Example:
+[NEED_USER_INPUT: Which year would you like - 2023 or 2024?]
+
+DO NOT make assumptions. DO NOT invent data.
+ALWAYS ask the user if unclear.
+""",
         )
 
         return supervisor
@@ -329,7 +355,17 @@ Handle:
 - General knowledge
 - Simple questions
 
-Be concise and direct. Provide the answer clearly.""",
+Be concise and direct. Provide the answer clearly.
+
+If you need clarification from the user, respond with:
+[NEED_USER_INPUT: your question here]
+
+Example:
+[NEED_USER_INPUT: Which year would you like - 2023 or 2024?]
+
+DO NOT make assumptions. DO NOT invent data.
+ALWAYS ask the user if unclear.
+""",
         )
 
         team = MagenticOneGroupChat(
@@ -417,6 +453,17 @@ YOU: [Call list_all_tables_wrapper] → Find FactInternetSales
      [Call get_table_schema_wrapper('FactInternetSales')] → See columns
      [Execute] SELECT TOP 100 * FROM FactInternetSales ORDER BY OrderDate DESC
      [Return results]
+
+If you need clarification from the user, respond with:
+[NEED_USER_INPUT: your question here]
+
+Example:
+- [NEED_USER_INPUT: Which year - 2023 or 2024?]
+- [NEED_USER_INPUT: Do you want total sales or by region?]
+- [NEED_USER_INPUT: Filter by any specific date range?]
+
+DO NOT make assumptions. DO NOT invent data.
+ALWAYS ask the user if unclear.
 """,
         )
 
@@ -432,7 +479,17 @@ Analyze results from SQLAgent. Provide:
 - Trends
 - Insights
 
-Be brief and data-driven.""",
+Be brief and data-driven.
+
+If you need clarification from the user, respond with:
+[NEED_USER_INPUT: your question here]
+
+Example:
+[NEED_USER_INPUT: Which year would you like - 2023 or 2024?]
+
+DO NOT make assumptions. DO NOT invent data.
+ALWAYS ask the user if unclear.
+""",
         )
 
         # Validation Agent - Quick
@@ -960,7 +1017,7 @@ Keep it short.""",
             # Add context if available
             if conversation_history:
                 logger.info(f"📚 Received {len(conversation_history)} previous messages")
-                
+
                 # Check if we should ask for clarification FIRST
                 clarification = self._should_ask_for_clarification(task_description, conversation_history)
                 if clarification:
@@ -971,7 +1028,7 @@ Keep it short.""",
                         "routed_to": "CLARIFICATION",
                         "needs_clarification": True
                     }
-                
+
                 # Build enhanced prompt (only if questions are related)
                 enriched_task = self._build_context_prompt(task_description, conversation_history)
             else:
@@ -1019,6 +1076,21 @@ Keep it short.""",
 
                         # CLEAN: Extract user-friendly content
                         clean_content = self._extract_clean_content(content)
+
+                        # Check if agent needs user input
+                        user_input_needed = self._check_for_user_input_needed(clean_content)
+                        if user_input_needed:
+                            # Yield the question to user
+                            yield {
+                                "agent": source,
+                                "type": "question",  # NEW type
+                                "content": user_input_needed,
+                                "timestamp": datetime.now().isoformat(),
+                                "needs_user_input": True  # Flag for UI
+                            }
+                            # Stop streaming - wait for user response
+                            logger.info("⏸️ Pausing for user input")
+                            return
 
                         # Classify message type
                         message_type = self._classify_message_type(
@@ -1095,6 +1167,23 @@ Keep it short.""",
 
                             # CLEAN: Extract user-friendly content
                             clean_content = self._extract_clean_content(content)
+
+                            # Check if agent needs user input
+                            user_input_needed = self._check_for_user_input_needed(
+                                clean_content
+                            )
+                            if user_input_needed:
+                                # Yield the question to user
+                                yield {
+                                    "agent": source,
+                                    "type": "question",  # NEW type
+                                    "content": user_input_needed,
+                                    "timestamp": datetime.now().isoformat(),
+                                    "needs_user_input": True,  # Flag for UI
+                                }
+                                # Stop streaming - wait for user response
+                                logger.info("⏸️ Pausing for user input")
+                                return
 
                             # FINAL CHECK: Make sure we didn't leave any wrappers
                             if "TextMessage(" in clean_content:

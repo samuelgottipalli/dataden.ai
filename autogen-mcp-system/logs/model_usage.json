@@ -104,6 +104,34 @@
       "details": "gpt-oss:120b-cloud",
       "current_model": "gpt-oss:120b-cloud",
       "using_fallback": false
+    },
+    {
+      "timestamp": "2025-12-11T16:35:32.324982",
+      "event": "success",
+      "details": "gpt-oss:120b-cloud",
+      "current_model": "gpt-oss:120b-cloud",
+      "using_fallback": false
+    },
+    {
+      "timestamp": "2025-12-11T16:38:12.360042",
+      "event": "success",
+      "details": "gpt-oss:120b-cloud",
+      "current_model": "gpt-oss:120b-cloud",
+      "using_fallback": false
+    },
+    {
+      "timestamp": "2025-12-11T16:40:18.297945",
+      "event": "success",
+      "details": "gpt-oss:120b-cloud",
+      "current_model": "gpt-oss:120b-cloud",
+      "using_fallback": false
+    },
+    {
+      "timestamp": "2025-12-11T16:41:47.595318",
+      "event": "success",
+      "details": "gpt-oss:120b-cloud",
+      "current_model": "gpt-oss:120b-cloud",
+      "using_fallback": false
     }
   ]
 }

@@ -279,6 +279,7 @@ async def non_streaming_response(
 
     except Exception as e:
         logger.error(f"❌ Non-streaming error: {e}")
+        logger.exception("Full traceback:")
         raise HTTPException(500, f"Execution failed: {str(e)}")
 
 
