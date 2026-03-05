@@ -1,0 +1,46 @@
+# ============================================================
+# AI Data Assistant — POC2
+# requirements.txt
+# Python >= 3.10 required
+# ============================================================
+
+# --- Microsoft AutoGen framework (AgentChat + Ollama extension) ---
+autogen-agentchat==0.7.5
+autogen-ext[ollama]==0.7.5
+
+# --- FastAPI (API layer) ---
+fastapi==0.115.12
+uvicorn[standard]==0.34.0
+
+# --- Configuration ---
+pydantic==2.11.3
+pydantic-settings==2.9.1
+python-dotenv==1.1.0
+
+# --- MS SQL Server ---
+pyodbc==5.2.0
+sqlalchemy==2.0.40
+
+# --- PostgreSQL + pgvector ---
+psycopg2-binary==2.9.10
+pgvector==0.4.1
+
+# --- LDAP Authentication ---
+ldap3==2.9.1
+
+# --- Embeddings (nomic-embed-text via Ollama — no separate package needed) ---
+# Ollama Python client is pulled in by autogen-ext[ollama]
+
+# --- Data processing ---
+pandas==2.2.3
+numpy==2.2.5
+
+# --- Retry / resilience ---
+tenacity==9.1.2
+
+# --- Logging ---
+loguru==0.7.3
+
+# --- Testing ---
+pytest==8.3.5
+pytest-asyncio==0.26.0

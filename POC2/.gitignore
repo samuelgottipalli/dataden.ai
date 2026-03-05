@@ -1,0 +1,49 @@
+# ============================================================
+# AI Data Assistant — POC2
+# .gitignore
+# ============================================================
+
+# Environment & secrets — NEVER commit
+.env
+*.env
+
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Logs (runtime generated)
+logs/
+*.log
+
+# Test & coverage artifacts
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE
+.vscode/
+.idea/
+*.suo
+*.user
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Data — never commit institution data
+data/
+*.csv
+*.xlsx
+*.bak
+
+# Sensitive config
+OAI_CONFIG_LIST
+*.key
+*.pem
