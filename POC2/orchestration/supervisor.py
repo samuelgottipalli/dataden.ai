@@ -18,6 +18,7 @@ import asyncio
 import json
 import re
 from dataclasses import dataclass, field
+from typing import Optional
 from loguru import logger
 
 from autogen_agentchat.teams import RoundRobinGroupChat
@@ -51,7 +52,16 @@ class QueryResult:
     raw_data: list | None
     error: str | None
     message_trace: list[str]
-    database_key: str | None = None          # NEW — which DB was queried
+    database_key: str | None = None          # which DB was queried
+
+
+@dataclass
+class ConversationTurn:
+    """A single turn in a multi-turn conversation."""
+    user_query: str
+    assistant_response: str
+    database_key: Optional[str] = None
+    sql_executed: Optional[str] = None
 
 
 # ── Intent extraction ─────────────────────────────────────────────────────────
@@ -135,8 +145,11 @@ async def classify_intent(user_query: str) -> str:
         ),
         options={
             "temperature": 0.0,
+            # No num_predict cap: Qwen3 thinking mode emits a <think> block
+            # before the answer token — capping tokens cuts off mid-think and
+            # returns an empty string. The R1 family strips <think> blocks
+            # automatically; the fallback pattern matcher handles empty output.
             "num_ctx": 2048,
-            "num_predict": 50,       # enough tokens for one word after think-block stripping
         },
     )
     try:
@@ -245,8 +258,8 @@ async def route_to_database(user_query: str) -> str:
         ),
         options={
             "temperature": 0.0,
+            # No num_predict cap — same reason as classify_intent above.
             "num_ctx": 4096,
-            "num_predict": 50,   # enough tokens for a database key after think-block stripping
         },
     )
 
@@ -296,11 +309,14 @@ async def route_to_database(user_query: str) -> str:
 async def run_data_query_pipeline(
     user_query: str,
     database_key: str,
+    history: Optional[list[ConversationTurn]] = None,
 ) -> QueryResult:
     """
     Runs the SQL Agent → Validation Agent pipeline for a DATA_QUERY intent.
     The resolved database_key is injected into the task so the SQL Agent
-    knows which database to connect to.
+    knows which database to connect to. If history is provided, a concise
+    context summary is prepended to help the agent resolve references to
+    previous questions (e.g. "same semester", "that table", "now by gender").
     """
     sql_agent = build_sql_agent()
     validation_agent = build_validation_agent()
@@ -310,6 +326,7 @@ async def run_data_query_pipeline(
                   TextMentionTermination("VALIDATION_PASSED") | \
                   TextMentionTermination("VALIDATION_FAILED") | \
                   TextMentionTermination("VALIDATION_WARNING") | \
+                  TextMentionTermination("CLARIFICATION_NEEDED") | \
                   MaxMessageTermination(12)
 
     team = RoundRobinGroupChat(
@@ -317,10 +334,23 @@ async def run_data_query_pipeline(
         termination_condition=termination,
     )
 
-    # Inject the database_key into the task so the SQL Agent sees it
+    # Build conversation context summary from history (last 3 turns max)
+    history_context = ""
+    if history:
+        recent = history[-3:]
+        lines = ["Previous conversation context (for resolving references):"]
+        for i, turn in enumerate(recent, 1):
+            lines.append(f"  Turn {i} — User asked: {turn.user_query}")
+            if turn.sql_executed:
+                lines.append(f"           SQL used: {turn.sql_executed}")
+            lines.append(f"           Assistant answered: {turn.assistant_response[:200]}")
+        history_context = "\n".join(lines) + "\n\n"
+
+    # Inject database key, optional history, and the current question
     task_with_db = (
         f"TARGET DATABASE: {database_key}\n\n"
-        f"User question: {user_query}"
+        + history_context
+        + f"Current question: {user_query}"
     )
 
     message_trace: list[str] = []
@@ -349,6 +379,16 @@ async def run_data_query_pipeline(
                 continue
 
             content_upper = content_str.upper()
+
+            # Capture clarification request from SQL Agent
+            if "CLARIFICATION_NEEDED" in content_upper and event.source == "SQLAgent":
+                # Extract the question text after "Question:"
+                question_text = content_str
+                if "Question:" in content_str:
+                    question_text = content_str.split("Question:", 1)[-1].strip()
+                validation_status = "CLARIFICATION_NEEDED"
+                final_response = question_text
+                logger.info(f"[PIPELINE] SQL Agent requested clarification: {question_text[:100]}")
 
             # Capture validation status
             for status in ("VALIDATION_PASSED", "VALIDATION_FAILED", "VALIDATION_WARNING"):
@@ -404,7 +444,8 @@ async def run_data_query_pipeline(
             message_trace[-1].split("]", 1)[-1].strip() if message_trace else ""
         )
 
-    success = validation_status in ("VALIDATION_PASSED", "VALIDATION_WARNING")
+    # CLARIFICATION_NEEDED is not a failure — it's an intentional agent response
+    success = validation_status in ("VALIDATION_PASSED", "VALIDATION_WARNING", "CLARIFICATION_NEEDED")
 
     return QueryResult(
         success=success,
@@ -422,10 +463,18 @@ async def run_data_query_pipeline(
 
 # ── Main entry point ──────────────────────────────────────────────────────────
 
-async def process_query(user_query: str) -> QueryResult:
+async def process_query(
+    user_query: str,
+    history: Optional[list[ConversationTurn]] = None,
+) -> QueryResult:
     """
     Main entry point. Classifies intent, routes to a database, then runs
     the appropriate pipeline.
+
+    Pass `history` (a list of ConversationTurn) to give the SQL Agent
+    context from previous turns in the same session. The history is
+    summarised and prepended to the task so the agent understands
+    references like "same semester", "that table", "now show by gender", etc.
     """
     # Step 1 — intent classification
     intent = await classify_intent(user_query)
@@ -455,4 +504,4 @@ async def process_query(user_query: str) -> QueryResult:
     logger.info(f"[SUPERVISOR] Routing DATA_QUERY to database: {database_key}")
 
     # Step 3 — run pipeline
-    return await run_data_query_pipeline(user_query, database_key)
+    return await run_data_query_pipeline(user_query, database_key, history=history)
