@@ -2,121 +2,56 @@
 tools/sql_tools.py
 AI Data Assistant — POC2
 
-Tool functions registered with the SQL Agent.
-These are the actual functions that touch the database.
-AutoGen calls these as FunctionTools when the agent decides to use them.
+SQL tools available to the SQL Agent. All tools now accept a `database_key`
+parameter that identifies which database in the catalog to connect to.
 
-All tools are:
-  - Read-only (enforced by validate_readonly_sql before every execution)
-  - Row-limited (MAX_ROWS cap)
-  - Logged (every execution appears in audit log)
+Tools:
+  get_schema_summary(database_key)          — compact schema for a specific DB
+  get_table_sample(database_key, table)     — sample rows from a specific table
+  execute_sql_query(database_key, sql)      — execute a validated SELECT query
 """
 
 import json
 from typing import Annotated
 from loguru import logger
+
 from db.connection import get_mssql_connection, validate_readonly_sql
-
-# Hard cap on rows returned
-MAX_ROWS = 500
-# Hard cap on query execution time (seconds)
-QUERY_TIMEOUT_SECONDS = 30
-# Max tables to return in a full schema summary before switching to compact mode
-_SCHEMA_COMPACT_THRESHOLD = 30
+from db.catalog import get_available_database_entry, get_schemas_for_database, build_schema_filter_sql
 
 
-def execute_sql_query(
-    sql: Annotated[str, "The SELECT SQL query to execute against the data warehouse"],
+# ── get_schema_summary ────────────────────────────────────────────────────────
+
+def get_schema_summary(
+    database_key: Annotated[
+        str,
+        "The database key to query (e.g. 'StudentDB', 'CourseDB'). "
+        "Must be one of the keys from the database catalog provided to you.",
+    ],
 ) -> str:
     """
-    Execute a read-only SQL SELECT query against the MS SQL data warehouse.
+    Returns a compact one-line-per-table schema summary for the specified
+    database. Only tables in the allowed schemas (as defined in the catalog)
+    are included.
 
-    Returns a JSON string with keys:
-      - success (bool)
-      - rows (list of dicts, up to MAX_ROWS)
-      - row_count (int)
-      - columns (list of str)
-      - truncated (bool) — True if results were capped at MAX_ROWS
-      - error (str or None)
-
-    Only SELECT statements are permitted. Do not pass INSERT, UPDATE, DELETE,
-    DROP, TRUNCATE, ALTER, or any DDL/DML statement.
-    """
-    is_safe, reason = validate_readonly_sql(sql)
-    if not is_safe:
-        logger.warning(f"[SQL BLOCKED] {reason}")
-        return json.dumps({
-            "success": False,
-            "rows": [],
-            "row_count": 0,
-            "columns": [],
-            "truncated": False,
-            "error": f"Query blocked by safety check: {reason}",
-        })
-
-    logger.info(f"[SQL EXECUTE] {sql[:200]}")
-
-    try:
-        with get_mssql_connection() as conn:
-            conn.timeout = QUERY_TIMEOUT_SECONDS
-            cursor = conn.cursor()
-            cursor.execute(sql)
-
-            columns = [col[0] for col in cursor.description] if cursor.description else []
-            rows_raw = cursor.fetchmany(MAX_ROWS + 1)
-
-            truncated = len(rows_raw) > MAX_ROWS
-            rows_raw = rows_raw[:MAX_ROWS]
-
-            rows = []
-            for row in rows_raw:
-                row_dict = {}
-                for col, val in zip(columns, row):
-                    if hasattr(val, "isoformat"):
-                        row_dict[col] = val.isoformat()
-                    elif val is None:
-                        row_dict[col] = None
-                    else:
-                        row_dict[col] = str(val) if not isinstance(val, (int, float, bool)) else val
-                rows.append(row_dict)
-
-        logger.info(f"[SQL OK] {len(rows)} rows returned (truncated={truncated})")
-        return json.dumps({
-            "success": True,
-            "rows": rows,
-            "row_count": len(rows),
-            "columns": columns,
-            "truncated": truncated,
-            "error": None,
-        })
-
-    except Exception as e:
-        logger.error(f"[SQL ERROR] {e}")
-        return json.dumps({
-            "success": False,
-            "rows": [],
-            "row_count": 0,
-            "columns": [],
-            "truncated": False,
-            "error": str(e),
-        })
-
-
-def get_schema_summary() -> str:
-    """
-    Return the list of tables and their columns available in the data warehouse.
-
-    To keep the output manageable, this returns a COMPACT format:
-    each table is shown as one line:
+    Format per line:
         SCHEMA.TABLE_NAME: col1 (type), col2 (type), ...
 
-    This is the format you should read to decide which tables and columns
-    are relevant to the user's question before writing a SQL query.
-    Use get_table_sample() if you need to see actual data values in a table.
+    Use this before writing a query to discover available tables and columns.
     """
-    logger.info("[SCHEMA] Fetching schema summary")
+    logger.info(f"[SCHEMA] Fetching schema summary for database: {database_key}")
 
-    schema_sql = """
+    entry = get_available_database_entry(database_key)
+    if entry is None:
+        return json.dumps({
+            "success": False,
+            "error": f"Unknown database key: '{database_key}'. "
+                     "Use a key from the database catalog.",
+        })
+
+    schemas = get_schemas_for_database(database_key)
+    schema_filter = build_schema_filter_sql(schemas)
+
+    schema_sql = f"""
         SELECT
             t.TABLE_SCHEMA,
             t.TABLE_NAME,
@@ -128,16 +63,16 @@ def get_schema_summary() -> str:
             ON t.TABLE_NAME = c.TABLE_NAME
             AND t.TABLE_SCHEMA = c.TABLE_SCHEMA
         WHERE t.TABLE_TYPE = 'BASE TABLE'
+          AND t.TABLE_SCHEMA IN {schema_filter}
         ORDER BY t.TABLE_SCHEMA, t.TABLE_NAME, c.ORDINAL_POSITION
     """
 
     try:
-        with get_mssql_connection() as conn:
+        with get_mssql_connection(entry["database_name"]) as conn:
             cursor = conn.cursor()
             cursor.execute(schema_sql)
             rows = cursor.fetchall()
 
-        # Build compact one-line-per-table representation
         tables: dict = {}
         for schema_name, table_name, col_name, data_type, nullable in rows:
             key = f"{schema_name}.{table_name}"
@@ -146,54 +81,188 @@ def get_schema_summary() -> str:
             null_marker = "" if nullable == "YES" else " NOT NULL"
             tables[key].append(f"{col_name} ({data_type}{null_marker})")
 
-        compact_lines = []
-        for table_key, columns in sorted(tables.items()):
-            col_str = ", ".join(columns)
-            compact_lines.append(f"{table_key}: {col_str}")
+        compact_lines = [
+            f"{tbl}: {', '.join(cols)}"
+            for tbl, cols in sorted(tables.items())
+        ]
 
         table_count = len(tables)
-        compact_text = "\n".join(compact_lines)
+        logger.info(f"[SCHEMA] {database_key} — {table_count} tables found")
 
-        logger.info(f"[SCHEMA] {table_count} tables found")
         return json.dumps({
             "success": True,
+            "database": database_key,
             "table_count": table_count,
             "format": "compact",
-            "schema": compact_text,
+            "schema": "\n".join(compact_lines),
             "instructions": (
-                "Each line is: SCHEMA.TABLE: col (type), col (type), ... "
-                "Use these table and column names directly in your SELECT query. "
+                f"Each line is: SCHEMA.TABLE: col (type), col (type), ... "
+                f"These are tables in the '{database_key}' database. "
+                "Use SCHEMA.TABLE notation in your SELECT query (e.g. dbo.students). "
                 "Do NOT generate CREATE TABLE statements. "
                 "Your task is to write a SELECT query to answer the user's question."
             ),
         })
 
     except Exception as e:
-        logger.error(f"[SCHEMA ERROR] {e}")
-        return json.dumps({"success": False, "table_count": 0, "schema": "", "error": str(e)})
+        logger.error(f"[SCHEMA ERROR] {database_key}: {e}")
+        return json.dumps({"success": False, "database": database_key, "error": str(e)})
 
+
+# ── get_table_sample ──────────────────────────────────────────────────────────
 
 def get_table_sample(
-    table_name: Annotated[str, "The table name (schema-qualified, e.g. dbo.students)"],
-    sample_rows: Annotated[int, "Number of sample rows to return (max 10)"] = 5,
+    database_key: Annotated[
+        str,
+        "The database key (e.g. 'StudentDB'). Must match a key in the catalog.",
+    ],
+    table_name: Annotated[
+        str,
+        "Schema-qualified table name (e.g. 'dbo.students', 'Academic.grades').",
+    ],
+    sample_rows: Annotated[
+        int,
+        "Number of sample rows to return (max 10).",
+    ] = 5,
 ) -> str:
     """
-    Return a small sample of rows from a specific table.
-    Use this to understand the actual data format and values in a table
-    before writing a query — e.g. to check date formats, enum values,
-    or how a field like 'semester' or 'sex' is stored.
-
-    Returns JSON with sample rows and column names.
+    Returns a small sample of rows from a specific table in the specified
+    database. Use this to understand actual data values before writing a query
+    (e.g. to check date formats, enum values, how a field is stored).
     """
-    sample_rows = min(sample_rows, 10)
+    logger.info(f"[SAMPLE] {database_key} → {table_name} ({sample_rows} rows)")
 
-    import re
-    if not re.match(r"^[a-zA-Z0-9_\.\[\]]+$", table_name):
+    entry = get_available_database_entry(database_key)
+    if entry is None:
         return json.dumps({
             "success": False,
-            "error": f"Invalid table name: {table_name}",
+            "error": f"Unknown database key: '{database_key}'.",
         })
 
-    sql = f"SELECT TOP {sample_rows} * FROM {table_name}"
-    logger.info(f"[SAMPLE] {sql}")
-    return execute_sql_query(sql)
+    # Clamp sample rows
+    sample_rows = max(1, min(sample_rows, 10))
+
+    # Validate table_name format (schema.table) to prevent injection
+    import re
+    if not re.match(r"^[A-Za-z_][A-Za-z0-9_]*\.[A-Za-z_][A-Za-z0-9_]*$", table_name):
+        return json.dumps({
+            "success": False,
+            "error": (
+                f"Invalid table_name format: '{table_name}'. "
+                "Use schema-qualified format, e.g. 'dbo.students'."
+            ),
+        })
+
+    # Confirm the schema is in the allowed list for this database
+    schema_part = table_name.split(".")[0]
+    allowed_schemas = get_schemas_for_database(database_key)
+    if schema_part not in allowed_schemas:
+        return json.dumps({
+            "success": False,
+            "error": (
+                f"Schema '{schema_part}' is not in the allowed schemas for "
+                f"'{database_key}'. Allowed schemas: {allowed_schemas}"
+            ),
+        })
+
+    sample_sql = f"SELECT TOP {sample_rows} * FROM {table_name}"
+
+    try:
+        with get_mssql_connection(entry["database_name"]) as conn:
+            cursor = conn.cursor()
+            cursor.execute(sample_sql)
+            columns = [desc[0] for desc in cursor.description]
+            rows = cursor.fetchall()
+            row_dicts = [dict(zip(columns, row)) for row in rows]
+
+        logger.info(f"[SAMPLE] {database_key}.{table_name} — {len(row_dicts)} rows returned")
+        return json.dumps({
+            "success": True,
+            "database": database_key,
+            "table": table_name,
+            "columns": columns,
+            "rows": row_dicts,
+            "row_count": len(row_dicts),
+        }, default=str)
+
+    except Exception as e:
+        logger.error(f"[SAMPLE ERROR] {database_key}.{table_name}: {e}")
+        return json.dumps({"success": False, "database": database_key, "table": table_name, "error": str(e)})
+
+
+# ── execute_sql_query ─────────────────────────────────────────────────────────
+
+def execute_sql_query(
+    database_key: Annotated[
+        str,
+        "The database key to run the query against (e.g. 'StudentDB'). "
+        "Must match a key in the database catalog.",
+    ],
+    sql: Annotated[
+        str,
+        "The SELECT query to execute. Must be read-only — no INSERT, UPDATE, "
+        "DELETE, DROP, ALTER, EXEC, or TRUNCATE.",
+    ],
+) -> str:
+    """
+    Executes a validated read-only SELECT query against the specified database
+    and returns the results as JSON.
+
+    Results are capped at 1000 rows. If the query returns more, the caller
+    is advised to refine with GROUP BY or TOP.
+    """
+    logger.info(f"[SQL] execute_sql_query on '{database_key}' | SQL: {sql[:100]}...")
+
+    entry = get_available_database_entry(database_key)
+    if entry is None:
+        return json.dumps({
+            "success": False,
+            "error": f"Unknown database key: '{database_key}'.",
+        })
+
+    # Validate read-only
+    is_safe, reason = validate_readonly_sql(sql)
+    if not is_safe:
+        return json.dumps({"success": False, "error": reason})
+
+    try:
+        with get_mssql_connection(entry["database_name"]) as conn:
+            cursor = conn.cursor()
+            cursor.execute(sql)
+
+            if cursor.description is None:
+                # Non-SELECT statement slipped through — return empty result
+                logger.warning(f"[SQL] Query returned no cursor description: {sql[:80]}")
+                return json.dumps({
+                    "success": False,
+                    "error": "Query did not return a result set. Only SELECT queries are allowed.",
+                })
+
+            columns = [desc[0] for desc in cursor.description]
+            rows = cursor.fetchmany(1000)
+            row_dicts = [dict(zip(columns, row)) for row in rows]
+
+        truncated = len(row_dicts) == 1000
+        logger.info(
+            f"[SQL] {database_key} — {len(row_dicts)} rows returned"
+            + (" (truncated at 1000)" if truncated else "")
+        )
+
+        result = {
+            "success": True,
+            "database": database_key,
+            "columns": columns,
+            "rows": row_dicts,
+            "row_count": len(row_dicts),
+        }
+        if truncated:
+            result["warning"] = (
+                "Results truncated at 1000 rows. Consider adding TOP, "
+                "WHERE filters, or GROUP BY to your query."
+            )
+
+        return json.dumps(result, default=str)
+
+    except Exception as e:
+        logger.error(f"[SQL ERROR] {database_key}: {e} | SQL: {sql[:120]}")
+        return json.dumps({"success": False, "database": database_key, "error": str(e)})

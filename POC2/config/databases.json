@@ -1,0 +1,60 @@
+{
+  "_comment": "Database catalog for the AI Data Assistant. Each entry describes one SQL Server database the LLM is allowed to query. The 'description' and 'schema_descriptions' fields are injected verbatim into the LLM context — keep them clear and concise. 'schemas' lists the SQL Server schema names that are in scope. 'available' controls whether the LLM is permitted to route queries to this database.",
+  "databases": [
+    {
+      "key": "edw_landing",
+      "database_name": "edw_landing",
+      "available": true,
+      "description": "Raw data exported directly from source systems with minimal transformation. Tables are stored in the same form as their source system counterparts. Most tables need to be joined with dimension tables (prefixed 'D_' or suffixed '_TBL') to get a full picture. Tables prefixed 'CENSUS_' or suffixed '_SNAPSHOT' are point-in-time snapshots of specific datasets. Update schedules for all tables and views are defined in the table OTHR.landing_tables.",
+      "schemas": ["STDNT", "STDNT_FIN", "SURVEY", "SURVY", "EMP", "FIN", "OTHR", "dbo"],
+      "schema_descriptions": {
+        "STDNT": "Student data from source systems — demographics, enrollment, academic standing, programme registration. Most tables require joining with D_ or _TBL dimension tables.",
+        "STDNT_FIN": "Student financial data from source systems — tuition charges, financial aid, account balances, payment history. Most tables require joining with D_ or _TBL dimension tables.",
+        "SURVEY": "Survey response data exported from survey platforms.",
+        "SURVY": "Additional survey data — may contain older or alternate survey exports. Check OTHR.landing_tables for update schedules.",
+        "EMP": "Employee and HR data from source systems — staff, faculty, positions, payroll exports. Most tables require joining with D_ or _TBL dimension tables.",
+        "FIN": "Institutional finance data from source systems — general ledger, budget, procurement exports. Most tables require joining with D_ or _TBL dimension tables.",
+        "OTHR": "Reference and metadata tables. Contains 'landing_tables' which defines update schedules and descriptions for all tables in this database. Also contains dimension tables used across schemas.",
+        "dbo": "Default schema — may contain shared or utility tables."
+      },
+      "dimension_table_note": "Dimension tables have a prefix of 'D_' or a suffix of '_TBL'. Always check whether a fact table needs to be joined to a dimension table to resolve codes or IDs into readable values. Consult OTHR.landing_tables for table descriptions and update schedules.",
+      "snapshot_table_note": "Tables prefixed 'CENSUS_' or suffixed '_SNAPSHOT' contain point-in-time snapshots. Consult OTHR.landing_tables for the snapshot dates and what each snapshot represents.",
+      "example_questions": [
+        "How many students are currently enrolled according to the latest snapshot?",
+        "What does the CENSUS_ENROLLMENT_SNAPSHOT table contain and when was it last updated?",
+        "Show me the update schedule for tables in the STDNT schema."
+      ]
+    },
+    {
+      "key": "edw_staging",
+      "database_name": "edw_staging",
+      "available": true,
+      "description": "Transformed and joined data built from edw_landing tables (or other edw_staging tables) to meet reporting needs. Tables here are pre-joined or partially aggregated compared to edw_landing, but most still require joining with dimension tables (prefixed 'D_' or suffixed '_TBL') for a complete picture. Update schedules are defined in the table OTHR.staging_tables.",
+      "schemas": ["STDNT", "STDNT_FIN", "SURVEY", "EMP", "FIN", "OTHR", "dbo"],
+      "schema_descriptions": {
+        "STDNT": "Transformed student data — cleaned, joined, or reshaped from edw_landing.STDNT for reporting. May still require dimension table joins.",
+        "STDNT_FIN": "Transformed student financial data — cleaned or joined from edw_landing.STDNT_FIN for reporting. May still require dimension table joins.",
+        "SURVEY": "Transformed survey data prepared for reporting from edw_landing survey schemas.",
+        "EMP": "Transformed employee and HR data — cleaned or joined from edw_landing.EMP for reporting. May still require dimension table joins.",
+        "FIN": "Transformed institutional finance data — cleaned or joined from edw_landing.FIN for reporting. May still require dimension table joins.",
+        "OTHR": "Reference and metadata tables. Contains 'staging_tables' which defines update schedules and descriptions for all tables in this database. Also contains dimension tables used across schemas.",
+        "dbo": "Default schema — may contain shared or utility tables."
+      },
+      "dimension_table_note": "Dimension tables have a prefix of 'D_' or a suffix of '_TBL'. Always check whether a staging table needs to be joined to a dimension table to resolve codes or IDs into readable values. Consult OTHR.staging_tables for table descriptions and update schedules.",
+      "example_questions": [
+        "Show retention rates by department for the last three years.",
+        "What is the headcount of active employees by division?",
+        "Show total financial aid awarded by programme this academic year."
+      ]
+    },
+    {
+      "key": "edw",
+      "database_name": "edw",
+      "available": false,
+      "description": "Pre-aggregated metrics database intended for dashboards and reports. Tables are currently NOT ACTIVE — ETL development is still in progress. DO NOT query this database until further notice.",
+      "schemas": [],
+      "schema_descriptions": {},
+      "example_questions": []
+    }
+  ]
+}

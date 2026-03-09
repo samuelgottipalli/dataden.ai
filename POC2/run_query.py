@@ -5,13 +5,12 @@ AI Data Assistant — POC2 Phase 1 CLI
 Usage:
     python run_query.py "How many students enrolled in 2024?"
     python run_query.py --trace "Show retention rates by department"
+    python run_query.py --interactive
 
 Flags:
     --trace     Print the full agent message trace after the result
     --json      Output the full QueryResult as JSON instead of human-readable
-
-This script is the Phase 1 integration test harness.
-No UI — purely a console runner to confirm the end-to-end pipeline works.
+    --interactive / -i   Start an interactive prompt loop
 """
 
 import asyncio
@@ -28,18 +27,17 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="AI Data Assistant — Phase 1 query runner"
     )
-    parser.add_argument("query", nargs="?", help="The natural language query to run")
+    parser.add_argument("query", nargs="?", help="The question to ask")
     parser.add_argument(
-        "--trace", action="store_true",
-        help="Print the full agent message trace",
+        "--trace", action="store_true", help="Print full agent message trace"
     )
     parser.add_argument(
-        "--json", action="store_true", dest="as_json",
-        help="Output the full result as JSON",
+        "--json", dest="as_json", action="store_true",
+        help="Output full QueryResult as JSON"
     )
     parser.add_argument(
         "--interactive", "-i", action="store_true",
-        help="Run in interactive mode (loop until 'exit')",
+        help="Start an interactive prompt loop"
     )
     return parser.parse_args()
 
@@ -49,54 +47,48 @@ def print_result(result, show_trace: bool = False, as_json: bool = False) -> Non
         print(json.dumps({
             "success": result.success,
             "intent": result.intent,
-            "user_query": result.user_query,
-            "final_response": result.final_response,
-            "validation_status": result.validation_status,
-            "sql_executed": result.sql_executed,
-            "raw_data": result.raw_data,
+            "database": result.database_key,
+            "query": result.user_query,
+            "response": result.final_response,
+            "validation": result.validation_status,
+            "sql": result.sql_executed,
+            "row_count": len(result.raw_data) if result.raw_data else 0,
             "error": result.error,
+            "trace": result.message_trace if show_trace else [],
         }, indent=2))
         return
 
-    width = 72
-    print("\n" + "=" * width)
-    print(f"  Query : {result.user_query}")
-    print(f"  Intent: {result.intent}")
-    print(f"  Status: {'✅ SUCCESS' if result.success else '❌ FAILED'}")
-    print("=" * width)
+    print("\n" + "=" * 60)
+    status_icon = "✓" if result.success else "✗"
+    print(f"{status_icon}  Intent: {result.intent}")
 
-    print("\n📋 Response:\n")
-    print(result.final_response)
+    if result.database_key:
+        print(f"   Database: {result.database_key}")
 
     if result.sql_executed:
-        print("\n🔍 SQL Executed:\n")
-        print(f"  {result.sql_executed}")
+        print(f"\n   SQL executed:\n   {result.sql_executed}")
 
-    if result.raw_data:
-        print(f"\n📊 Data Rows Returned: {len(result.raw_data)}")
-        if len(result.raw_data) <= 5:
-            for row in result.raw_data:
-                print(f"  {row}")
-        else:
-            for row in result.raw_data[:3]:
-                print(f"  {row}")
-            print(f"  ... and {len(result.raw_data) - 3} more rows")
+    print(f"\n   {result.final_response}")
+
+    if result.validation_status not in ("N/A", "UNKNOWN"):
+        print(f"\n   Validation: {result.validation_status}")
 
     if result.error and not result.success:
-        print(f"\n⚠️  Error: {result.error}")
+        print(f"\n   Error: {result.error}")
 
     if show_trace and result.message_trace:
-        print("\n" + "-" * width)
-        print("  Agent Message Trace")
-        print("-" * width)
-        for msg in result.message_trace:
-            print(f"\n{msg}")
+        print("\n--- Agent trace ---")
+        for line in result.message_trace:
+            print(f"  {line[:200]}")
 
-    print("\n" + "=" * width + "\n")
+    print("=" * 60)
 
 
-async def run_single(query: str, show_trace: bool, as_json: bool) -> bool:
-    """Run one query and return True if it succeeded."""
+async def run_single(
+    query: str,
+    show_trace: bool = False,
+    as_json: bool = False,
+) -> bool:
     result = await process_query(query)
     print_result(result, show_trace=show_trace, as_json=as_json)
     return result.success
@@ -137,4 +129,11 @@ async def main() -> None:
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except (SystemExit, KeyboardInterrupt):
+        # SystemExit is raised by sys.exit() inside main().
+        # Re-raising it here after asyncio.run() has finished avoids the
+        # "task_done() called too many times" noise from AutoGen's runtime
+        # shutdown on Windows (Python 3.11 asyncio teardown race condition).
+        raise

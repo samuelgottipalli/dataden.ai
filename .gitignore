@@ -15,3 +15,5 @@ dataden/
 .webui_secret_key
 OAI_CONFIG_LIST
 autogen_ai_lib/
+.pytest_cache/
+*.env

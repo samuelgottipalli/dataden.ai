@@ -6,6 +6,11 @@ Central configuration. All values are loaded from the .env file.
 Import the singleton `settings` object wherever config is needed:
 
     from config.settings import settings
+
+Multi-database support: individual database names are NOT stored here.
+They live in config/databases.json and are loaded by db/catalog.py.
+The mssql_* fields here define the server-level connection credentials
+that are shared across all databases on that server.
 """
 
 from pydantic_settings import BaseSettings
@@ -21,10 +26,9 @@ class Settings(BaseSettings):
     are missing.
     """
 
-    # --- MS SQL Server ---
+    # --- MS SQL Server (server-level — no single database field) ---
     mssql_server: str
     mssql_port: int = 1433
-    mssql_database: str
     mssql_user: str
     mssql_password: str
     mssql_driver: str = "{ODBC Driver 18 for SQL Server}"
@@ -63,16 +67,18 @@ class Settings(BaseSettings):
 
     # --- Derived convenience properties ---
 
-    @property
-    def mssql_connection_string(self) -> str:
+    def mssql_connection_string(self, database: str) -> str:
         """
-        Returns the pyodbc connection string for the data warehouse.
-        Read-only enforcement is at the database account level, not here.
+        Returns the pyodbc connection string for a specific database on the
+        configured MS SQL Server. Pass the database name from databases.json.
+
+        Example:
+            conn_str = settings.mssql_connection_string("StudentDB")
         """
         return (
             f"DRIVER={self.mssql_driver};"
             f"SERVER={self.mssql_server},{self.mssql_port};"
-            f"DATABASE={self.mssql_database};"
+            f"DATABASE={database};"
             f"UID={self.mssql_user};"
             f"PWD={self.mssql_password};"
             f"TrustServerCertificate={self.mssql_trust_server_certificate};"
@@ -98,7 +104,7 @@ class Settings(BaseSettings):
         )
 
     class Config:
-        env_file = r"G:\dataden.ai\POC2\.env"
+        env_file = ".env"
         env_file_encoding = "utf-8"
         case_sensitive = False
 

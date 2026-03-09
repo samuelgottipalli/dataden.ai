@@ -3,15 +3,22 @@ db/connection.py
 AI Data Assistant — POC2
 
 Manages connections to:
-  - MS SQL Server (data warehouse — read-only)
+  - MS SQL Server (data warehouse — read-only, multi-database)
   - PostgreSQL (operational database — audit logs, RAG store, sessions)
 
 Usage:
     from db.connection import get_mssql_connection, get_postgres_connection
+
+    # Connect to a specific database (key from databases.json)
+    with get_mssql_connection("StudentDB") as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT COUNT(*) FROM dbo.students")
+        ...
 """
 
 import pyodbc
 import psycopg2
+import re
 from loguru import logger
 from typing import Optional
 from config.settings import settings
@@ -22,7 +29,7 @@ from config.settings import settings
 # ─────────────────────────────────────────────────────────────
 
 # Keywords that must never appear in a query going to the data warehouse.
-# This is a defence-in-depth check on top of the read-only DB account.
+# Defence-in-depth on top of the read-only DB account.
 _DISALLOWED_SQL_KEYWORDS = {
     "INSERT", "UPDATE", "DELETE", "DROP", "TRUNCATE",
     "ALTER", "CREATE", "EXEC", "EXECUTE", "MERGE",
@@ -40,8 +47,6 @@ def validate_readonly_sql(sql: str) -> tuple[bool, Optional[str]]:
     """
     normalised = sql.upper()
     for keyword in _DISALLOWED_SQL_KEYWORDS:
-        # Check as a whole word to avoid false positives (e.g. "CREATED_AT")
-        import re
         if re.search(rf"\b{keyword}\b", normalised):
             reason = f"Query contains disallowed operation: {keyword}"
             logger.warning(f"[SQL BLOCK] {reason} | Query preview: {sql[:120]}")
@@ -49,60 +54,72 @@ def validate_readonly_sql(sql: str) -> tuple[bool, Optional[str]]:
     return True, None
 
 
-def get_mssql_connection() -> pyodbc.Connection:
+def get_mssql_connection(database: str) -> pyodbc.Connection:
     """
-    Opens and returns a new pyodbc connection to the MS SQL data warehouse.
+    Opens and returns a new pyodbc connection to the specified MS SQL database.
 
-    The connection is intentionally not pooled at this layer — each caller
-    is responsible for closing it. Use as a context manager:
+    The `database` parameter must be one of the keys defined in
+    config/databases.json (e.g. "StudentDB", "CourseDB").
 
-        with get_mssql_connection() as conn:
+    The connection is intentionally not pooled — each caller is responsible
+    for closing it. Use as a context manager:
+
+        with get_mssql_connection("StudentDB") as conn:
             cursor = conn.cursor()
             ...
 
     Raises:
-        pyodbc.Error — if the connection cannot be established.
+        ValueError  — if `database` is empty or None
+        pyodbc.Error — if the connection cannot be established
     """
+    if not database:
+        raise ValueError("database parameter is required for get_mssql_connection()")
+
+    conn_str = settings.mssql_connection_string(database)
     try:
-        conn = pyodbc.connect(settings.mssql_connection_string, timeout=10)
-        logger.debug("MSSQL connection opened")
+        conn = pyodbc.connect(conn_str, timeout=10)
+        logger.debug(f"MSSQL connection opened → {database}")
         return conn
     except pyodbc.Error as e:
-        logger.error(f"Failed to connect to MS SQL Server: {e}")
+        logger.error(f"Failed to connect to MS SQL Server [{database}]: {e}")
         raise
 
 
-def test_mssql_connection() -> dict:
+def test_mssql_connection(database: str) -> dict:
     """
-    Verifies the MS SQL Server connection and returns status info.
-    Used by the Phase 0 verification script and health checks.
-
-    Returns a dict with keys: success (bool), server_version (str), error (str)
+    Verifies the MS SQL Server connection for a specific database.
+    Returns a status dict with keys: success, server_version, visible_tables, error.
     """
     try:
-        with get_mssql_connection() as conn:
+        with get_mssql_connection(database) as conn:
             cursor = conn.cursor()
             cursor.execute("SELECT @@VERSION")
             version_row = cursor.fetchone()
             version = version_row[0].split("\n")[0].strip() if version_row else "Unknown"
 
-            # Confirm we can query INFORMATION_SCHEMA (proves read access)
             cursor.execute(
                 "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES "
                 "WHERE TABLE_TYPE = 'BASE TABLE'"
             )
             table_count = cursor.fetchone()[0]
 
-        logger.info(f"MSSQL connection OK | Tables visible: {table_count}")
+        logger.info(f"MSSQL [{database}] OK | Tables visible: {table_count}")
         return {
             "success": True,
+            "database": database,
             "server_version": version,
             "visible_tables": table_count,
             "error": None,
         }
     except Exception as e:
-        logger.error(f"MSSQL connection test failed: {e}")
-        return {"success": False, "server_version": None, "visible_tables": None, "error": str(e)}
+        logger.error(f"MSSQL [{database}] connection test failed: {e}")
+        return {
+            "success": False,
+            "database": database,
+            "server_version": None,
+            "visible_tables": None,
+            "error": str(e),
+        }
 
 
 # ─────────────────────────────────────────────────────────────
@@ -165,17 +182,12 @@ def setup_postgres_schema() -> dict:
     """
     Creates the pgvector extension and all required tables if they do not
     already exist. Safe to run multiple times (uses IF NOT EXISTS throughout).
-
-    Call this once during Phase 0 setup:
-        python tests/verify_postgres.py --setup
     """
     results = []
 
     ddl_statements = [
-        # Enable pgvector
         ("pgvector extension", "CREATE EXTENSION IF NOT EXISTS vector;"),
 
-        # RAG document store
         ("rag_documents table", """
             CREATE TABLE IF NOT EXISTS rag_documents (
                 id          BIGSERIAL PRIMARY KEY,
@@ -187,14 +199,12 @@ def setup_postgres_schema() -> dict:
             );
         """),
 
-        # HNSW index for fast similarity search
         ("rag_documents embedding index", """
             CREATE INDEX IF NOT EXISTS rag_documents_embedding_idx
             ON rag_documents
             USING hnsw (embedding vector_cosine_ops);
         """),
 
-        # Audit log
         ("audit_log table", """
             CREATE TABLE IF NOT EXISTS audit_log (
                 id              BIGSERIAL PRIMARY KEY,
@@ -212,7 +222,6 @@ def setup_postgres_schema() -> dict:
             );
         """),
 
-        # Query store (Tier 1 self-learning cache)
         ("query_store table", """
             CREATE TABLE IF NOT EXISTS query_store (
                 id              BIGSERIAL PRIMARY KEY,
@@ -229,7 +238,6 @@ def setup_postgres_schema() -> dict:
             );
         """),
 
-        # RAG enrichment review queue (Tier 2 self-learning)
         ("rag_review_queue table", """
             CREATE TABLE IF NOT EXISTS rag_review_queue (
                 id              BIGSERIAL PRIMARY KEY,
@@ -244,7 +252,6 @@ def setup_postgres_schema() -> dict:
             );
         """),
 
-        # LoRA version tracker (Tier 3 self-learning)
         ("lora_versions table", """
             CREATE TABLE IF NOT EXISTS lora_versions (
                 id                  BIGSERIAL PRIMARY KEY,
